@@ -32,13 +32,12 @@
   :version "0.1"
   :maintainer "Jan Winkler <winkler@cs.uni-bremen.de>"
   :licence "BSD"
-  :description "Shopping Scenario Executive"
-  :depends-on (cram-prediction
-               roslisp
-               designators-ros
-               cram-roslisp-common
+  :description "Longterm Fetch and Place Executive"
+  :depends-on (roslisp
+               ;designators-ros
+               ;cram-roslisp-common
                cram-plan-library
-               cram-reasoning
+               cram-prolog
                cram-pr2-knowledge
                cram-plan-knowledge
                cram-environment-representation
@@ -70,22 +69,16 @@
      (:file "sem-map-config" :depends-on ("package"))
      (:file "reasoning" :depends-on ("package"))
      (:file "utils" :depends-on ("package" "reasoning"))
-     (:file "planner" :depends-on ("package" "reasoning"))
-     (:file "planner_v2" :depends-on ("package" "reasoning"))
      (:file "plan-library" :depends-on ("package"
                                         "utils"
                                         "reasoning"
                                         "costmap-metadata"
                                         "sem-map-config"
-                                        "facts"
-                                        "planner"
-                                        "planner_v2"))
+                                        "facts"))
      (:file "top-level-plans" :depends-on ("package"
                                            "utils"
                                            "reasoning"
                                            "costmap-metadata"
                                            "sem-map-config"
                                            "facts"
-                                           "plan-library"
-                                           "planner"
-                                           "planner_v2"))))))
+                                           "plan-library"))))))
