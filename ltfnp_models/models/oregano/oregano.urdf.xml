@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot name="oregano"
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find ltfnp_models)/defs/utils.xml"/>
+  
+  <cylinderlink name="link" radius="0.0275" height="0.075" mass="0.04" />
+  
+</robot>

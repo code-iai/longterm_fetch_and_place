@@ -1,0 +1,11 @@
+<launch>
+
+  <include file="$(find ltfnp_executive)/launch/ltfnp.launch"/>
+  <include file="$(find ltfnp_gazebo)/launch/ltfnp.launch"/>
+  
+  <node name="static_world_frame" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /odom_combined 100" />
+  
+  <include file="$(find pr2_moveit_node)/launch/move_group.launch"/>
+  <include file="$(find pr2_moveit_node)/launch/nav_pcontroller.launch"/>
+  
+</launch>

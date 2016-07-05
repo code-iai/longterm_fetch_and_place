@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>ltfnp_executive</name>
+  <version>0.0.1</version>
+  <description>
+    
+    Shopping scenario related executive code
+    
+  </description>
+  
+  <maintainer email="winkler@cs.uni-bremen.de">Jan Winkler</maintainer>
+  <author email="winkler@cs.uni-bremen.de">Jan Winkler</author>
+  
+  <license>BSD</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <run_depend>robot_state_chain_publisher</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>attache_msgs</run_depend>
+</package>

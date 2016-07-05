@@ -1,0 +1,38 @@
+<launch>
+  <node pkg="nav_pcontroller" type="nav_pcontroller" name="nav_pcontroller" output="screen">
+    <remap from="/cmd_vel" to="/base_controller/command"/>
+    <remap from="~laser_1" to="/base_scan"/>
+    <remap from="/goal" to="/nav_pcontroller/move_base_simple/goal"/>
+    <rosparam>
+      enable_jlo: false
+      
+      slowdown_far: 0.20
+      slowdown_near: 0.08
+      safety_dist: 0.06 <!-- 0.02 -->
+      repelling_dist: 0.10 <!-- 0.025This was 0.10, but seemed to interfer with the CRAM controllers. Lowering the safety here. -->
+      repelling_gain: 0.5
+      repelling_gain_max: 0.015
+      
+      vel_ang_max: 0.6
+      vel_lin_max: 0.1
+      acc_ang_max: 0.4
+      acc_lin_max: 0.4
+      loop_rate: 30
+      p: 1.2
+      
+      n_lasers: 1
+      complete_blind_spots: false
+
+      odom_frame: odom_combined
+      base_link_frame: base_link
+
+      speed_filter_name: /nav_pcontroller
+      footprint:
+        front: 0.33
+        rear: -0.33
+        right: -0.33
+        left: 0.33
+        tolerance: 0.0
+    </rosparam>
+  </node>
+</launch>

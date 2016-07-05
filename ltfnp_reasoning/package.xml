@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>ltfnp_reasoning</name>
+  <version>0.0.1</version>
+  <description>
+    
+    Shopping scenario related reasoning modules
+    
+  </description>
+  
+  <maintainer email="winkler@cs.uni-bremen.de">Jan Winkler</maintainer>
+  <author email="winkler@cs.uni-bremen.de">Jan Winkler</author>
+  
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>rosjava_build_tools</build_depend>
+  <build_depend>rosjava_bootstrap</build_depend>
+  <build_depend>rosjava_messages</build_depend>
+  
+  <build_depend>knowrob_common</build_depend>
+  
+  <run_depend>ltfnp_models</run_depend>
+  <run_depend>rosjava_bootstrap</run_depend>
+  <run_depend>rosjava_messages</run_depend>
+
+  <run_depend>knowrob_common</run_depend>
+  
+</package>

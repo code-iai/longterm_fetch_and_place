@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find ltfnp_models)/defs/inertia.xml"/>
+  
+  <macro name="boxlink" params="name size_x size_y size_z mass">
+    <boxlink_materialized name="${name}" size_x="${size_x}" size_y="${size_y}" size_z="${size_z}" material="PlainGrey" mass="${mass}"/>
+  </macro>
+  
+  <macro name="boxlink_materialized" params="name size_x size_y size_z material mass">
+    <link name="${name}">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}" />
+        </geometry>
+	
+	<material name="${material}" />
+      </visual>
+      
+    <collision>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <contact_coefficients mu="1.0" />
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}" />
+        </geometry>
+    <surface>
+        <friction>
+            <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+            </ode>
+        </friction>
+    </surface>
+    </collision>
+      
+      <cuboid_inertia width="${size_x}" length="${size_z}" height="${size_y}" mass="${mass}" />
+    </link>
+  </macro>
+  
+  <macro name="cylinderlink" params="name height radius mass">
+    <link name="${name}">
+      <visual>
+	<origin rpy="0 0 0" xyz="0 0 0" />
+	<geometry>
+	  <cylinder radius="${radius}" length="${height}" />
+	</geometry>
+      </visual>
+      
+    <collision>
+	<origin rpy="0 0 0" xyz="0 0 0" />
+	<contact_coefficients mu="1.0" />
+	<geometry>
+	  <cylinder radius="${radius}" length="${height}" />
+	</geometry>
+    <surface>
+        <friction>
+            <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+            </ode>
+        </friction>
+    </surface>
+    </collision>
+      
+      <cylinder_inertia radius="${radius}" length="${height}" mass="${mass}" />
+    </link>
+  </macro>
+  
+  <macro name="static_joint" params="name parent xyz">
+    <joint name="${name}_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="${xyz}" />
+      <parent link="${parent}" />
+      <child link="${name}" />
+    </joint>
+  </macro>
+  
+</robot>

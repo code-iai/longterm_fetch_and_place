@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot name="kelloggs"
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find ltfnp_models)/defs/utils.xml"/>
+  
+  <boxlink name="link" size_x="0.195" size_y="0.07" size_z="0.29" mass="0.4"/>
+  
+</robot>

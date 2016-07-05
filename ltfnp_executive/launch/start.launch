@@ -1,0 +1,8 @@
+<launch>
+
+  <include file="$(find ltfnp_executive)/launch/ltfnp_simulation.launch"/>
+  <include file="$(find pr2_description_lowres)/robots/upload_pr2.launch"/>
+  
+  <node name="autonomous_operation" pkg="ltfnp_executive" type="start.sh" output="screen" />
+  
+</launch>

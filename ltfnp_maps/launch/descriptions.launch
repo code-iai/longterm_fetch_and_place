@@ -1,0 +1,16 @@
+<launch>
+  
+  <!-- ============= -->
+  <!-- Shopping Area -->
+  <!-- ============= -->
+  
+  <param name="shopping_area_description" command="$(find xacro)/xacro.py '$(find ltfnp_models)/models/shopping_area/shopping_area.urdf.xml'" />
+  
+  
+  <!-- ==== -->
+  <!-- Rack -->
+  <!-- ==== -->
+  
+  <param name="shopping_rack_description" command="$(find xacro)/xacro.py '$(find ltfnp_models)/models/shopping_rack/shopping_rack.urdf.xml'" />
+  
+</launch>

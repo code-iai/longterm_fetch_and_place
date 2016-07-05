@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>ltfnp</name>
+  <version>0.0.1</version>
+  <description>
+    
+    Metapackage for ltfnp related code, models, and meta
+    data.
+    
+  </description>
+  
+  <maintainer email="winkler@cs.uni-bremen.de">Jan Winkler</maintainer>
+  <author email="winkler@cs.uni-bremen.de">Jan Winkler</author>
+  
+  <license>BSD</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <run_depend>ltfnp_models</run_depend>
+  <run_depend>ltfnp_maps</run_depend>
+  <run_depend>ltfnp_executive</run_depend>
+  <run_depend>ltfnp_gazebo</run_depend>
+  
+  <export>
+    <metapackage/>
+  </export>
+</package>

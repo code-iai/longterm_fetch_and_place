@@ -1,0 +1,7 @@
+<launch>
+  
+  <include file="$(find ltfnp_maps)/launch/descriptions.launch" />
+  <include file="$(find ltfnp_maps)/launch/transformations.launch" />
+  <include file="$(find ltfnp_maps)/launch/map.launch" />
+  
+</launch>

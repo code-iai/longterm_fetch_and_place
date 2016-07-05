@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>ltfnp_maps</name>
+  <version>0.0.1</version>
+  <description>
+    
+    The ltfnp_maps package
+    
+  </description>
+  
+  <maintainer email="winkler@cs.uni-bremen.de">Jan Winkler</maintainer>
+  <author email="winkler@cs.uni-bremen.de">Jan Winkler</author>
+  
+  <license>BSD</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

@@ -1,0 +1,28 @@
+<launch>
+  
+  <!-- ============= -->
+  <!-- Shopping Area -->
+  <!-- ============= -->
+  
+  <node name="publisher_area" pkg="robot_state_chain_publisher" type="state_chain_publisher">
+    <remap from="robot_description" to="shopping_area_description" />
+    <param name="publish_frequency" value="2" />
+    <param name="tf_prefix" value="/" />
+  </node>
+  
+  <node pkg="tf" type="static_transform_publisher" name="shopping_area_broadcaster" args="2.72 0.295 0 -1.57 0 0 /map /shopping_area 100" />
+  
+  
+  <!-- ==== -->
+  <!-- Rack -->
+  <!-- ==== -->
+  
+  <node name="publisher_rack" pkg="robot_state_chain_publisher" type="state_chain_publisher">
+    <remap from="robot_description" to="shopping_rack_description" />
+    <param name="publish_frequency" value="2" />
+    <param name="tf_prefix" value="/" />
+  </node>
+  
+  <node pkg="tf" type="static_transform_publisher" name="shopping_rack_broadcaster" args="0.08 -1.445 0 0 0 0 /shopping_area /shopping_rack 100" />
+  
+</launch>

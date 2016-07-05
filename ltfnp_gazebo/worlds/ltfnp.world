@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    
+    <!-- The shopping area (walls) -->
+    <model name="shopping_area">
+      <static>true</static>
+      <include>
+	<uri>model://shopping_area</uri>
+      </include>
+      
+      <pose>2.720 0.295 0.000 0.000 0.000 -1.570</pose>
+    </model>
+    
+    <!-- The shopping rack -->
+    <model name="shopping_rack">
+      <static>true</static>
+      <include>
+	<uri>model://shopping_rack</uri>
+      </include>
+      
+      <pose>1.275 0.214 0.000 0.000 0.000 -1.570</pose>
+    </model>
+    
+    <plugin name="attache" filename="libattache.so"/>
+  </world>
+</sdf>

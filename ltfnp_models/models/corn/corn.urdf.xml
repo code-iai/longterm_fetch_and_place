@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<robot name="corn"
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find ltfnp_models)/defs/utils.xml"/>
+  
+  <cylinderlink name="link" radius="0.0425" height="0.085" mass="0.4" />
+  
+</robot>
