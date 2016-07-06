@@ -38,4 +38,11 @@
 ;;;
 
 (def-top-level-cram-function longterm-fetch-and-place ()
+  ;; Agenda:
+  ;;   1 Determine object to fetch and where to put it vaguely
+  ;;   2 Resolve next location at which it could reside (lazily)
+  ;;   3 Approach location, and potentially articulate it (opening drawers/doors)
+  ;;   4 Detect objects at that location, verifying whether the one in
+  ;;     question is present; if not, articulate (close) and go to 2 until exhausted
+  ;;   5 [...go on...]
   )
