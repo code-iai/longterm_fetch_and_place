@@ -60,3 +60,28 @@ The following points are to be done in the near future:
 
  * Append handle-information to the objects in
    `ltfnp_models`.
+
+
+### Additional hints to get it running
+
+These hints are meant for special cases in which it is not apparent
+what the solution to a problem is.
+
+ * `libbullet.so` missing: The error, as reported by `cffi.lisp`, is
+   described as `Unable to find ros library 'libbullet_cl.so' in
+   dependencies of package cl_bullet` and basically says that the
+   bullet library is not compiled.
+   
+   To fix this, do the following (assuming you followed the default
+   installation instructions from cram-system.org):
+
+```bash
+$ roscd cl_bullet
+$ mkdir build && cd build
+$ cmake .. && make
+$ cp devel/lib/libbullet_cl.so ../../../../devel/lib/
+```
+
+   This places the missing `libbullet_cl.so` in your `devel/lib`
+   directory. Now try re-loading the `ltfnp_executive` package in the
+   REPL.
