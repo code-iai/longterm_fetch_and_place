@@ -241,19 +241,20 @@
 
 (defun set-item-pose (item pose)
   "Sets the `item's pose in the knowledge base. This affects planning."
-  (let* ((pose (cl-tf2:ensure-pose-stamped-transformed
-                *tf* pose "/map"))
-         (rotation-matrix (cl-transforms:pose->matrix pose))
-         (dimensions (array-dimensions rotation-matrix))
-         (linear-entry-list
-           (loop for i from 0 below (first dimensions)
-                 append
-                 (loop for j from 0 below (second dimensions) append
-                       `(,(aref rotation-matrix i j))))))
-    (json-prolog:prolog `("set_object_pose"
-                          ,(add-prolog-namespace item)
-                          ,@(loop for i from 0 below (length linear-entry-list) collect
-                                  (nth i linear-entry-list))))))
+  ;; (let* ((pose (cl-tf2:ensure-pose-stamped-transformed
+  ;;               *tf* pose "/map"))
+  ;;        (rotation-matrix (cl-transforms:pose->matrix pose))
+  ;;        (dimensions (array-dimensions rotation-matrix))
+  ;;        (linear-entry-list
+  ;;          (loop for i from 0 below (first dimensions)
+  ;;                append
+  ;;                (loop for j from 0 below (second dimensions) append
+  ;;                      `(,(aref rotation-matrix i j))))))
+  ;;   (json-prolog:prolog `("set_object_pose"
+  ;;                         ,(add-prolog-namespace item)
+  ;;                         ,@(loop for i from 0 below (length linear-entry-list) collect
+  ;;                                 (nth i linear-entry-list))))))
+  )
 
 (defun get-item-pose (item)
   "Gets the `item's pose from the knowledge base."

@@ -34,27 +34,25 @@
   :licence "BSD"
   :description "Longterm Fetch and Place Executive"
   :depends-on (roslisp
-               ;designators-ros
-               ;cram-roslisp-common
+               cram-tf
                cram-plan-library
                cram-prolog
-               cram-pr2-knowledge
-               cram-plan-knowledge
-               cram-environment-representation
-               pr2-manipulation-knowledge
+               cram-pr2-description
+               cram-plan-occasions-events
+               cram-occasions-events
+               cram-pr2-designators
+	       ;cram-environment-representation
                pr2-manipulation-process-module
                pr2-reachability-costmap
                pr2-navigation-process-module
-               pr2-reachability-costmap
                point-head-process-module
-               object-location-designators
                alexandria
-               physics-utils
-               occupancy-grid-costmap
-               location-costmap
-               semantic-map-costmap
+               cram-physics-utils
+               cram-occupancy-grid-costmap
+               cram-location-costmap
+               cram-semantic-map-costmap
                cram-language
-               bullet-reasoning-designators
+               cram-bullet-reasoning-designators
                robosherlock-process-module
                cram-beliefstate
                gazebo-perception-process-module

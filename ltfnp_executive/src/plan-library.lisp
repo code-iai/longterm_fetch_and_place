@@ -33,21 +33,21 @@
   (declare (ignore rack hints))
   (roslisp:ros-info (shopping plans) "SCENE-PERCEIVED"))
 
-(def-goal (achieve (rack-scene-perceived ?rack ?hints))
-  ;; Iterate through all rack levels and add their contents to the
-  ;; collision environment.
-  (go-in-front-of-rack ?rack)
-  (let ((perceive-scene-rack-level (get-hint ?hints :perceive-scene-rack-level nil)))
-    (loop for level in (or (when perceive-scene-rack-level
-                             `(,(get-rack-on-level ?rack perceive-scene-rack-level)))
-                           (get-rack-levels ?rack))
-          as pose = (get-rack-level-relative-pose
-                     level 0 0 0
-                     (cl-transforms:euler->quaternion))
-          do (achieve `(cram-plan-library:looking-at ,pose))
-             (with-designators ((generic-object (object `())))
-               (perceive-all
-                generic-object :stationary t :move-head nil)))))
+;; (def-goal (achieve (rack-scene-perceived ?rack ?hints))
+;;   ;; Iterate through all rack levels and add their contents to the
+;;   ;; collision environment.
+;;   (go-in-front-of-rack ?rack)
+;;   (let ((perceive-scene-rack-level (get-hint ?hints :perceive-scene-rack-level nil)))
+;;     (loop for level in (or (when perceive-scene-rack-level
+;;                              `(,(get-rack-on-level ?rack perceive-scene-rack-level)))
+;;                            (get-rack-levels ?rack))
+;;           as pose = (get-rack-level-relative-pose
+;;                      level 0 0 0
+;;                      (cl-transforms:euler->quaternion))
+;;           do (achieve `(cram-plan-library:looking-at ,pose))
+;;              (with-designators ((generic-object (object `())))
+;;                (perceive-all
+;;                 generic-object :stationary t :move-head nil)))))
 
 (declare-goal object-picked-from-rack (rack object)
   "Picks an object `object' from a given rack instance `rack'."
@@ -91,11 +91,12 @@
                       (enrich-object-description perceived-object))
                     (perceive-all ?object-template))))
       (dolist (object enriched-objects)
-        (plan-knowledge:on-event
-         (make-instance 'plan-knowledge:object-updated-event
-                        :perception-source :generic
-                        :object-designator object)))
-      enriched-objects)))
+      ;;   (plan-knowledge:on-event
+      ;;    (make-instance 'plan-knowledge:object-updated-event
+      ;;                   :perception-source :generic
+      ;;                   :object-designator object)))
+      ;; enriched-objects)))
+	))))
 
 (declare-goal object-handover (object target-hand)
   "Hands over the held object `object' such that it is held by the hand `target-hand', if not already true."
@@ -106,7 +107,7 @@
   (let ((current-hand
           (assoc '?hand
                  (lazy-car
-                  (crs:prolog `(pr2-manip-pm::object-in-hand
+                  (cram-prolog:prolog `(pr2-manip-pm::object-in-hand
                                 ,?object ?hand))))))
     (unless (eql current-hand ?target-hand)
       ;; TODO(winkler): Implement the handover here. Ideally, the
@@ -121,13 +122,13 @@
   (declare (ignore object level x y))
   (roslisp:ros-info (shopping plans) "OBJECT-PLACED-ON-RACK"))
 
-(def-goal (achieve (object-placed-on-rack ?object ?level ?x ?y))
-  (let* ((elevation 0.0)
-         (absolute-pose (get-rack-level-relative-pose
-                         ?level ?x ?y elevation)))
-    (with-designators ((loc (location `((desig-props:pose
-                                         ,absolute-pose)))))
-      (place-object ?object loc))))
+;; (def-goal (achieve (object-placed-on-rack ?object ?level ?x ?y))
+;;   (let* ((elevation 0.0)
+;;          (absolute-pose (get-rack-level-relative-pose
+;;                          ?level ?x ?y elevation)))
+;;     (with-designators ((loc (location `((desig-props:pose
+;;                                          ,absolute-pose)))))
+;;       (place-object ?object loc))))
 
 (declare-goal switched-holding-hand (object)
   "Switches hands for the held object `object'."

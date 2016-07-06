@@ -95,7 +95,7 @@
      ?cm))
 
   (<- (desig-costmap ?desig ?cm)
-    (crs:fail)
+    (cram-prolog:fail)
     (desig-prop ?desig (desig-props:to desig-props:reach))
     (desig-prop ?desig (desig-props:obj ?obj))
     (current-designator ?obj ?current-obj)
@@ -110,13 +110,13 @@
   
   (<- (infer-object-property ?object desig-props:type ?value)
     (desig-prop ?object (desig-props::detection ?detection))
-    (crs:lisp-pred is-detection-source-object ?detection)
-    (crs:lisp-fun get-type-from-detection ?detection ?type)
-    (crs:lisp-fun convert-object-name ?type ?value))
+    (cram-prolog:lisp-pred is-detection-source-object ?detection)
+    (cram-prolog:lisp-fun get-type-from-detection ?detection ?type)
+    (cram-prolog:lisp-fun convert-object-name ?type ?value))
   
   (<- (infer-object-property ?object desig-props:dimensions ?value)
     (desig-prop ?object (desig-props:type "Lion"))
-    (crs:lisp-fun vector 0.045 0.195 0.26 ?value))
+    (cram-prolog:lisp-fun vector 0.045 0.195 0.26 ?value))
   
   ;; (<- (infer-object-property ?object desig-props:shape ?value)
   ;;   (desig-prop ?object (desig-props:type ?type))
@@ -126,16 +126,16 @@
 (def-fact-group occassions (holds)
 
   (<- (object-picked-from-rack ?rack ?object)
-    (crs:fail))
+    (cram-prolog:fail))
 
   (<- (objects-detected-in-rack ?rack ?object-template)
-    (crs:fail))
+    (cram-prolog:fail))
 
   (<- (rack-scene-perceived)
-    (crs:fail))
+    (cram-prolog:fail))
   
   (<- (object-handover ?object ?target-hand)
     (not (pr2-manip-pm::object-in-hand ?object ?target-hand)))
   
   (<- (object-placed-on-rack ?object ?level ?x ?y)
-    (crs:fail)))
+    (cram-prolog:fail)))

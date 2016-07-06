@@ -221,8 +221,8 @@
                      (let ((adv (roslisp:advertise "/hhhhhh" "geometry_msgs/PoseStamped")))
                        (loop for object in objects
                              for global-pose = (pose-on-rack x-index y-index)
-                             for testing = (roslisp:publish
-                                            adv (tf:pose-stamped->msg global-pose))
+                             for testing = nil;(roslisp:publish
+                                            ;adv (tf:pose-stamped->msg global-pose))
                              for distance = (tf:v-dist
                                              (tf:origin global-pose)
                                              (tf:origin (reference
@@ -266,11 +266,11 @@
 
 (defun perceive-sim-objs ()
   (let* ((ignorable-objects `("pr2" "ground_plane" "shopping_area" "shopping_rack"))
-         (perceived-objects
-           (with-designators ((obj (object nil))
-                              (perceive (action `((desig-props:to desig-props:perceive)
-                                                  (desig-props:obj ,obj)))))
-             (perform perceive)))
+         (perceived-objects nil)
+           ;; (with-designators ((obj (object nil))
+           ;;                    (perceive (action `((desig-props:to desig-props:perceive)
+           ;;                                        (desig-props:obj ,obj)))))
+           ;;   (perform perceive)))
          (filtered-objects
            (remove-if (lambda (subject)
                         (find subject ignorable-objects
@@ -328,13 +328,13 @@
                       (y (second (second (first entry))))
                       (theta (third (second (first entry))))
                       (content (second entry))
-                      (zone-pose
-                        (cl-tf2:ensure-pose-stamped-transformed
-                         *tf*
-                         (make-zone-pose
-                          level zone x y
-                          :orientation (tf:euler->quaternion :az theta))
-                         "map")))
+                      (zone-pose nil))
+                        ;; (cl-tf2:ensure-pose-stamped-transformed
+                        ;;  *tf*
+                        ;;  (make-zone-pose
+                        ;;   level zone x y
+                        ;;   :orientation (tf:euler->quaternion :az theta))
+                        ;;  "map")))
                  (spawn-shopping-item-at-pose content zone-pose)))))
     (macrolet ((setf-arrangement-slot-ex (arrangement level zone x y theta content)
                  `(setf ,arrangement

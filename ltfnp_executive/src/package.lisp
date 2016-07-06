@@ -30,9 +30,12 @@
 
 (desig-props:def-desig-package ltfnp-executive
   (:nicknames shopping)
-  (:use #:common-lisp #:roslisp #:cram-utilities #:designators-ros
-        #:cram-roslisp-common #:cram-designators #:location-costmap
-        #:cram-plan-knowledge #:cram-plan-library
+  (:use #:common-lisp #:roslisp #:cram-utilities; #:designators-ros
+        ;#:cram-roslisp-common
+	;#:cram-designators
+	#:location-costmap
+        #:cram-plan-occasions-events
+	#:cram-plan-library
         #:cram-language-designator-support)
   (:import-from :cram-language
                 top-level fl-funcall with-tags pursue tag retry-after-suspension
@@ -43,8 +46,8 @@
                 action-desig?
                 desig-prop
                 action-desig)
-  (:import-from #:cram-task-knowledge
-                infer-object-property)
+  ;(:import-from #:cram-task-knowledge
+  ;              infer-object-property)
   (:import-from :robosherlock-process-module
                 perceived-object-invalid
                 object-handle)
@@ -54,8 +57,8 @@
                 desig-costmap)
   (:import-from :cram-language-designator-support with-designators)
   (:import-from :cram-language def-cram-function def-top-level-cram-function)
-  (:import-from :cram-reasoning def-fact-group <- not)
-  (:import-from :cram-roslisp-common *tf2*)
+  (:import-from :cram-prolog def-fact-group <- not)
+  (:import-from :cram-tf *transformer*)
   (:export start-scenario-external)
   (:desig-properties :on :name :grasp-type :handle
                      :pose :shape :box :cylinder

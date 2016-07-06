@@ -27,7 +27,7 @@
 
 (in-package :sem-map-utils)
 
-(def-fact-group semantic-map-data (semantic-map-name)
+;; (def-fact-group semantic-map-data (semantic-map-name)
 
-  (<- (semantic-map-name
-       "http://ias.cs.tum.edu/kb/ias_semantic_map.owl#SemanticEnvironmentMap_Lq93n1o98")))
+;;   (<- (semantic-map-name
+;;        "http://ias.cs.tum.edu/kb/ias_semantic_map.owl#SemanticEnvironmentMap_Lq93n1o98")))

@@ -118,14 +118,15 @@
      ,@body))
 
 (defun get-robot-pose (&optional (frame-id "/base_link"))
-  (cl-tf2:ensure-pose-stamped-transformed
-   *tf2*
-   (tf:make-pose-stamped
-    frame-id
-    0.0
-    (tf:make-identity-vector)
-    (tf:make-identity-rotation))
-   "/map" :use-current-ros-time t))
+  ;; (cl-tf2:ensure-pose-stamped-transformed
+  ;;  *tf2*
+  ;;  (tf:make-pose-stamped
+  ;;   frame-id
+  ;;   0.0
+  ;;   (tf:make-identity-vector)
+  ;;   (tf:make-identity-rotation))
+  ;;  "/map" :use-current-ros-time t))
+  )
 
 (defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
   (when (or (eql side :left) (not side))
@@ -170,7 +171,7 @@
                      ,(tf:w area-rot-quaternion)))
          (area-trans `(2.720 0.295 0)))
     (force-ll
-     (crs:prolog
+     (cram-prolog:prolog
       `(and (btr:clear-bullet-world)
             (btr:bullet-world ?w)
             (btr:assert (btr:object
@@ -178,7 +179,7 @@
                          ((0 0 0) (0 0 0 1))
                          :normal (0 0 1) :constant 0))
             (btr:debug-window ?w)
-            (btr:robot ?robot)
+            ;(btr:robot ?robot)
             (assert (btr:object
                      ?w btr:urdf ?robot ,(get-robot-pose)
                      :urdf ,urdf-robot))
@@ -192,23 +193,25 @@
                      :urdf ,urdf-area)))))))
 
 (defun init-btr-perception ()
-  (cram-environment-representation:ignore-bullet-object-during-perception "floor")
-  (cram-environment-representation:ignore-bullet-object-during-perception 'floor)
-  (cram-environment-representation:ignore-bullet-object-during-perception "ground_plane")
-  (cram-environment-representation:ignore-bullet-object-during-perception 'cram-pr2-knowledge::pr2)
-  (cram-environment-representation:ignore-bullet-object-during-perception (first (get-racks)))
-  (cram-environment-representation:ignore-bullet-object-during-perception 'sem-map-rack)
-  (cram-environment-representation:ignore-bullet-object-during-perception 'sem-map-area))
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception "floor")
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception 'floor)
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception "ground_plane")
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception 'cram-pr2-knowledge::pr2)
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception (first (get-racks)))
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception 'sem-map-rack)
+  ;; (cram-environment-representation:ignore-bullet-object-during-perception 'sem-map-area))
+  )
 
 (defun prepare-settings ()
-  (cram-designators:disable-location-validation-function
-   'bullet-reasoning-designators::check-ik-solution)
-  (cram-designators:disable-location-validation-function
-   'bullet-reasoning-designators::validate-designator-solution)
-  (init-belief-state)
-  (init-btr-perception)
-  (moveit:clear-collision-environment)
-  (sem-map-coll-env:publish-semantic-map-collision-objects))
+  ;; (cram-designators:disable-location-validation-function
+  ;;  'bullet-reasoning-designators::check-ik-solution)
+  ;; (cram-designators:disable-location-validation-function
+  ;;  'bullet-reasoning-designators::validate-designator-solution)
+  ;; (init-belief-state)
+  ;; (init-btr-perception)
+  ;; (moveit:clear-collision-environment)
+  ;; (sem-map-coll-env:publish-semantic-map-collision-objects))
+  )
 
 (defun move-torso (&optional (position 0.3))
   (let* ((action-client (or *action-client-torso*
@@ -234,12 +237,13 @@
   (move-arms-up :side :right))
 
 (defun handover-object (object)
-  (with-designators ((handover-action
-                      (action
-                       `((to handover)
-                         (type trajectory)
-                         (obj ,object)))))
-    (perform handover-action)))
+  )
+  ;; (with-designators ((handover-action
+  ;;                     (action
+  ;;                      `((to handover)
+  ;;                        (type trajectory)
+  ;;                        (obj ,object)))))
+  ;;   (perform handover-action)))
 
 (defun pick-object (object &key stationary)
   (let ((object (desig:current-desig object)))
@@ -557,17 +561,19 @@
 
 (defun get-shopping-objects (&key class-type)
   "Constructs object designators from shopping items known to the underlying knowledge base. Each item will be equipped with a name, semantic handles, and the object shape (all acquired from the knowledge base). Returns a list of object designators."
-  (let ((shopping-items (or (and class-type (get-items-by-class-type class-type))
-                            (get-shopping-items))))
-    (mapcar
-     #'get-named-shopping-object
-     shopping-items)))
+  )
+  ;; (let ((shopping-items (or (and class-type (get-items-by-class-type class-type))
+  ;;                           (get-shopping-items))))
+  ;;   (mapcar
+  ;;    #'get-named-shopping-object
+  ;;    shopping-items)))
 
 (defun go-to-pose (pose)
-  (with-designators ((goal-location (location `((pose ,pose))))
-                     (navigate (action `((type navigation)
-                                         (goal ,goal-location)))))
-    (perform navigate)))
+  )
+  ;; (with-designators ((goal-location (location `((pose ,pose))))
+  ;;                    (navigate (action `((type navigation)
+  ;;                                        (goal ,goal-location)))))
+  ;;   (perform navigate)))
 
 (defun go-in-front-of-rack (rack)
   (let* ((rack-pose (get-rack-pose rack))
@@ -720,7 +726,7 @@
              (lambda (bdgs)
                (with-vars-bound (?p) bdgs
                  ?p))
-             (crs:prolog `(and (btr:bullet-world ?w)
+             (cram-prolog:prolog `(and (btr:bullet-world ?w)
                                (btr:object ?w ?o)
                                (member ?o ,known-objects)
                                (btr:object-pose ?w ?o ?p))))))
