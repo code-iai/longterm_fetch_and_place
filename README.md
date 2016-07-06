@@ -75,12 +75,12 @@ what the solution to a problem is.
    To fix this, do the following (assuming you followed the default
    installation instructions from cram-system.org):
 
-```bash
-$ roscd cl_bullet
-$ mkdir build && cd build
-$ cmake .. && make
-$ cp devel/lib/libbullet_cl.so ../../../../devel/lib/
-```
+    ```bash
+    $ roscd cl_bullet
+    $ mkdir build && cd build
+    $ cmake .. && make
+    $ cp devel/lib/libbullet_cl.so ../../../../devel/lib/
+    ```
 
    This places the missing `libbullet_cl.so` in your `devel/lib`
    directory. Now try re-loading the `ltfnp_executive` package in the
