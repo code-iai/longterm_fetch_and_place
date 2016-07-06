@@ -53,10 +53,6 @@ package:
  * `pr2_moveit_node`: Readily configured MoveIt! node to control the
    simulated PR2 in Gazebo.
 
- * `attache_msgs`: Message and service definitions for using the
-   `libattache.so` plugin for Gazebo (attachment and detachment of
-   objects to each other, used for simulated grasping).
-
 
 ### Open To Dos
 

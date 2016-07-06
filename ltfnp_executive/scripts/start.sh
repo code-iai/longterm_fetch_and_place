@@ -35,10 +35,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; Make sure the shopping scenario package is loaded
-(roslisp:ros-info (shopping-aux) "Loading Shopping Scenario.")
+;; Make sure the ltfnp package is loaded
+(roslisp:ros-info (ltfnp-aux) "Loading Longterm Fetch and Place scenario.")
 (ros-load:load-system "ltfnp_executive" "ltfnp-executive")
-(roslisp:ros-info (shopping-aux) "Shopping Scenario loaded.")
+(roslisp:ros-info (ltfnp-aux) "Longterm Fetch and Place scenario loaded.")
 
 ;; Start the scenario
-(shopping:start-scenario-external)
+(ltfnp:start-scenario)

@@ -1,19 +1,15 @@
-;;; Copyright (c) 2015, Jan Winkler <winkler@cs.uni-bremen.de>
+;;; Copyright (c) 2016, Jan Winkler <winkler@cs.uni-bremen.de>
 ;;; All rights reserved.
-;;;
+;;; 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions are met:
-;;;
+;;; 
 ;;; * Redistributions of source code must retain the above copyright
-;;; notice, this list of conditions and the following disclaimer.
+;;;   notice, this list of conditions and the following disclaimer.
 ;;; * Redistributions in binary form must reproduce the above copyright
-;;; notice, this list of conditions and the following disclaimer in the
-;;; documentation and/or other materials provided with the distribution.
-;;; * Neither the name of the Institute for Artificial Intelligence/
-;;; Universitaet Bremen nor the names of its contributors may be used to 
-;;; endorse or promote products derived from this software without specific 
-;;; prior written permission.
-;;;
+;;;   notice, this list of conditions and the following disclaimer in the
+;;;   documentation and/or other materials provided with the distribution.
+;;; 
 ;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 ;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 ;;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,14 +25,10 @@
 (in-package :cl-user)
 
 (desig-props:def-desig-package ltfnp-executive
-  (:nicknames shopping)
-  (:use #:common-lisp #:roslisp #:cram-utilities; #:designators-ros
-        ;#:cram-roslisp-common
-	;#:cram-designators
-	#:location-costmap
-        #:cram-plan-occasions-events
-	#:cram-plan-library
-        #:cram-language-designator-support)
+  (:nicknames ltfnp)
+  (:use #:common-lisp #:roslisp #:cram-utilities
+        #:location-costmap #:cram-plan-occasions-events
+        #:cram-plan-library #:cram-language-designator-support)
   (:import-from :cram-language
                 top-level fl-funcall with-tags pursue tag retry-after-suspension
                 whenever pulsed value with-task-suspended seq declare-goal def-goal)
@@ -46,8 +38,6 @@
                 action-desig?
                 desig-prop
                 action-desig)
-  ;(:import-from #:cram-task-knowledge
-  ;              infer-object-property)
   (:import-from :robosherlock-process-module
                 perceived-object-invalid
                 object-handle)
@@ -59,7 +49,7 @@
   (:import-from :cram-language def-cram-function def-top-level-cram-function)
   (:import-from :cram-prolog def-fact-group <- not)
   (:import-from :cram-tf *transformer*)
-  (:export start-scenario-external)
+  (:export start-scenario)
   (:desig-properties :on :name :grasp-type :handle
                      :pose :shape :box :cylinder
                      :type :navigation :pose :goal :trajectory

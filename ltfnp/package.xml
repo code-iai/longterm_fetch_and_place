@@ -16,10 +16,18 @@
   
   <buildtool_depend>catkin</buildtool_depend>
   
+  <!-- ltfnp packages -->
   <run_depend>ltfnp_models</run_depend>
   <run_depend>ltfnp_maps</run_depend>
   <run_depend>ltfnp_executive</run_depend>
   <run_depend>ltfnp_gazebo</run_depend>
+  
+  <!-- external packages -->
+  <run_depend>robosherlock_process_module</run_depend>
+  <run_depend>gazebo_perception_process_module</run_depend>
+  <run_depend>cram_gazebo_utilities</run_depend>
+  <run_depend>iai_common_msgs</run_depend>
+  <run_depend>nav_pcontroller</run_depend>
   
   <export>
     <metapackage/>
