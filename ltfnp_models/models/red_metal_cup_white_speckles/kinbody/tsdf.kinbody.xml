@@ -1,0 +1,8 @@
+<KinBody name="red_metal_cup_white_speckles">
+  <Body type="static" name="red_metal_cup_white_speckles">
+    <Geom type="trimesh">
+      <Render>../meshes/tsdf_mesh.stl</Render>
+      <Data>../meshes/tsdf_mesh.stl</Data>
+    </Geom>
+  </Body>
+</KinBody>
