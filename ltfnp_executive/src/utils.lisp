@@ -24,18 +24,7 @@
 
 (in-package :ltfnp-executive)
 
-(defun start-scenario ()
-  ;; This function is mainly meant as an entry point for external
-  ;; runner scripts (for starting the scenario using launch files,
-  ;; etc.)
-  (roslisp:ros-info (ltfnp) "Connecting to ROS")
-  (roslisp-utilities:startup-ros)
-  (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
-  (longterm-fetch-and-place))
-
 ;;;
-;;; Top-Level Plans
+;;; Add utility functions here
 ;;;
 
-(def-top-level-cram-function longterm-fetch-and-place ()
-  )

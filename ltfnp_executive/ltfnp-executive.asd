@@ -57,4 +57,5 @@
   ((:module "src"
     :components
     ((:file "package")
-     (:file "top-level-plans" :depends-on ("package"))))))
+     (:file "utils" :depends-on ("package"))
+     (:file "top-level-plans" :depends-on ("package" "utils"))))))
