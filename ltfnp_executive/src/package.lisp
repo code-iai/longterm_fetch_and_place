@@ -25,7 +25,7 @@
 (in-package :cl-user)
 
 (desig-props:def-desig-package ltfnp-executive
-  (:nicknames shopping)
+  (:nicknames ltfnp)
   (:use #:common-lisp #:roslisp #:cram-utilities
         #:location-costmap #:cram-plan-occasions-events
         #:cram-plan-library #:cram-language-designator-support)
