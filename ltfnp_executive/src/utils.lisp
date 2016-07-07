@@ -64,3 +64,14 @@
   ;; TODO: Add reasoning mechanisms to CRAM that read the new
   ;; properties from the semantic map
   )
+
+(defun init-3d-world ()
+  (force-ll
+   (cram-prolog:prolog
+    `(and (btr:clear-bullet-world)
+          (btr:bullet-world ?w)
+          (btr:assert (btr:object
+                       ?w :static-plane floor
+                       ((0 0 0) (0 0 0 1))
+                       :normal (0 0 1) :constant 0))
+          (btr:debug-window ?w)))))
