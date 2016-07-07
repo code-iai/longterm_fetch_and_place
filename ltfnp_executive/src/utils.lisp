@@ -32,8 +32,9 @@
   `(cpm:with-process-modules-running
        (pr2-manipulation-process-module:pr2-manipulation-process-module
         pr2-navigation-process-module:pr2-navigation-process-module
-        point-head-process-module:point-head-process-module)
-        ;robosherlock-process-module:robosherlock-process-module)
+        point-head-process-module:point-head-process-module
+        ;robosherlock-process-module:robosherlock-process-module
+        gazebo-perception-process-module:gazebo-perception-process-module)
      ,@body))
 
 (defun go-to-pose (position orientation)
@@ -75,3 +76,8 @@
                        ((0 0 0) (0 0 0 1))
                        :normal (0 0 1) :constant 0))
           (btr:debug-window ?w)))))
+
+(cram-language:def-top-level-cram-function test-perception ()
+  (with-process-modules
+    (with-designators ((obj :object `((:name "IAI_kitchen"))))
+      (cram-plan-library:perceive-object 'cram-plan-library:currently-visible obj))))
