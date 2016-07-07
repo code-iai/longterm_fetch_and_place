@@ -1,4 +1,4 @@
-;;; Copyright (c) 2015, Jan Winkler <winkler@cs.uni-bremen.de>
+;;; Copyright (c) 2016, Jan Winkler <winkler@cs.uni-bremen.de>
 ;;; All rights reserved.
 ;;; 
 ;;; Redistribution and use in source and binary forms, with or without
@@ -9,9 +9,6 @@
 ;;;     * Redistributions in binary form must reproduce the above copyright
 ;;;       notice, this list of conditions and the following disclaimer in the
 ;;;       documentation and/or other materials provided with the distribution.
-;;;     * Neither the name of Willow Garage, Inc. nor the names of its
-;;;       contributors may be used to endorse or promote products derived from
-;;;       this software without specific prior written permission.
 ;;; 
 ;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 ;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -37,3 +34,4 @@
   (<- (costmap-manipulation-padding 0.7))
   (<- (costmap-in-reach-distance 1.0))
   (<- (costmap-reach-minimal-distance 0.5)))
+

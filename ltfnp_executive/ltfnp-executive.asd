@@ -1,19 +1,15 @@
-;;; Copyright (c) 2015, Jan Winkler <winkler@cs.uni-bremen.de>
+;;; Copyright (c) 2016, Jan Winkler <winkler@cs.uni-bremen.de>
 ;;; All rights reserved.
-;;;
+;;; 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions are met:
-;;;
+;;; 
 ;;; * Redistributions of source code must retain the above copyright
-;;; notice, this list of conditions and the following disclaimer.
+;;;   notice, this list of conditions and the following disclaimer.
 ;;; * Redistributions in binary form must reproduce the above copyright
-;;; notice, this list of conditions and the following disclaimer in the
-;;; documentation and/or other materials provided with the distribution.
-;;; * Neither the name of the Institute for Artificial Intelligence/
-;;; Universitaet Bremen nor the names of its contributors may be used to 
-;;; endorse or promote products derived from this software without specific 
-;;; prior written permission.
-;;;
+;;;   notice, this list of conditions and the following disclaimer in the
+;;;   documentation and/or other materials provided with the distribution.
+;;; 
 ;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 ;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 ;;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,27 +30,24 @@
   :licence "BSD"
   :description "Longterm Fetch and Place Executive"
   :depends-on (roslisp
-               ;designators-ros
-               ;cram-roslisp-common
+               cram-tf
                cram-plan-library
                cram-prolog
-               cram-pr2-knowledge
-               cram-plan-knowledge
-               cram-environment-representation
-               pr2-manipulation-knowledge
+               cram-pr2-description
+               cram-plan-occasions-events
+               cram-occasions-events
+               cram-pr2-designators
                pr2-manipulation-process-module
                pr2-reachability-costmap
                pr2-navigation-process-module
-               pr2-reachability-costmap
                point-head-process-module
-               object-location-designators
                alexandria
-               physics-utils
-               occupancy-grid-costmap
-               location-costmap
-               semantic-map-costmap
+               cram-physics-utils
+               cram-occupancy-grid-costmap
+               cram-location-costmap
+               cram-semantic-map-costmap
                cram-language
-               bullet-reasoning-designators
+               cram-bullet-reasoning-designators
                robosherlock-process-module
                cram-beliefstate
                gazebo-perception-process-module
@@ -64,21 +57,6 @@
   ((:module "src"
     :components
     ((:file "package")
-     (:file "facts" :depends-on ("package"))
      (:file "costmap-metadata" :depends-on ("package"))
-     (:file "sem-map-config" :depends-on ("package"))
-     (:file "reasoning" :depends-on ("package"))
-     (:file "utils" :depends-on ("package" "reasoning"))
-     (:file "plan-library" :depends-on ("package"
-                                        "utils"
-                                        "reasoning"
-                                        "costmap-metadata"
-                                        "sem-map-config"
-                                        "facts"))
-     (:file "top-level-plans" :depends-on ("package"
-                                           "utils"
-                                           "reasoning"
-                                           "costmap-metadata"
-                                           "sem-map-config"
-                                           "facts"
-                                           "plan-library"))))))
+     (:file "utils" :depends-on ("package" "costmap-metadata"))
+     (:file "top-level-plans" :depends-on ("package" "utils" "costmap-metadata"))))))
