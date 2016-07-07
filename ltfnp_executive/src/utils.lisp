@@ -30,7 +30,7 @@
 
 (defmacro with-process-modules (&body body)
   `(cpm:with-process-modules-running
-       (;pr2-manipulation-process-module:pr2-manipulation-process-module
+       (pr2-manipulation-process-module:pr2-manipulation-process-module
         pr2-navigation-process-module:pr2-navigation-process-module
         point-head-process-module:point-head-process-module)
         ;robosherlock-process-module:robosherlock-process-module)
@@ -45,3 +45,22 @@
   (let ((reference (cram-designators:reference loc-desig)))
     (when reference
       (achieve `(cram-plan-library:looking-at ,reference)))))
+
+(defun move-arm-pose (arm pose)
+  (pr2-manip-pm::execute-move-arm-pose arm pose))
+
+(defun test-move-arm-pose ()
+  (move-arm-pose :left (tf:make-pose-stamped
+                        "torso_lift_link" 0.0
+                        (tf:make-3d-vector 0.1 0.45 0.4)
+                        (tf:make-identity-rotation)))
+  (move-arm-pose :right (tf:make-pose-stamped
+                         "torso_lift_link" 0.0
+                         (tf:make-3d-vector 0.1 -0.45 0.4)
+                         (tf:make-identity-rotation))))
+
+
+(defun get-supporting-surfaces ()
+  ;; TODO: Add reasoning mechanisms to CRAM that read the new
+  ;; properties from the semantic map
+  )
