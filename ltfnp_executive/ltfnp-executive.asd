@@ -57,5 +57,6 @@
   ((:module "src"
     :components
     ((:file "package")
-     (:file "utils" :depends-on ("package"))
-     (:file "top-level-plans" :depends-on ("package" "utils"))))))
+     (:file "costmap-metadata" :depends-on ("package"))
+     (:file "utils" :depends-on ("package" "costmap-metadata"))
+     (:file "top-level-plans" :depends-on ("package" "utils" "costmap-metadata"))))))

@@ -4,11 +4,11 @@
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions are met:
 ;;; 
-;;; * Redistributions of source code must retain the above copyright
-;;;   notice, this list of conditions and the following disclaimer.
-;;; * Redistributions in binary form must reproduce the above copyright
-;;;   notice, this list of conditions and the following disclaimer in the
-;;;   documentation and/or other materials provided with the distribution.
+;;;     * Redistributions of source code must retain the above copyright
+;;;       notice, this list of conditions and the following disclaimer.
+;;;     * Redistributions in binary form must reproduce the above copyright
+;;;       notice, this list of conditions and the following disclaimer in the
+;;;       documentation and/or other materials provided with the distribution.
 ;;; 
 ;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 ;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -24,21 +24,14 @@
 
 (in-package :ltfnp-executive)
 
-;;;
-;;; Add utility functions here
-;;;
+(def-fact-group costmap-metadata (desig-loc)
 
-(defmacro with-process-modules (&body body)
-  `(cpm:with-process-modules-running
-       (;pr2-manipulation-process-module:pr2-manipulation-process-module
-        pr2-navigation-process-module:pr2-navigation-process-module)
-        ;point-head-process-module:point-head-process-module
-        ;robosherlock-process-module:robosherlock-process-module)
-     ,@body))
+  (<- (costmap-size 10 10))
+  (<- (costmap-origin -5 -5))
+  (<- (costmap-resolution 0.05))
+  
+  (<- (costmap-padding 0.5))
+  (<- (costmap-manipulation-padding 0.7))
+  (<- (costmap-in-reach-distance 1.0))
+  (<- (costmap-reach-minimal-distance 0.5)))
 
-(defun go-to-pose (position orientation)
-  (let ((pose (tf:make-pose-stamped "/base_link" 0.0 position orientation)))
-    (with-designators ((loc :location `((:pose ,pose)))
-                       (nav :action `((:type :navigation)
-                                      (:goal ,loc))))
-      (perform nav))))
