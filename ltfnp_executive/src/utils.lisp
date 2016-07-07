@@ -31,14 +31,17 @@
 (defmacro with-process-modules (&body body)
   `(cpm:with-process-modules-running
        (;pr2-manipulation-process-module:pr2-manipulation-process-module
-        pr2-navigation-process-module:pr2-navigation-process-module)
-        ;point-head-process-module:point-head-process-module
+        pr2-navigation-process-module:pr2-navigation-process-module
+        point-head-process-module:point-head-process-module)
         ;robosherlock-process-module:robosherlock-process-module)
      ,@body))
 
 (defun go-to-pose (position orientation)
   (let ((pose (tf:make-pose-stamped "/base_link" 0.0 position orientation)))
-    (with-designators ((loc :location `((:pose ,pose)))
-                       (nav :action `((:type :navigation)
-                                      (:goal ,loc))))
-      (perform nav))))
+    (with-designators ((loc :location `((:pose ,pose))))
+      (at-location (loc)))))
+
+(defun look-at (loc-desig)
+  (let ((reference (cram-designators:reference loc-desig)))
+    (when reference
+      (achieve `(cram-plan-library:looking-at ,reference)))))
