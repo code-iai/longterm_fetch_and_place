@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<robot name="milk" xmlns:xacro="http://ros.org/wiki/xacro">
+  <link name="milk_link">
+    <!--MAIN_BODY-->
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://buttermilk/ReineButterMilch.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0375" length="0.173"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+</robot>
