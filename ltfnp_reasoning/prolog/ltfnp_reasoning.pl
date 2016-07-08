@@ -33,7 +33,10 @@
 	   ltfnp_add_object/2,
 	   ltfnp_remove_object/1,
 	   ltfnp_reasoner_call/3,
-	   ltfnp_object_literal_atom/3
+	   ltfnp_object_literal_atom/3,
+	   ltfnp_set_object_pose/8,
+	   ltfnp_get_object_pose/8,
+	   ltfnp_assert_string/3
 	  ]).
 
 
@@ -50,7 +53,10 @@
     ltfnp_add_object(r),
     ltfnp_remove_object(r),
     ltfnp_reasoner_call(r, r, r),
-    ltfnp_object_literal_atom(r, r, r).
+    ltfnp_object_literal_atom(r, r, r),
+    ltfnp_set_object_pose(r, r, r, r, r, r, r, r),
+    ltfnp_get_object_pose(r, r, r, r, r, r, r, r),
+    ltfnp_assert_string(r, r, r).
 
 
 :- rdf_db:rdf_register_ns(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
@@ -121,3 +127,45 @@ ltfnp_object_literal_atom(Object, Property, Value) :-
     owl_has(Object, Property, Literal),
     strip_literal_type(Literal, Atom),
     term_to_atom(Value, Atom).
+
+
+%% ltfnp_set_object_pose(?Object, ?Translation, ?Rotation) is nondet.
+%
+%
+% @param Object ...
+% @param Translation ...
+% @param Rotation ...
+%
+ltfnp_set_object_pose(Object, TX, TY, TZ, QW, QX, QY, QZ) :-
+    ltfnp_object(Object),
+    rdf_instance_from_class('http://knowrob.org/kb/knowrob.owl#Transformation', Transformation),
+    rdf_assert(Object, knowrob:'objectPose', Transformation),
+    string_concat(TX, "", T1),
+    string_concat(T1, TY, T2),
+    string_concat(T2, TZ, T),
+    string_concat(QW, "", Q1),
+    string_concat(Q1, QX, Q2),
+    string_concat(Q2, QY, Q3),
+    string_concat(Q2, QZ, Q).
+    ltfnp_assert_string(Transformation, knowrob:'quaternion', Q),
+    ltfnp_assert_string(Transformation, knowrob:'translation', T).
+
+
+ltfnp_assert_string(Subject, Field, Content) :-
+    rdf_retractall(Subject, Field, _),
+    term_to_atom(Content, ContentAtom),
+    rdf_assert(Subject, Field, literal(type(string, ContentAtom))).
+
+
+%% ltfnp_get_object_pose(?Object, ?Translation, ?Rotation) is nondet.
+%
+%
+% @param Object ...
+% @param Translation ...
+% @param Rotation ...
+%
+ltfnp_get_object_pose(Object, TX, TY, TZ, QW, QX, QY, QZ) :-
+    ltfnp_object(Object),
+    owl_has(Object, knowrob:'objectPose', Transformation),
+    owl_has(Transformation, knowrob:'quaternion', [QW, QX, QY, QZ]),
+    owl_has(Transformation, knowrob:'translation', [TX, TY, TZ]).

@@ -110,3 +110,13 @@ base-class itself does not count towards the enlisted classes."
 
 (defun delete-object (object-id)
   (json-prolog:prolog `("ltfnp_remove_object" ,(add-prolog-namespace object-id))))
+
+(defun set-object-pose (object-id translation rotation)
+  (json-prolog:prolog `("ltfnp_set_object_pose"
+                        ,(add-prolog-namespace object-id)
+                        ,(first translation) ,(second translation) ,(third translation)
+                        ,(first rotation) ,(second rotation) ,(third rotation) ,(fourth rotation))))
+
+(defun get-object-pose (object-id)
+  (json-prolog:prolog `("ltfnp_get_object_pose"
+                        ,(add-prolog-namespace object-id) ?tx ?ty ?tz ?qw ?qx ?qy ?qz)))
