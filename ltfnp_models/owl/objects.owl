@@ -2,764 +2,172 @@
 
 <!--
   
-  Shopping Scenario OWL definitions
+  Longterm Fetch and Place OWL definitions
   
-  This file is part of the larger ltfnp package for autonomous object shopping related tasks as performed by humanoid robots (such as the PR2).
+  This file is part of the larger ltfnp package for autonomous longterm fetch and place related tasks as performed by humanoid robots (such as the PR2).
   
-  Copyright 2015, Jan Winkler <winkler@cs.uni-bremen.de>
+  Copyright 2016, Jan Winkler <winkler@cs.uni-bremen.de>
   
 -->
 
 
 <!DOCTYPE rdf:RDF [
-    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
-    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
-    <!ENTITY knowrob "http://knowrob.org/kb/knowrob.owl#" >
-    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
-    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+  <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+  <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+  <!ENTITY knowrob "http://knowrob.org/kb/knowrob.owl#" >
+  <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+  <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
 ]>
 
 <rdf:RDF xmlns="http://knowrob.org/kb/ias_semantic_map.owl#"
-    xml:base="http://knowrob.org/kb/ias_semantic_map.owl"
-    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:map="http://knowrob.org/kb/ias_semantic_map.owl#"
-    xmlns:srdl="http://knowrob.org/kb/srdl2-comp.owl#"
-    xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:knowrob="http://knowrob.org/kb/knowrob.owl#">
-    <owl:Ontology rdf:about="http://knowrob.org/kb/shopping_area.owl#">
-        <owl:imports rdf:resource="package://knowrob_common/owl/knowrob.owl"/>
-    </owl:Ontology>
+	 xml:base="http://knowrob.org/kb/ias_semantic_map.owl"
+	 xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	 xmlns:map="http://knowrob.org/kb/ias_semantic_map.owl#"
+	 xmlns:srdl="http://knowrob.org/kb/srdl2-comp.owl#"
+	 xmlns:owl="http://www.w3.org/2002/07/owl#"
+	 xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+	 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	 xmlns:knowrob="http://knowrob.org/kb/knowrob.owl#">
+  <owl:Ontology rdf:about="http://knowrob.org/kb/ltfnp.owl#">
+    <owl:imports rdf:resource="package://knowrob_common/owl/knowrob.owl"/>
+  </owl:Ontology>
+  
+  
+  <!-- New Data Properties -->
+  <owl:DatatypeProperty rdf:about="&knowrob;urdf"/>
+  <owl:DatatypeProperty rdf:about="&knowrob;primitiveShape"/>
+  <owl:DatatypeProperty rdf:about="&knowrob;semanticHandle"/>
+  <owl:DatatypeProperty rdf:about="&knowrob;graspType"/>
+  <owl:DatatypeProperty rdf:about="&knowrob;handlePose"/>
+  
+  
+  <!-- General Classes -->
+  <owl:Class rdf:about="&knowrob;RotationMatrix3D"/>
+  
+  <!-- Handle Classes -->
+  <owl:Class rdf:about="&knowrob;SemanticHandle"/>
+  
+  <!-- Object Classes -->
+  <owl:Class rdf:about="&knowrob;LTFnPObject">
+    <rdfs:subClassOf rdf:resource="&knowrob;HumanScaleObject"/>
+  </owl:Class>
+  
+  <!-- Milk -->
+  <owl:Class rdf:about="&knowrob;Milk">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
     
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/milk/milk.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
-    <!-- New Object Properties -->
-    <owl:ObjectProperty rdf:about="&knowrob;productCategory"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
+	<owl:hasValue rdf:datatype="&xsd;double">0.09</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
+	<owl:hasValue rdf:datatype="&xsd;double">0.065</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
-    <!-- Data Properties -->
-    <owl:DatatypeProperty rdf:about="&knowrob;depthOfObject"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;heightOfObject"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m00"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m01"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m02"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m03"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m10"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m11"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m12"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m13"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m20"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m21"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m22"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m23"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m30"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m31"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m32"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;m33"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;widthOfObject"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;maxJointValue"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;minJointValue"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;turnRadius"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;vectorX"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;vectorY"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;vectorZ"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
+	<owl:hasValue rdf:datatype="&xsd;double">0.21</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- Buttermilk -->
+  <owl:Class rdf:about="&knowrob;Buttermilk">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
     
-    <!-- New Data Properties -->
-    <owl:DatatypeProperty rdf:about="&knowrob;stackable"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;urdf"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;primitiveShape"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;semanticHandle"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;graspType"/>
-    <owl:DatatypeProperty rdf:about="&knowrob;handlePose"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/buttermilk/buttermilk.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;radiusOfObject"/>
+	<owl:hasValue rdf:datatype="&xsd;double">0.0375</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
-    <!-- General Classes -->
-    <owl:Class rdf:about="&knowrob;RotationMatrix3D"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
+	<owl:hasValue rdf:datatype="&xsd;double">0.17</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
-    <!-- Handle Classes -->
-    <owl:Class rdf:about="&knowrob;SemanticHandle"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
-    <!-- Object Classes -->
-    <owl:Class rdf:about="&knowrob;ShoppingItem">
-      <rdfs:subClassOf rdf:resource="&knowrob;HumanScaleObject"/>
-    </owl:Class>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Buttermilk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     
-    <!-- Corn -->
-    <owl:Class rdf:about="&knowrob;Corn">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;stackable"/>
-	  <owl:hasValue rdf:datatype="&xsd;boolean">true</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/corn/corn.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.085</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.085</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.085</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Kelloggs -->
-    <owl:Class rdf:about="&knowrob;Kelloggs">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/kelloggs/kelloggs.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.195</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.07</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.29</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;Kelloggs_Handle_laok8b26"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;Kelloggs_Handle_diuxn543"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Lion -->
-    <owl:Class rdf:about="&knowrob;Lion">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/lion/lion.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.195</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.045</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.26</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;Lion_Handle_aii8lm3s"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;Lion_Handle_la009mn3"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Salt -->
-    <owl:Class rdf:about="&knowrob;Salt">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/salt/salt.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.06</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.045</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.14</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;Salt_Handle_loapm34g"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;Salt_Handle_laoiugmn"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Pancake Mix -->
-    <owl:Class rdf:about="&knowrob;PancakeMix">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/pancakemix/pancakemix.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.095</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.05</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.21</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;PancakeMix_Handle_aoiqu89m"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;PancakeMix_Handle_paolikc0"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Tomato Sauce -->
-    <owl:Class rdf:about="&knowrob;TomatoSauce">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/tomatosauce/tomatosauce.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.075</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.05</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.11</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;TomatoSauce_Handle_0llakm34"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	  <owl:hasValue rdf:resource="&knowrob;TomatoSauce_Handle_nruy76a0"/>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Salt Dispenser -->
-    <owl:Class rdf:about="&knowrob;SaltDispenser">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/saltdispenser/saltdispenser.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.05</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.05</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.14</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    <!-- Oregano -->
-    <owl:Class rdf:about="&knowrob;Oregano">
-      <rdfs:subClassOf rdf:resource="&knowrob;ShoppingItem"/>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;urdf"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/oregano/oregano.urdf</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.055</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.055</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	  <owl:hasValue rdf:datatype="&xsd;double">0.075</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-      
-      <rdfs:subClassOf>
-	<owl:Restriction>
-	  <owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
-	  <owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
-	</owl:Restriction>
-      </rdfs:subClassOf>
-    </owl:Class>
-    
-    
-    <!-- =========== -->
-    <!-- Individuals -->
-    <!-- =========== -->
-    
-    
-    <!-- Corn -->
-    <!-- TODO: Add handles -->
-    
-    <!-- Kelloggs -->
-    <owl:NamedIndividual rdf:about="&knowrob;Kelloggs_Handle_laok8b26">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;Kelloggs_Handle_laok8b26_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Kelloggs_Handle_laok8b26_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-0.06</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Kelloggs_Handle_diuxn543">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;Kelloggs_Handle_diuxn543_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Kelloggs_Handle_diuxn543_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.06</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <!-- Lion -->
-    <owl:NamedIndividual rdf:about="&knowrob;Lion_Handle_aii8lm3s">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;Lion_Handle_aii8lm3s_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Lion_Handle_aii8lm3s_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-0.07</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Lion_Handle_la009mn3">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;Lion_Handle_la009mn3_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Lion_Handle_la009mn3_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.07</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <!-- Salt -->
-    <owl:NamedIndividual rdf:about="&knowrob;Salt_Handle_loapm34g">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;Salt_Handle_loapm34g_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Salt_Handle_loapm34g_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.04</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Salt_Handle_laoiugmn">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;Salt_Handle_laoiugmn_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;Salt_Handle_laoiugmn_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-0.04</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <!-- Pancake Mix -->
-    <owl:NamedIndividual rdf:about="&knowrob;PancakeMix_Handle_aoiqu89m">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;PancakeMix_Handle_aoiqu89m_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;PancakeMix_Handle_aoiqu89m_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.02</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;PancakeMix_Handle_paolikc0">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;PancakeMix_Handle_paolikc0_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;PancakeMix_Handle_paolikc0_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-0.02</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <!-- Tomato Sauce -->
-    <owl:NamedIndividual rdf:about="&knowrob;TomatoSauce_Handle_0llakm34">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;TomatoSauce_Handle_0llakm34_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;TomatoSauce_Handle_0llakm34_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-0.02</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;TomatoSauce_Handle_nruy76a0">
-      <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
-      <knowrob:handlePose rdf:resource="&knowrob;TomatoSauce_Handle_nruy76a0_pose"/>
-      <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
-    </owl:NamedIndividual>
-    
-    <owl:NamedIndividual rdf:about="&knowrob;TomatoSauce_Handle_nruy76a0_pose">
-      <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-      <knowrob:m00 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">-1.0</knowrob:m00>
-      <knowrob:m01 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m01>
-      <knowrob:m02 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m02>
-      <knowrob:m03 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.02</knowrob:m03>
-      <knowrob:m10 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m10>
-      <knowrob:m11 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m11>
-      <knowrob:m12 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m12>
-      <knowrob:m13 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m13>
-      <knowrob:m20 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m20>
-      <knowrob:m21 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m21>
-      <knowrob:m22 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m22>
-      <knowrob:m23 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m23>
-      <knowrob:m30 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m30>
-      <knowrob:m31 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m31>
-      <knowrob:m32 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</knowrob:m32>
-      <knowrob:m33 rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</knowrob:m33>
-    </owl:NamedIndividual>
-    
-    <!-- Salt Dispenser -->
-    <!-- TODO: Add handles -->
-    
-    <!-- Oregano -->
-    <!-- TODO: Add handles -->
-    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Buttermilk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  
+  <!-- =========== -->
+  <!-- Individuals -->
+  <!-- =========== -->
+  
+  
+  <!-- Buttermilk -->
+  <owl:NamedIndividual rdf:about="&knowrob;Buttermilk_Handle_laok8b26">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Buttermilk_Handle_laok8b26_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Buttermilk_Handle_laok8b26_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.0 0.0 1.0</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.04 0.0 0.085</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Buttermilk_Handle_diuxn543">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Buttermilk_Handle_diuxn543_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Buttermilk_Handle_diuxn543_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.0 1.0 0.0</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">-0.4 0.0 0.085</knowrob:translation>
+  </owl:NamedIndividual>
+  
 </rdf:RDF>
