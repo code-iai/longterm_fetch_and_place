@@ -81,3 +81,33 @@
   (with-process-modules
     (with-designators ((obj :object `((:name "IAI_kitchen"))))
       (cram-plan-library:perceive-object 'cram-plan-library:currently-visible obj))))
+
+(defun make-handles (distance-from-center
+                     &key
+                       (segments 1)
+                       (ax 0.0) (ay 0.0) (az 0.0)
+                       (offset-angle 0.0)
+                       grasp-type
+                       (center-offset
+                        (tf:make-identity-vector)))
+  (loop for i from 0 below segments
+        as current-angle = (+ (* 2 pi (float (/ i segments)))
+                              offset-angle)
+        as handle-pose = (tf:make-pose
+                          (tf:make-3d-vector
+                           (+ (* distance-from-center (cos current-angle))
+                              (tf:x center-offset))
+                           (+ (* distance-from-center (sin current-angle))
+                              (tf:y center-offset))
+                           (+ 0.0
+                              (tf:z center-offset)))
+                          (tf:euler->quaternion
+                           :ax ax :ay ay :az (+ az current-angle)))
+        as handle-object = (make-designator
+                            :object
+                            (append
+                             `((:type :handle)
+                               (:at ,(make-designator :location `((:pose ,handle-pose)))))
+                             (when grasp-type
+                               `((:grasp-type ,grasp-type)))))
+        collect handle-object))

@@ -58,5 +58,6 @@
     :components
     ((:file "package")
      (:file "costmap-metadata" :depends-on ("package"))
-     (:file "utils" :depends-on ("package" "costmap-metadata"))
-     (:file "top-level-plans" :depends-on ("package" "utils" "costmap-metadata"))))))
+     (:file "reasoning" :depends-on ("package" "costmap-metadata"))
+     (:file "utils" :depends-on ("package" "costmap-metadata" "reasoning"))
+     (:file "top-level-plans" :depends-on ("package" "utils" "costmap-metadata" "reasoning"))))))
