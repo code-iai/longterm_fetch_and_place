@@ -34,6 +34,7 @@
 
 :- register_ros_package(iai_semantic_maps).
 :- owl_parser:owl_parse('package://ltfnp_models/owl/objects.owl').
+:- owl_parser:owl_parse('package://iai_semantic_maps/owl/kitchen.owl').
 :- owl_parser:owl_parse('package://iai_semantic_maps/owl/iai_maps_addons.owl').
 
 :- rdf_db:rdf_register_ns(knowrob, 'http://ias.cs.tum.edu/kb/knowrob.owl#', [keep(true)]).
