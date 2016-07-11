@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    
+    <plugin name="attache" filename="libattache.so"/>
+
+    <plugin name="gazebo_visibility_ros" filename="libgazebo_visibility_ros.so" />
+
+  </world>
+</sdf>

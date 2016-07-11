@@ -32,5 +32,8 @@
     </model>
     
     <plugin name="attache" filename="libattache.so"/>
+
+    <plugin name="gazebo_visibility_ros" filename="libgazebo_visibility_ros.so" />
+
   </world>
 </sdf>
