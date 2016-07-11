@@ -60,4 +60,9 @@
      (:file "costmap-metadata" :depends-on ("package"))
      (:file "reasoning" :depends-on ("package" "costmap-metadata"))
      (:file "utils" :depends-on ("package" "costmap-metadata" "reasoning"))
-     (:file "top-level-plans" :depends-on ("package" "utils" "costmap-metadata" "reasoning"))))))
+     (:file "sem-map-config" :depends-on ("package"))
+     (:file "top-level-plans" :depends-on ("package"
+                                           "utils"
+                                           "costmap-metadata"
+                                           "reasoning"
+                                           "sem-map-config"))))))
