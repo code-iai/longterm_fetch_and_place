@@ -50,3 +50,42 @@
   ;;   8 Sample target location for places to put down object and try putting it down;
   ;;     if either fails, go to 6
   )
+
+
+;;;
+;;; Helper Plans
+;;;
+
+(def-cram-function perceive-scene (location)
+  "Perceives the scene at any given `location'. Suitable for situations in which named table tops, drawers, or other containing pieces of furniture need to be examined for object presence."
+  (with-retry-counters ((resample-location 2))
+    (with-failure-handling
+        (((or cram-plan-failures:location-not-reached-failure
+              cram-plan-failures:navigation-failure
+              cram-plan-failures:location-reached-but-not-terminated) (f)
+           (declare (ignore f))
+           (when (setf location (cram-designators:next-solution location))
+             (do-retry resample-location
+               (retry)))))
+      (at-location (location)
+        ;; TODO: Do perception here.
+        ))))
+
+(def-cram-function examine-object (object)
+  "Further examines an already detected object by approaching it and directing cameras directly onto it."
+  (with-retry-counters ((retry-location 2))
+    (with-designators ((location-of-object
+                        :location
+                        `((:of ,object))))
+      (cram-language:with-failure-handling
+          (((or cram-plan-failures:location-not-reached-failure
+              cram-plan-failures:navigation-failure
+              cram-plan-failures:location-reached-but-not-terminated) (f)
+             (declare (ignore f))
+             (when (setf location-of-object
+                         (cram-designators:next-solution location-of-object))
+               (do-retry retry-location
+                 (retry)))))
+        (at-location (location-of-object)
+          ;; TODO: Do perception here.
+          )))))

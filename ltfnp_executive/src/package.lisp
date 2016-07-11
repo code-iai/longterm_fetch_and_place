@@ -28,7 +28,8 @@
   (:nicknames ltfnp)
   (:use #:common-lisp #:roslisp #:cram-utilities
         #:location-costmap #:cram-plan-occasions-events
-        #:cram-plan-library #:cram-language-designator-support)
+        #:cram-plan-library #:cram-language-designator-support
+        #:cpl-impl)
   (:import-from :cram-language
                 top-level fl-funcall with-tags pursue tag retry-after-suspension
                 whenever pulsed value with-task-suspended seq declare-goal def-goal)
