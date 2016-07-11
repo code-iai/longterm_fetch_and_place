@@ -95,3 +95,54 @@
            ;; RS, switch to `perceive-object a' instead and choose the
            ;; first result. Using `the' is cleaner, though.
            'cram-plan-library:the object))))))
+
+(def-cram-function access-location (location)
+  ;; Makes a location accessible by either just approaching it, or by
+  ;; approaching it and opening a container (drawer, cabinet, dish
+  ;; washer, ...).
+
+  ;; 1. Get semantic information (location type, possible articulation
+  ;;    requirements, maybe ideal approach direction)
+  ;; 2. Approach location
+  ;; 3. Possibly articulate it to open it
+  )
+
+(def-cram-function close-location (location)
+  ;; If required, close this location after having opened it through
+  ;; `access-location'.
+
+  ;; 1. Get semantic information (need to close, how to close it, type
+  ;;    of location)
+  )
+
+(def-cram-function find-object (object)
+  ;; This should also cover articulating the environment while
+  ;; searching for an object, ultimately leaving the container open
+  ;; that contained the object looked for. Of course for table tops
+  ;; this doesn't matter.
+  (access-location)
+  ;; Perceive objects "inside" (if applicable)
+  ;; If object(s) found, return them; otherwise, close-location.
+  )
+
+(def-cram-function pick-object (object)
+  ;; This relies on the fact that the object is already made
+  ;; accessible through `find-object', and just executes the actual
+  ;; grasping.
+  )
+
+(def-cram-function fetch-object (object)
+  (find-object object)
+  (pick-object object))
+
+(def-cram-function put-object (object location)
+  )
+
+(def-cram-function place-object (object location)
+  (access-location location)
+  (put-object object location))
+
+(def-cram-function fetch-and-place-object (object location)
+  ;; Most naive implementation, develop further.
+  (fetch-object object)
+  (place-object object location))
