@@ -120,3 +120,19 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-pose (object-id)
   (json-prolog:prolog `("ltfnp_get_object_pose"
                         ,(add-prolog-namespace object-id) ?tx ?ty ?tz ?qw ?qx ?qy ?qz)))
+
+;;;
+;;; Location related reasoning functions (mostly for convenience)
+;;;
+
+(defun get-location-type (name)
+  ;; Shall return :tabletop, :drawer or :fridge
+  )
+
+(defun must-articulate-location (name)
+  ;; T or nil
+  )
+
+(defun is-location-accessible (name)
+  ;; T or nil
+  )
