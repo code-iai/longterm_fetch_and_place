@@ -67,15 +67,28 @@
   )
 
 (defun init-3d-world ()
-  (force-ll
-   (cram-prolog:prolog
-    `(and (btr:clear-bullet-world)
-          (btr:bullet-world ?w)
-          (btr:assert (btr:object
-                       ?w :static-plane floor
-                       ((0 0 0) (0 0 0 1))
-                       :normal (0 0 1) :constant 0))
-          (btr:debug-window ?w)))))
+  (let* ((urdf-kitchen
+           (cl-urdf:parse-urdf
+            (roslisp:get-param "kitchen_description")))
+         (kitchen-rot-quaternion (tf:euler->quaternion :az (* 2 1.57)))
+         (kitchen-rot `(,(tf:x kitchen-rot-quaternion)
+                     ,(tf:y kitchen-rot-quaternion)
+                     ,(tf:z kitchen-rot-quaternion)
+                     ,(tf:w kitchen-rot-quaternion)))
+         (kitchen-trans `(0 0 0)))    
+    (force-ll
+     (cram-prolog:prolog
+      `(and (btr:clear-bullet-world)
+            (btr:bullet-world ?w)
+            (btr:assert (btr:object
+                         ?w :static-plane floor
+                         ((0 0 0) (0 0 0 1))
+                         :normal (0 0 1) :constant 0))
+            (btr:assert (btr:object
+                         ?w :semantic-map kitchen-area
+                         (,kitchen-trans ,kitchen-rot)
+                         :urdf ,urdf-kitchen))
+            (btr:debug-window ?w))))))
 
 (cram-language:def-top-level-cram-function test-perception ()
   (with-process-modules
