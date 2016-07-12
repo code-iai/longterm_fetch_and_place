@@ -70,12 +70,12 @@
   (let* ((urdf-kitchen
            (cl-urdf:parse-urdf
             (roslisp:get-param "kitchen_description")))
-         (kitchen-rot-quaternion (tf:euler->quaternion :az (* 2 1.57)))
+         (kitchen-rot-quaternion (tf:euler->quaternion :az -3.141))
          (kitchen-rot `(,(tf:x kitchen-rot-quaternion)
                      ,(tf:y kitchen-rot-quaternion)
                      ,(tf:z kitchen-rot-quaternion)
                      ,(tf:w kitchen-rot-quaternion)))
-         (kitchen-trans `(0 0 0)))    
+         (kitchen-trans `(-3.45 -4.35 0)))
     (force-ll
      (cram-prolog:prolog
       `(and (btr:clear-bullet-world)
