@@ -124,3 +124,17 @@
                              (when grasp-type
                                `((:grasp-type ,grasp-type)))))
         collect handle-object))
+
+(defmacro do-fail (failure-keyword)
+  `(cpl:fail ',(intern (subseq (write-to-string failure-keyword) 1)
+                       'cram-plan-failures)))
+
+(defmacro when-failure (clauses &body body)
+  `(with-failure-handling
+       ,(mapcar (lambda (clause)
+                  (destructuring-bind (failure-keyword code) clause
+                    (let ((failure (intern (subseq (write-to-string failure-keyword) 1)
+                                           'cram-plan-failures)))
+                      `(,failure (f) (declare (ignore f)) ,code))))
+                clauses)
+     ,@body))
