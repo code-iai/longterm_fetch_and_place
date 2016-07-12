@@ -19,7 +19,9 @@ $ roslaunch ltfnp_executive ltfnp_simulation.launch
 
 The simulated part requires to have the package
 [`nav_pcontroller`](https://github.com/code-iai/nav_pcontroller)
-present and compiled in the ROS package path.
+present and compiled in the ROS package path. Also, the
+[`iai_maps`](https://github.com/code-iai/iai_maps) package must be
+present.
 
 
 ### The Structure Explained
