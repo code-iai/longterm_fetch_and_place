@@ -116,22 +116,56 @@
 
 (def-cram-function place-object (object location)
   ;; Assumptions: Object in hand
-  (when-failure ((:location-not-reached (format t "Fail~%"))
-                 (:manipulation-pose-unreachable (format t "Fail~%"))
-                 (:manipulation-failed (format t "Fail~%")))
-    (access-location location))
-  (when-failure ((:manipulation-pose-unreachable (format t "Fail~%"))
-                 (:manipulation-failed (format t "Fail~%"))
-                 (:pose-occupied (format t "Fail~%")))
-    (put-object object location)))
+  (with-retry-counters ((location-resampling 2)
+                        (pose-resampling 2)
+                        (manipulation-retry 2))
+    (when-failure ((:location-not-reached
+                    (do-retry location-resampling
+                      (cpl:retry)))
+                   (:manipulation-pose-unreachable
+                    (do-retry pose-resampling
+                      (cpl:retry)))
+                   (:manipulation-failed
+                    (do-retry manipulation-retry
+                      (cpl:retry))))
+      (access-location location)))
+  (with-retry-counters ((pose-resampling 2)
+                        (manipulation-retry 2))
+    (when-failure ((:manipulation-pose-unreachable
+                    (do-retry pose-resampling
+                      (cpl:retry)))
+                   (:manipulation-failed
+                    (do-retry manipulation-retry
+                      (cpl:retry)))
+                   (:pose-occupied
+                    (do-retry pose-resampling
+                      (cpl:retry))))
+      (put-object object location))))
 
 (def-cram-function fetch-and-place-object (object location)
   ;; Most naive implementation, develop further.
-  (when-failure ((:location-not-reached (format t "Fail~%"))
-                 (:object-not-found (format t "Fail~%"))
-                 (:manipulation-pose-unreachable (format t "Fail~%")))
-    (fetch-object object))
-  (when-failure ((:location-not-reached (format t "Fail~%"))
-                 (:manipulation-pose-unreachable (format t "Fail~%"))
-                 (:pose-occupied (format t "Fail~%")))
-    (place-object object location)))
+  (with-retry-counters ((location-resampling 2)
+                        (pose-resampling 2)
+                        (not-found-retry 2))
+    (when-failure ((:location-not-reached
+                    (do-retry location-resampling
+                      (cpl:retry)))
+                   (:object-not-found
+                    (do-retry not-found-retry
+                      (cpl:retry)))
+                   (:manipulation-pose-unreachable
+                    (do-retry pose-resampling
+                      (cpl:retry))))
+      (fetch-object object)))
+  (with-retry-counters ((location-resampling 2)
+                        (pose-resampling 2))
+    (when-failure ((:location-not-reached
+                    (do-retry location-resampling
+                      (cpl:retry)))
+                   (:manipulation-pose-unreachable
+                    (do-retry pose-resampling
+                      (cpl:retry)))
+                   (:pose-occupied
+                    (do-retry pose-resampling
+                      (cpl:retry))))
+      (place-object object location))))
