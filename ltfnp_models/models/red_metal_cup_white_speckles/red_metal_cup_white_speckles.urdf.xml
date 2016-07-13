@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <robot name="corn"
        xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <link name="metal_bowl">
+  <link name="red_metal_cup_white_speckles">
     <!--MAIN_BODY-->
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://red_metal_bowl_white_speckles/red_metal_bowl_white_speckles.dae"/>
+        <mesh filename="package://red_metal_cup_white_speckles/red_metal_cup_white_speckles.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://red_metal_bowl_white_speckles/red_metal_bowl_white_speckles.stl"/>
+        <mesh filename="package://red_metal_cup_white_speckles/red_metal_cup_white_speckles.stl"/>
       </geometry>
     </collision>
     <inertial>
