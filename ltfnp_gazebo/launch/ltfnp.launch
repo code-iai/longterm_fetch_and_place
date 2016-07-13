@@ -5,7 +5,7 @@
   <env name="LD_LIBRARY_PATH" value="$(find ltfnp_gazebo)/plugins:$(env LD_LIBRARY_PATH)" />
   
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find ltfnp_gazebo)/worlds/ltfnp.world"/>
+    <arg name="world_name" value="$(find ltfnp_gazebo)/worlds/empty_world_with_plugins.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -16,6 +16,7 @@
   <!-- Start PR2 Robot -->
   <include file="$(find ltfnp_gazebo)/launch/pr2.launch" />
   
-  <!-- <include file="$(find ltfnp_gazebo)/launch/kitchen_ltfnp.launch"/> -->
-  
+  <!-- Spawn the kitchen -->
+  <include file="$(find iai_kitchen)/launch/gazebo_spawn_kitchen.launch"/>
+
 </launch>
