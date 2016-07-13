@@ -41,9 +41,6 @@
   <owl:DatatypeProperty rdf:about="&knowrob;handlePose"/>
   
   
-  <!-- General Classes -->
-  <owl:Class rdf:about="&knowrob;RotationMatrix3D"/>
-  
   <!-- Handle Classes -->
   <owl:Class rdf:about="&knowrob;SemanticHandle"/>
   
@@ -65,22 +62,15 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;widthOfObject"/>
-	<owl:hasValue rdf:datatype="&xsd;double">0.09</owl:hasValue>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/milk/milk.dae</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;depthOfObject"/>
-	<owl:hasValue rdf:datatype="&xsd;double">0.065</owl:hasValue>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    
-    <rdfs:subClassOf>
-      <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	<owl:hasValue rdf:datatype="&xsd;double">0.21</owl:hasValue>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -105,15 +95,15 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;radiusOfObject"/>
-	<owl:hasValue rdf:datatype="&xsd;double">0.0375</owl:hasValue>
+	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/buttermilk/buttermilk.dae</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;heightOfObject"/>
-	<owl:hasValue rdf:datatype="&xsd;double">0.17</owl:hasValue>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -138,6 +128,105 @@
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
+
+  <!-- RedMetalCup -->
+  <owl:Class rdf:about="&knowrob;RedMetalCup">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_cup_white_speckles/red_metal_cup_white_speckles.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_cup_white_speckles/red_metal_cup_white_speckles.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- RedMetalBowl -->
+  <owl:Class rdf:about="&knowrob;RedMetalBowl">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_bowl_white_speckles/red_metal_bowl_white_speckles.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_bowl_white_speckles/red_metal_bowl_white_speckles.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- RedMetalPlate -->
+  <owl:Class rdf:about="&knowrob;RedMetalPlate">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_plate_white_speckles/red_metal_plate_white_speckles.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_plate_white_speckles/red_metal_plate_white_speckles.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
   
   
   <!-- =========== -->
@@ -145,7 +234,7 @@
   <!-- =========== -->
   
   
-  <!-- Buttermilk -->
+  <!-- Buttermilk Handles -->
   <owl:NamedIndividual rdf:about="&knowrob;Buttermilk_Handle_laok8b26">
     <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
     <knowrob:handlePose rdf:resource="&knowrob;Buttermilk_Handle_laok8b26_pose"/>
