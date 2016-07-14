@@ -1,8 +1,0 @@
-<KinBody name="stainless_steel_knife_red_handle">
-  <Body type="static" name="stainless_steel_knife_red_handle">
-    <Geom type="trimesh">
-      <Render>../meshes/poisson_mesh.stl</Render>
-      <Data>../meshes/poisson_mesh.stl</Data>
-    </Geom>
-  </Body>
-</KinBody>
