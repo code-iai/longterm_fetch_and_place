@@ -129,7 +129,7 @@ base-class itself does not count towards the enlisted classes."
 (defun get-class-urdf-path (class)
   (with-first-prolog-vars-bound (?urdfpath)
       `("ltfnp_get_class_urdf_path" ,(add-prolog-namespace class) ?urdfpath)
-    (strip-prolog-string ?urdfpath)))
+    (json-symbol->string ?urdfpath)))
 
 (defun get-object-urdf-path (object-id)
   (get-class-urdf-path (get-object-class object-id)))

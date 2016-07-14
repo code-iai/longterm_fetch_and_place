@@ -116,8 +116,8 @@ ltfnp_remove_object(Object) :-
 % @param Result       The returned result
 %
 ltfnp_reasoner_call(Function, Parameters, Result) :-
-    jpl_new('org.knowrob.ltfnp_reasoning.LTFnPReasoner', [], RR),
-    jpl_call(RR, Function, Parameters, Result).
+    jpl_new('org.knowrob.ltfnp_reasoning.LTFnPReasoner', [], LR),
+    jpl_call(LR, Function, Parameters, Result).
 
 
 %% ltfnp_object_literal_atom(?Object, ?Property, ?Value) is nondet.
