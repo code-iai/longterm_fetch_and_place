@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<robot name="saltdispenser"
-       xmlns:xacro="http://www.ros.org/wiki/xacro">
-  
-  <xacro:include filename="$(find ltfnp_models)/defs/utils.xml"/>
-  
-  <cylinderlink name="link" radius="0.025" height="0.14" mass="0.28" />
-  
-</robot>

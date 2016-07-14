@@ -87,7 +87,7 @@ base-class itself does not count towards the enlisted classes."
     ?class)))
 
 (defun object-class-p (class)
-  "Returns a boolean value denoting whether `class' is a valid shopping item class (i.e., a subclass of `LTFnPObject')."
+  "Returns a boolean value denoting whether `class' is a valid object class (i.e., a subclass of `LTFnPObject')."
   (not (not (json-prolog:prolog `("ltfnp_object_class" ,(add-prolog-namespace class))))))
 
 (defun object-instances ()
@@ -120,6 +120,34 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-pose (object-id)
   (json-prolog:prolog `("ltfnp_get_object_pose"
                         ,(add-prolog-namespace object-id) ?tx ?ty ?tz ?qw ?qx ?qy ?qz)))
+
+(defun get-object-class (object-id)
+  (with-first-prolog-vars-bound (?class)
+      `("ltfnp_instance_of_class" ,(add-prolog-namespace object-id) ?class)
+    (strip-prolog-string ?class)))
+
+(defun get-class-urdf-path (class)
+  (with-first-prolog-vars-bound (?urdfpath)
+      `("ltfnp_get_class_urdf_path" ,(add-prolog-namespace class) ?urdfpath)
+    (json-symbol->string ?urdfpath)))
+
+(defun get-object-urdf-path (object-id)
+  (get-class-urdf-path (get-object-class object-id)))
+
+(defun spawn-object (object-id pose)
+  (cram-gazebo-utilities:spawn-gazebo-model object-id pose (get-object-urdf-path object-id)))
+
+(defun get-countertops ()
+  (cram-semantic-map-designators:designator->semantic-map-objects
+   (make-designator :object `((:type "CounterTop")))))
+
+(defun pose-on-countertop (countertop)
+  (let* ((name (semantic-map-utils:name countertop))
+         (type (slot-value countertop 'type))
+         (desig (make-designator :location `((:on ,type)
+                                             (:name ,name)))))
+    (cram-designators:reference desig)))
+
 
 ;;;
 ;;; Location related reasoning functions (mostly for convenience)

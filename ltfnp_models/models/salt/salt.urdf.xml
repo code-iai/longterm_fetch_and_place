@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<robot name="salt"
-       xmlns:xacro="http://www.ros.org/wiki/xacro">
-  
-  <xacro:include filename="$(find ltfnp_models)/defs/utils.xml"/>
-  
-  <boxlink name="link" size_x="0.06" size_y="0.045" size_z="0.14" mass="0.51" />
-  
-</robot>

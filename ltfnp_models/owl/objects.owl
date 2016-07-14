@@ -34,7 +34,7 @@
   
   
   <!-- New Data Properties -->
-  <owl:DatatypeProperty rdf:about="&knowrob;urdf"/>
+  <owl:DatatypeProperty rdf:about="&knowrob;pathToURDFModel"/>
   <owl:DatatypeProperty rdf:about="&knowrob;primitiveShape"/>
   <owl:DatatypeProperty rdf:about="&knowrob;semanticHandle"/>
   <owl:DatatypeProperty rdf:about="&knowrob;graspType"/>
@@ -55,7 +55,7 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/milk/milk.urdf</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -88,7 +88,7 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/buttermilk/buttermilk.urdf</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -135,7 +135,7 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_cup_white_speckles/red_metal_cup_white_speckles.urdf</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -168,7 +168,7 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_bowl_white_speckles/red_metal_bowl_white_speckles.urdf</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -201,7 +201,7 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;urdf"/>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_plate_white_speckles/red_metal_plate_white_speckles.urdf</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>

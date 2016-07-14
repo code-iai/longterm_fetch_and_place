@@ -36,7 +36,9 @@
 	   ltfnp_object_literal_atom/3,
 	   ltfnp_set_object_pose/8,
 	   ltfnp_get_object_pose/8,
-	   ltfnp_assert_string/3
+	   ltfnp_get_class_urdf_path/2,
+	   ltfnp_assert_string/3,
+	   ltfnp_instance_of_class/2
 	  ]).
 
 
@@ -56,7 +58,9 @@
     ltfnp_object_literal_atom(r, r, r),
     ltfnp_set_object_pose(r, r, r, r, r, r, r, r),
     ltfnp_get_object_pose(r, r, r, r, r, r, r, r),
-    ltfnp_assert_string(r, r, r).
+    ltfnp_get_class_urdf_path(r, r),
+    ltfnp_assert_string(r, r, r),
+    ltfnp_instance_of_class(r, r).
 
 
 :- rdf_db:rdf_register_ns(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
@@ -112,8 +116,8 @@ ltfnp_remove_object(Object) :-
 % @param Result       The returned result
 %
 ltfnp_reasoner_call(Function, Parameters, Result) :-
-    jpl_new('org.knowrob.ltfnp_reasoning.LTFnPReasoner', [], RR),
-    jpl_call(RR, Function, Parameters, Result).
+    jpl_new('org.knowrob.ltfnp_reasoning.LTFnPReasoner', [], LR),
+    jpl_call(LR, Function, Parameters, Result).
 
 
 %% ltfnp_object_literal_atom(?Object, ?Property, ?Value) is nondet.
@@ -131,7 +135,7 @@ ltfnp_object_literal_atom(Object, Property, Value) :-
 
 %% ltfnp_set_object_pose(?Object, ?Translation, ?Rotation) is nondet.
 %
-%
+% ...
 % @param Object ...
 % @param Translation ...
 % @param Rotation ...
@@ -147,8 +151,8 @@ ltfnp_set_object_pose(Object, TX, TY, TZ, QW, QX, QY, QZ) :-
     string_concat(Q1, QX, Q2),
     string_concat(Q2, QY, Q3),
     string_concat(Q2, QZ, Q).
-    ltfnp_assert_string(Transformation, knowrob:'quaternion', Q),
-    ltfnp_assert_string(Transformation, knowrob:'translation', T).
+    %ltfnp_assert_string(Transformation, knowrob:'quaternion', Q),
+    %ltfnp_assert_string(Transformation, knowrob:'translation', T).
 
 
 ltfnp_assert_string(Subject, Field, Content) :-
@@ -159,7 +163,7 @@ ltfnp_assert_string(Subject, Field, Content) :-
 
 %% ltfnp_get_object_pose(?Object, ?Translation, ?Rotation) is nondet.
 %
-%
+% ...
 % @param Object ...
 % @param Translation ...
 % @param Rotation ...
@@ -169,3 +173,25 @@ ltfnp_get_object_pose(Object, TX, TY, TZ, QW, QX, QY, QZ) :-
     owl_has(Object, knowrob:'objectPose', Transformation),
     owl_has(Transformation, knowrob:'quaternion', [QW, QX, QY, QZ]),
     owl_has(Transformation, knowrob:'translation', [TX, TY, TZ]).
+
+
+%% ltfnp_get_class_urdf_path(?Class, ?URDFPath) is nondet.
+%
+% ...
+% @param Class ...
+% @param URDFPath ...
+%
+ltfnp_get_class_urdf_path(Class, URDFPath) :-
+    ltfnp_object_class(Class),
+    class_properties(Class, knowrob:'pathToURDFModel', literal(type(_, URDFRelativePath))),
+    ltfnp_reasoner_call('resolveRelativePath', [URDFRelativePath], URDFPath).
+
+
+%% ltfnp_instance_of_class(?Object, ?Class) is nondet.
+%
+% ...
+% @param Object ...
+% @param Class ...
+%
+ltfnp_instance_of_class(Object, Class) :-
+    rdfs_instance_of(Object, Class).

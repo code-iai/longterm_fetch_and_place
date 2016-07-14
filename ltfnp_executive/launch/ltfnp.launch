@@ -3,7 +3,5 @@
   <include file="$(find ltfnp_maps)/launch/ltfnp_maps.launch"/>
   <include file="$(find ltfnp_reasoning)/launch/ltfnp_reasoning.launch"/>
   <include file="$(find pr2_description_lowres)/robots/upload_pr2.launch"/>
-  
-  <include file="$(find iai_maps)/launch/kitchen_with_state_publisher.launch"/>
 
 </launch>
