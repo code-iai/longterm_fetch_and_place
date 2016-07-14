@@ -18,5 +18,5 @@
   
   <!-- Spawn the kitchen -->
   <include file="$(find iai_kitchen)/launch/gazebo_spawn_kitchen.launch"/>
-
+  
 </launch>
