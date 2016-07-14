@@ -66,16 +66,29 @@
   ;; properties from the semantic map
   )
 
+(defun get-robot-pose (&optional (frame-id "/base_link"))
+  (cl-tf:transform-pose
+   *transformer*
+   :pose (tf:make-pose-stamped
+          frame-id
+          0.0
+          (tf:make-identity-vector)
+          (tf:make-identity-rotation))
+   :target-frame "/map"))
+
 (defun init-3d-world ()
-  (let* ((urdf-kitchen
+  (let* ((urdf-robot
+           (cl-urdf:parse-urdf
+            (roslisp:get-param "robot_description_lowres")))
+         (urdf-kitchen
            (cl-urdf:parse-urdf
             (roslisp:get-param "kitchen_description")))
-         (kitchen-rot-quaternion (tf:euler->quaternion :az -3.141))
+         (kitchen-rot-quaternion (tf:euler->quaternion)); :az -3.141))
          (kitchen-rot `(,(tf:x kitchen-rot-quaternion)
                      ,(tf:y kitchen-rot-quaternion)
                      ,(tf:z kitchen-rot-quaternion)
                      ,(tf:w kitchen-rot-quaternion)))
-         (kitchen-trans `(-3.45 -4.35 0)))
+         (kitchen-trans `(0 0 0)));-3.45 -4.35 0)))
     (force-ll
      (cram-prolog:prolog
       `(and (btr:clear-bullet-world)
@@ -84,6 +97,10 @@
                          ?w :static-plane floor
                          ((0 0 0) (0 0 0 1))
                          :normal (0 0 1) :constant 0))
+            (btr::robot ?robot)
+            (btr:assert (btr:object
+                         ?w :urdf ?robot ,(get-robot-pose)
+                         :urdf ,urdf-robot))
             (btr:assert (btr:object
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
