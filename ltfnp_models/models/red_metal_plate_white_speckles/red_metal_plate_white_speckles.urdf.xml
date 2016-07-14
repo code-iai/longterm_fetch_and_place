@@ -6,13 +6,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://red_metal_plate_white_speckles/red_metal_plate_white_speckles.dae"/>
+        <mesh filename="package://ltfnp_models/models/red_metal_plate_white_speckles/red_metal_plate_white_speckles.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://red_metal_plate_white_speckles/red_metal_plate_white_speckles.stl"/>
+        <mesh filename="package://ltfnp_models/models/red_metal_plate_white_speckles/red_metal_plate_white_speckles.stl"/>
       </geometry>
     </collision>
     <inertial>
