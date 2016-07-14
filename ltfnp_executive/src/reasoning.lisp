@@ -134,6 +134,20 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-urdf-path (object-id)
   (get-class-urdf-path (get-object-class object-id)))
 
+(defun spawn-object (object-id pose)
+  (cram-gazebo-utilities:spawn-gazebo-model object-id pose (get-object-urdf-path object-id)))
+
+(defun get-countertops ()
+  (cram-semantic-map-designators:designator->semantic-map-objects
+   (make-designator :object `((:type "CounterTop")))))
+
+(defun pose-on-countertop (countertop)
+  (let* ((name (semantic-map-utils:name countertop))
+         (type (slot-value countertop 'type))
+         (desig (make-designator :location `((:on ,type)
+                                             (:name ,name)))))
+    (cram-designators:reference desig)))
+
 
 ;;;
 ;;; Location related reasoning functions (mostly for convenience)
