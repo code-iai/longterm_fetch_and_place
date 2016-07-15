@@ -153,5 +153,15 @@
                     (let ((failure (intern (subseq (write-to-string failure-keyword) 1)
                                            'cram-plan-failures)))
                       `(,failure (f) (declare (ignore f)) ,code))))
+
                 clauses)
      ,@body))
+(defun prepare-settings ()
+  (setf actionlib::*action-server-timeout* 20)
+  (cram-designators:disable-location-validation-function
+   'btr-desig::check-ik-solution)
+  (cram-designators:disable-location-validation-function
+   'btr-desig::validate-designator-solution)
+  (gazebo-perception-pm::ignore-object "ground_plane")
+  (gazebo-perception-pm::ignore-object "pr2")
+  (gazebo-perception-pm::ignore-object "IAI_kitchen"))
