@@ -44,7 +44,7 @@
         (with-designators ((generic-object :object `()))
           ;; All objects match
           (cram-plan-library:perceive-object
-           'cram-plan-library:all generic-object))))))
+           :all generic-object))))))
 
 (def-cram-function examine-object (object)
   "Further examines an already detected object by approaching it and directing cameras directly onto it."
@@ -67,7 +67,7 @@
            ;; failure; if this happens to frequently due to quirks in
            ;; RS, switch to `perceive-object a' instead and choose the
            ;; first result. Using `the' is cleaner, though.
-           'cram-plan-library:the object))))))
+           :the object))))))
 
 (def-cram-function access-location (location)
   ;; Makes a location accessible by either just approaching it, or by
