@@ -23,6 +23,12 @@ present and compiled in the ROS package path. Also, the
 [`iai_maps`](https://github.com/code-iai/iai_maps) package must be
 present.
 
+In CRAM, start the current state like this:
+```lisp
+LTFNP> (roslisp-utils:startup-ros)
+LTFNP> (longterm-fetch-and-place)
+```
+
 
 ### The Structure Explained
 
