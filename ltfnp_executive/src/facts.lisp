@@ -60,12 +60,15 @@
                              ?cm)
                             (btr:debug-costmap ?cm))))
 
+
 (def-fact-group ltfnp-costmap-area-restriction (desig-costmap)
   
   (<- (desig-costmap ?desig ?cm)
     (or (desig-prop ?desig (:to :see))
-        (desig-prop ?desig (:to :reach)))
+        (desig-prop ?desig (:to :reach))
+        (desig-prop ?desig (:on ?_)))
     (costmap ?cm)
-    (costmap-add-function scenario-area-restriction-distribution
-                          (make-ltfnp-area-restriction-cost-function)
-                          ?cm)))
+    (costmap-add-function
+     ltfnp-costmap-area-restriction
+     (make-ltfnp-area-restriction-cost-function)
+     ?cm)))
