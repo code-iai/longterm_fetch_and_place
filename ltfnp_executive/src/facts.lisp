@@ -26,22 +26,28 @@
 
 
 (defun make-ltfnp-area-restriction-cost-function ()
-  ;; TODO: These need adaptation; they are old values from the
-  ;; shopping scenario.
-  (let ((min-x -0.25)
-        (max-x 0.50)
-        (min-y -0.5)
-        (max-y 0.5))
+  (let ((area-boxes ;; x y w h
+          `((-0.45 -0.2 1.5 1.0) ;; Main center area
+            (-0.45 0.2 0.75 1.5) ;; In front of kitchen island, kitchen side
+            (-0.45 -1.2 0.75 1.5) ;; Side of meal table
+            (-1.5 -0.75 1.2 0.75) ;; In front of meal table
+            (1.3 0.1 0.3 0.75) ;; On sink area
+            (-0.9 0.55 0.3 1.5) ;; On island area
+            (-1.5 -1.25 0.9 0.35) ;; On meal table
+            )))
     (lambda (x y)
-      (if (and (>= x min-x)
-               (<= x max-x)
-               (>= y min-y)
-               (<= y max-y))
-          1.0d0
-          0.0d0))))
+      (block validity-check
+        (loop for box in area-boxes do
+          (destructuring-bind (bx by w h) box
+            (when (and (>= x bx)
+                       (>= y by)
+                       (< x (+ bx w))
+                       (< y (+ by h)))
+              (return-from validity-check 1.0d0))))
+        0.0d0))))
 
 (defmethod costmap-generator-name->score
-    ((name (common-lisp:eql 'ltfnp-area-restriction-distribution)))
+    ((name (common-lisp:eql 'ltfnp-costmap-area-restriction)))
   100)
 
 
