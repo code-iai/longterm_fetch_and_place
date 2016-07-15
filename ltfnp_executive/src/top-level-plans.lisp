@@ -56,4 +56,8 @@
   ;;   7 If location could not be reached, go back to 6
   ;;   8 Sample target location for places to put down object and try putting it down;
   ;;     if either fails, go to 6
-  )
+  (with-process-modules
+    (prepare-settings)
+    (go-to-origin)
+    ;; TODO: Add activity here
+    ))
