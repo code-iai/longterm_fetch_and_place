@@ -50,6 +50,15 @@
     ((name (common-lisp:eql 'ltfnp-costmap-area-restriction)))
   100)
 
+(defun test-restriction-costmap ()
+  "Asserts the debug costmap according to the area restriction as defined in this file into bullet. This function is intended for testing purposes in case the restriction changed."
+  (cram-prolog:prolog `(and (costmap ?cm)
+                            (costmap-padding ?pad)
+                            (costmap-add-function
+                             ltfnp-costmap-area-restriction
+                             (make-ltfnp-area-restriction-cost-function)
+                             ?cm)
+                            (btr:debug-costmap ?cm))))
 
 (def-fact-group ltfnp-costmap-area-restriction (desig-costmap)
   
