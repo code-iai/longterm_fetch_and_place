@@ -153,9 +153,18 @@
                     (let ((failure (intern (subseq (write-to-string failure-keyword) 1)
                                            'cram-plan-failures)))
                       `(,failure (f) (declare (ignore f)) ,code))))
-
                 clauses)
      ,@body))
+
+(defun go-to-origin ()
+  (let* ((origin-pose (cl-tf:make-pose-stamped
+                       "map" 0.0
+                       (tf:make-identity-vector)
+                       (tf:euler->quaternion :az (* PI 1.5))))
+         (origin-loc (make-designator :location `((:pose ,origin-pose)))))
+  (at-location (origin-loc)
+    )))
+
 (defun prepare-settings ()
   (setf actionlib::*action-server-timeout* 20)
   (cram-designators:disable-location-validation-function
