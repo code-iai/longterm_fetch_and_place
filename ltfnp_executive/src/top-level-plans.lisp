@@ -33,9 +33,7 @@
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
-  (gazebo-perception-pm::ignore-object "ground_plane")
-  (gazebo-perception-pm::ignore-object "pr2")
-  (gazebo-perception-pm::ignore-object "IAI_kitchen")
+  (prepare-settings)
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (roslisp-utilities:startup-ros)
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
@@ -58,4 +56,8 @@
   ;;   7 If location could not be reached, go back to 6
   ;;   8 Sample target location for places to put down object and try putting it down;
   ;;     if either fails, go to 6
-  )
+  (with-process-modules
+    (prepare-settings)
+    (go-to-origin)
+    ;; TODO: Add activity here
+    ))

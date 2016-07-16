@@ -31,20 +31,11 @@
 
 (def-cram-function perceive-scene (location)
   "Perceives the scene at any given `location'. Suitable for situations in which named table tops, drawers, or other containing pieces of furniture need to be examined for object presence."
-  (with-retry-counters ((resample-location 2))
-    (with-failure-handling
-        (((or cram-plan-failures:location-not-reached-failure
-              cram-plan-failures:navigation-failure
-              cram-plan-failures:location-reached-but-not-terminated) (f)
-           (declare (ignore f))
-           (when (setf location (cram-designators:next-solution location))
-             (do-retry resample-location
-               (retry)))))
-      (at-location (location)
-        (with-designators ((generic-object :object `()))
-          ;; All objects match
-          (cram-plan-library:perceive-object
-           :all generic-object))))))
+  (block perceive
+    (when-failure ((:object-not-found (return-from perceive)))
+      (with-designators ((generic-object :object `((:at ,location))))
+        (cram-plan-library:perceive-object
+         :all generic-object)))))
 
 (def-cram-function examine-object (object)
   "Further examines an already detected object by approaching it and directing cameras directly onto it."
