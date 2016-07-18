@@ -39,6 +39,7 @@
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (spawn-scene)
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
+  (move-arms-up)
   (longterm-fetch-and-place))
 
 
@@ -59,8 +60,8 @@
   ;;   8 Sample target location for places to put down object and try putting it down;
   ;;     if either fails, go to 6
   (with-process-modules
-    (prepare-settings)
-    (go-to-origin)
-    (find-object "Milk")
+    ;(go-to-origin)
+    (with-designators ((milk :object `((:type "Milk"))))
+      (find-object milk))
     ;; TODO: Add activity here
     ))
