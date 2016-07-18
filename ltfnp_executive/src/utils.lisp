@@ -110,7 +110,7 @@
 (cram-language:def-top-level-cram-function test-perception ()
   (with-process-modules
     (with-designators ((obj :object `((:name "IAI_kitchen"))))
-      (cram-plan-library:perceive-object 'cram-plan-library:currently-visible obj))))
+      (cram-plan-library:perceive-object :currently-visible obj))))
 
 (defun make-handles (distance-from-center
                      &key
