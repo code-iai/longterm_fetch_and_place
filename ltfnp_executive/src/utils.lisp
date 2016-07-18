@@ -175,5 +175,25 @@
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen"))
 
-(defun spawn-scene ()
-  (spawn-object (instantiate-object "Milk") (pose-on-countertop (first (get-countertops)))))
+(defun spawn-scene () ;; (instantiate-object "Milk")
+  (spawn-object "Milk" (pose-on-countertop (first (get-countertops)))))
+
+(defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
+  (when (or (eql side :left) (not side))
+    (pr2-manip-pm::execute-move-arm-pose
+     :left
+     (tf:make-pose-stamped
+      "torso_lift_link" (roslisp:ros-time)
+      (tf:make-3d-vector 0.1 0.45 0.3)
+      (tf:euler->quaternion :ay (/ pi -2)))
+     :ignore-collisions ignore-collisions
+     :allowed-collision-objects allowed-collision-objects))
+  (when (or (eql side :right) (not side))
+    (pr2-manip-pm::execute-move-arm-pose
+     :right
+     (tf:make-pose-stamped
+      "torso_lift_link" (roslisp:ros-time)
+      (tf:make-3d-vector 0.1 -0.45 0.3)
+      (tf:euler->quaternion :ay (/ pi -2)))
+     :ignore-collisions ignore-collisions
+     :allowed-collision-objects allowed-collision-objects)))
