@@ -96,7 +96,7 @@
                     (cram-language:retry)))
       (access-location place)
       ;; Perceive objects "inside" (if applicable)
-      (perceive-object 'cram-plan-library:a object)
+      (perceive-object :a object)
       ;; If object(s) found, return them; otherwise, close-location.
       )))
 
