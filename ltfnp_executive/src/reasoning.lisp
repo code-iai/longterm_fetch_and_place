@@ -134,6 +134,9 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-urdf-path (object-id)
   (get-class-urdf-path (get-object-class object-id)))
 
+(defun spawn-class (object-id class pose)
+  (cram-gazebo-utilities:spawn-gazebo-model object-id pose (get-class-urdf-path class)))
+
 (defun spawn-object (object-id pose)
   (cram-gazebo-utilities:spawn-gazebo-model object-id pose (get-object-urdf-path object-id)))
 

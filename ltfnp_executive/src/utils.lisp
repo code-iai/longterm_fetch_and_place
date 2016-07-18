@@ -176,7 +176,7 @@
   (gazebo-perception-pm::ignore-object "IAI_kitchen"))
 
 (defun spawn-scene () ;; (instantiate-object "Milk")
-  (spawn-object "Milk" (pose-on-countertop (first (get-countertops)))))
+  (spawn-class "milk0" "Milk" (pose-on-countertop (first (get-countertops)))))
 
 (defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
   (when (or (eql side :left) (not side))
