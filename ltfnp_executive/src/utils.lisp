@@ -174,3 +174,6 @@
   (gazebo-perception-pm::ignore-object "ground_plane")
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen"))
+
+(defun spawn-scene ()
+  (spawn-object (instantiate-object "Milk") (pose-on-countertop (first (get-countertops)))))
