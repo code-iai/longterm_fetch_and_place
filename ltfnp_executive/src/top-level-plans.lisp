@@ -33,9 +33,11 @@
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
-  (prepare-settings)
-  (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (roslisp-utilities:startup-ros)
+  (prepare-settings)
+  (init-3d-world)
+  (roslisp:ros-info (ltfnp) "Connecting to ROS")
+  (spawn-scene)
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (longterm-fetch-and-place))
 
@@ -59,5 +61,6 @@
   (with-process-modules
     (prepare-settings)
     (go-to-origin)
+    (find-object "Milk")
     ;; TODO: Add activity here
     ))
