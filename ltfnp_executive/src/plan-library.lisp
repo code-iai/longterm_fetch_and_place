@@ -84,10 +84,14 @@
   ;; searching for an object, ultimately leaving the container open
   ;; that contained the object looked for. Of course for table tops
   ;; this doesn't matter.
-  (access-location)
-  ;; Perceive objects "inside" (if applicable)
-  ;; If object(s) found, return them; otherwise, close-location.
-  )
+  (let ((place (or (cram-designators:desig-prop-value object :at)
+                   (make-designator :location `((:on "CounterTop"))))))
+    (when-failure ((:object-not-found (setf place (cram-designators::next-solution place))
+                                      (cram-language:retry)))
+      (access-location)
+      ;; Perceive objects "inside" (if applicable)
+      ;; If object(s) found, return them; otherwise, close-location.
+      )))
 
 (def-cram-function pick-object (object)
   ;; Assumptions: Object accessible, approached

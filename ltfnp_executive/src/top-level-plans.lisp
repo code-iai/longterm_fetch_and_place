@@ -61,5 +61,6 @@
   (with-process-modules
     (prepare-settings)
     (go-to-origin)
+    (find-object "Milk")
     ;; TODO: Add activity here
     ))
