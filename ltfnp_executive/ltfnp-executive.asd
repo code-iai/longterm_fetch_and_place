@@ -50,6 +50,7 @@
                cram-bullet-reasoning-designators
                robosherlock-process-module
                cram-beliefstate
+               cram-robot-pose-gaussian-costmap
                gazebo-perception-process-module
                attache_msgs-srv
                pr2_controllers_msgs-msg)
