@@ -100,6 +100,12 @@ base-class itself does not count towards the enlisted classes."
       `("ltfnp_object" ?class)
     ?class)))
 
+(defun register-object (object-id class)
+  (assert (object-class-p class)
+          ()
+          "Class `~a' is not a subclass of `LTFnP'." class)
+  (json-prolog:prolog `("ltfnp_register_object" ,(add-prolog-namespace object-id) ,(add-prolog-namespace class))))
+
 (defun instantiate-object (class)
   (assert (object-class-p class)
           ()
