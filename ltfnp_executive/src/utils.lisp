@@ -24,6 +24,9 @@
 
 (in-package :ltfnp-executive)
 
+
+(defvar *action-client-torso* nil)
+
 ;;;
 ;;; Add utility functions here
 ;;;
@@ -197,3 +200,18 @@
       (tf:euler->quaternion :ay (/ pi -2)))
      :ignore-collisions ignore-collisions
      :allowed-collision-objects allowed-collision-objects)))
+
+(defun move-torso (&optional (position 0.3))
+  (let* ((action-client (or *action-client-torso*
+                            (setf *action-client-torso*
+                                  (actionlib:make-action-client
+                                   "/torso_controller/position_joint_action"
+                                   "pr2_controllers_msgs/SingleJointPositionAction"))))
+         (goal (actionlib:make-action-goal
+                   action-client
+                 position position)))
+    (setf *action-client-torso* action-client)
+    (actionlib:send-goal-and-wait
+     action-client goal
+     :result-timeout 30.0
+     :exec-timeout 30.0)))
