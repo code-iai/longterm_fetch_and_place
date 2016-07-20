@@ -169,6 +169,7 @@
     )))
 
 (defun prepare-settings ()
+  (setf cram-tf::*tf-default-timeout* 100)
   (setf actionlib::*action-server-timeout* 20)
   (cram-designators:disable-location-validation-function
    'btr-desig::check-ik-solution)
