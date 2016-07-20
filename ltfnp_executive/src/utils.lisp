@@ -66,7 +66,7 @@
   ;; properties from the semantic map
   )
 
-(defun get-robot-pose (&optional (frame-id "/base_link"))
+(defun get-robot-pose (&optional (frame-id "base_link"))
   (cl-tf:transform-pose
    *transformer*
    :pose (tf:make-pose-stamped
