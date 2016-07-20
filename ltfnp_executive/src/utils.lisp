@@ -24,6 +24,9 @@
 
 (in-package :ltfnp-executive)
 
+
+(defvar *action-client-torso* nil)
+
 ;;;
 ;;; Add utility functions here
 ;;;
@@ -66,7 +69,7 @@
   ;; properties from the semantic map
   )
 
-(defun get-robot-pose (&optional (frame-id "/base_link"))
+(defun get-robot-pose (&optional (frame-id "base_link"))
   (cl-tf:transform-pose
    *transformer*
    :pose (tf:make-pose-stamped
@@ -166,6 +169,7 @@
     )))
 
 (defun prepare-settings ()
+  (setf cram-tf::*tf-default-timeout* 100)
   (setf actionlib::*action-server-timeout* 20)
   (cram-designators:disable-location-validation-function
    'btr-desig::check-ik-solution)
@@ -197,3 +201,18 @@
       (tf:euler->quaternion :ay (/ pi -2)))
      :ignore-collisions ignore-collisions
      :allowed-collision-objects allowed-collision-objects)))
+
+(defun move-torso (&optional (position 0.3))
+  (let* ((action-client (or *action-client-torso*
+                            (setf *action-client-torso*
+                                  (actionlib:make-action-client
+                                   "/torso_controller/position_joint_action"
+                                   "pr2_controllers_msgs/SingleJointPositionAction"))))
+         (goal (actionlib:make-action-goal
+                   action-client
+                 position position)))
+    (setf *action-client-torso* action-client)
+    (actionlib:send-goal-and-wait
+     action-client goal
+     :result-timeout 30.0
+     :exec-timeout 30.0)))
