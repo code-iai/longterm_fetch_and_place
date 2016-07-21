@@ -61,7 +61,10 @@
   ;;     if either fails, go to 6
   (with-process-modules
     ;(go-to-origin)
-    (with-designators ((milk :object `((:type "Milk"))))
+    (with-designators ((loc-on-sink :location `((:on "CounterTop")
+                                                (:name "iai_kitchen_sink_area_counter_top")))
+                       (milk :object `((:type "Milk")
+                                       (:at ,loc-on-sink))))
       (find-object milk))
     ;; TODO: Add activity here
     ))
