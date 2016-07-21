@@ -177,7 +177,8 @@
    'btr-desig::validate-designator-solution)
   (gazebo-perception-pm::ignore-object "ground_plane")
   (gazebo-perception-pm::ignore-object "pr2")
-  (gazebo-perception-pm::ignore-object "IAI_kitchen"))
+  (gazebo-perception-pm::ignore-object "IAI_kitchen")
+  (init-3d-world))
 
 (defun spawn-scene () ;; (instantiate-object "Milk")
   (spawn-class "milk0" "Milk" (pose-on-countertop (first (get-countertops)))))
