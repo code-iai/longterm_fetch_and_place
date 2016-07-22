@@ -80,6 +80,20 @@
 	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   
   <!-- Buttermilk -->
@@ -254,6 +268,31 @@
   </owl:NamedIndividual>
   
   <owl:NamedIndividual rdf:about="&knowrob;Buttermilk_Handle_diuxn543_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.0 1.0 0.0</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">-0.4 0.0 0.085</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <!-- Milk Handles -->
+  <owl:NamedIndividual rdf:about="&knowrob;Milk_Handle_laok8b26">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Milk_Handle_laok8b26_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Milk_Handle_laok8b26_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.0 0.0 1.0</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.04 0.0 0.085</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Milk_Handle_diuxn543">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Milk_Handle_diuxn543_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Milk_Handle_diuxn543_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.0 1.0 0.0</knowrob:quaternion>
     <knowrob:translation rdf:datatype="&xsd;string">-0.4 0.0 0.085</knowrob:translation>

@@ -158,6 +158,18 @@ base-class itself does not count towards the enlisted classes."
                                              (:name ,name)))))
     (cram-designators:reference desig)))
 
+(defun get-class-semantic-handles (class)
+  (cpl:mapcar-clean
+   (lambda (handle)
+     (get-semantic-handle-details handle))
+   (with-prolog-vars-bound (?handle)
+       `("ltfnp_class_semantic_handle" ,(add-prolog-namespace class) ?handle)
+     (strip-prolog-string (json-symbol->string ?handle)))))
+
+(defun get-semantic-handle-details (handle)
+  (with-first-prolog-vars-bound (?grasptype ?tx ?ty ?tz ?qw ?qx ?qy ?qz)
+      `("ltfnp_semantic_handle_details" ,(add-prolog-namespace handle) ?grasptype ?tx ?ty ?tz ?qw ?qx ?qy ?qz)
+    `(,?grasptype ,?tx ,?ty ,?tz ,?qw ,?qx ,?qy ,?qz)))
 
 ;;;
 ;;; Location related reasoning functions (mostly for convenience)
