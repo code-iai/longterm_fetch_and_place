@@ -38,7 +38,9 @@
 	   ltfnp_get_object_pose/8,
 	   ltfnp_get_class_urdf_path/2,
 	   ltfnp_assert_string/3,
-	   ltfnp_instance_of_class/2
+	   ltfnp_instance_of_class/2,
+	   ltfnp_class_semantic_handle/2,
+	   ltfnp_semantic_handle_details/9
 	  ]).
 
 
@@ -60,7 +62,9 @@
     ltfnp_get_object_pose(r, r, r, r, r, r, r, r),
     ltfnp_get_class_urdf_path(r, r),
     ltfnp_assert_string(r, r, r),
-    ltfnp_instance_of_class(r, r).
+    ltfnp_instance_of_class(r, r),
+    ltfnp_class_semantic_handle(r, r),
+    ltfnp_semantic_handle_details(r, r, r, r, r, r, r, r, r).
 
 
 :- rdf_db:rdf_register_ns(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
@@ -195,3 +199,21 @@ ltfnp_get_class_urdf_path(Class, URDFPath) :-
 %
 ltfnp_instance_of_class(Object, Class) :-
     rdfs_instance_of(Object, Class).
+
+
+%% ltfnp_class_semantic_handle(?Class, ?SemanticHandle) is nondet.
+%
+% @param Class           The class to get semantic handles for
+% @param SemanticHandle  The semantic handle in the class
+%
+ltfnp_class_semantic_handle(Class, SemanticHandle) :-
+    class_properties(Class, knowrob:'semanticHandle', SemanticHandle).
+
+
+ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY, QZ) :-
+    owl_has(SemanticHandle, knowrob:'graspType', literal(type(_, GraspType))),
+    rdf_triple(knowrob:'translation', SemanticHandle, literal(type(_, Translation)))
+    %owl_has(SemanticHandle, knowrob:'translation', literal(type(_, Translation))),
+    parse_vector(Translation, [TX, TY, TZ]),
+    owl_has(SemanticHandle, knowrob:'quaternion', literal(type(_, Quaternion))),
+    parse_vector(Quaternion, [QW, QX, QY, QZ]).
