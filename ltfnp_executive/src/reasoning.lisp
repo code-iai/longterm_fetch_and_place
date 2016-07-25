@@ -164,12 +164,32 @@ base-class itself does not count towards the enlisted classes."
      (get-semantic-handle-details handle))
    (with-prolog-vars-bound (?handle)
        `("ltfnp_class_semantic_handle" ,(add-prolog-namespace class) ?handle)
-     (strip-prolog-string (json-symbol->string ?handle)))))
+     (strip-prolog-string ?handle))))
+
+(defun stripped-symbol-name (sym)
+  (let ((sym-name (symbol-name sym)))
+    (if (and (equal (subseq sym-name 0 1) "'")
+             (equal (subseq sym-name (1- (length sym-name)) (length sym-name)) "'"))
+        (subseq sym-name 1 (- (length sym-name) 1))
+        sym-name)))
 
 (defun get-semantic-handle-details (handle)
   (with-first-prolog-vars-bound (?grasptype ?tx ?ty ?tz ?qw ?qx ?qy ?qz)
       `("ltfnp_semantic_handle_details" ,(add-prolog-namespace handle) ?grasptype ?tx ?ty ?tz ?qw ?qx ?qy ?qz)
-    `(,?grasptype ,?tx ,?ty ,?tz ,?qw ,?qx ,?qy ,?qz)))
+    `(,(stripped-symbol-name ?grasptype) ,?tx ,?ty ,?tz ,?qw ,?qx ,?qy ,?qz)))
+
+(defun get-class-semantic-handle-objects (class)
+  (mapcar (lambda (handle-data)
+            (destructuring-bind (grasp-type tx ty tz qw qx qy qz) handle-data
+              (make-designator
+               :object
+               `((:type :handle)
+                 (:grasp-type ,(intern (string-upcase grasp-type) :keyword))
+                 (:at ,(make-designator
+                        :location
+                        `((:pose ,(tf:make-pose (tf:make-3d-vector tx ty tz)
+                                                (tf:make-quaternion qw qx qy qz))))))))))
+          (get-class-semantic-handles class)))
 
 ;;;
 ;;; Location related reasoning functions (mostly for convenience)
