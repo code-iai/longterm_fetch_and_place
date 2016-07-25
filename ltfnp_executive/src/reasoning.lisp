@@ -178,6 +178,19 @@ base-class itself does not count towards the enlisted classes."
       `("ltfnp_semantic_handle_details" ,(add-prolog-namespace handle) ?grasptype ?tx ?ty ?tz ?qw ?qx ?qy ?qz)
     `(,(stripped-symbol-name ?grasptype) ,?tx ,?ty ,?tz ,?qw ,?qx ,?qy ,?qz)))
 
+(defun get-class-semantic-handle-objects (class)
+  (mapcar (lambda (handle-data)
+            (destructuring-bind (grasp-type tx ty tz qw qx qy qz) handle-data
+              (make-designator
+               :object
+               `((:type :handle)
+                 (:grasp-type ,(intern (string-upcase grasp-type) :keyword))
+                 (:at ,(make-designator
+                        :location
+                        `((:pose ,(tf:make-pose (tf:make-3d-vector tx ty tz)
+                                                (tf:make-quaternion qw qx qy qz))))))))))
+          (get-class-semantic-handles class)))
+
 ;;;
 ;;; Location related reasoning functions (mostly for convenience)
 ;;;
