@@ -102,15 +102,20 @@
 
 (def-cram-function pick-object (object)
   ;; Assumptions: Object accessible, approached
+  (format t "Trying to pick object up~%")
   )
 
 (def-cram-function fetch-object (object)
-  (when-failure ((:object-not-found (format t "Fail~%")))
-    (find-object object))
-  (when-failure ((:location-not-reached (format t "Fail~%"))
-                 (:manipulation-pose-unreachable (format t "Fail~%"))
-                 (:manipulation-failed (format t "Fail~%")))
-    (pick-object object)))
+  (with-designators ((find-action :action `((:to :find)
+                                            (:obj ,object)))
+                     (pick-action :action `((:to :pick)
+                                            (:obj ,object))))
+    (when-failure ((:object-not-found
+                    (ros-warn (ltfnp) "fetch-object: object not found")))
+      (perform find-action))
+    (when-failure ((:manipulation-pose-unreachable (format t "Fail~%"))
+                   (:manipulation-failed (format t "Fail~%")))
+      (perform pick-action))))
 
 (def-cram-function put-object (object location)
   ;; Assumptions: Location accessible, approached

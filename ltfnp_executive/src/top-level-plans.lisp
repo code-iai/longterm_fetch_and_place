@@ -64,7 +64,7 @@
     (with-designators ((loc-on-sink :location `((:on "CounterTop")
                                                 (:name "iai_kitchen_sink_area_counter_top")))
                        (milk :object `((:type "Milk")
-                                       (:at ,loc-on-sink))))
-      (find-object milk))
-    ;; TODO: Add activity here
-    ))
+                                       (:at ,loc-on-sink)))
+                       (fetch-action :action `((:to :fetch)
+                                               (:obj ,milk))))
+      (perform fetch-action))))
