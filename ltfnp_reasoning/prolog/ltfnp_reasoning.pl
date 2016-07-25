@@ -212,6 +212,8 @@ ltfnp_class_semantic_handle(Class, SemanticHandle) :-
 
 ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY, QZ) :-
     owl_has(SemanticHandle, knowrob:'graspType', literal(type(_, GraspType))),
-    owl_has(SemanticHandle, knowrob:'handlePose', Pose),
-    position_to_list(Pose, [TX, TY, TZ]),
-    quaternion_to_list(Pose, [QW, QX, QY, QZ]).
+    rdf_triple(knowrob:'translation', SemanticHandle, literal(type(_, Translation)))
+    %owl_has(SemanticHandle, knowrob:'translation', literal(type(_, Translation))),
+    parse_vector(Translation, [TX, TY, TZ]),
+    owl_has(SemanticHandle, knowrob:'quaternion', literal(type(_, Quaternion))),
+    parse_vector(Quaternion, [QW, QX, QY, QZ]).
