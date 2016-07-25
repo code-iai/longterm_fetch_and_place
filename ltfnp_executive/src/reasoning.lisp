@@ -144,7 +144,7 @@ base-class itself does not count towards the enlisted classes."
 
 (defun make-class-description (class)
   (append
-   `((:description ,class))
+   `((:type ,class))
    (mapcar (lambda (handle-object)
              `(:handle ,handle-object))
            (get-class-semantic-handle-objects class))))
