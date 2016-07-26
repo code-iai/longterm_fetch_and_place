@@ -71,6 +71,7 @@
    (json-symbol->string (write-to-string delimiter))
    symbol))
 
+
 ;;;
 ;;; Object and object class related predicates
 ;;;
@@ -141,8 +142,17 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-urdf-path (object-id)
   (get-class-urdf-path (get-object-class object-id)))
 
+(defun make-class-description (class)
+  (append
+   `((:type ,class))
+   (mapcar (lambda (handle-object)
+             `(:handle ,handle-object))
+           (get-class-semantic-handle-objects class))))
+
 (defun spawn-class (object-id class pose)
-  (cram-gazebo-utilities:spawn-gazebo-model object-id pose (get-class-urdf-path class) :description `((:type ,class))))
+  (cram-gazebo-utilities:spawn-gazebo-model
+   object-id pose (get-class-urdf-path class)
+   :description (make-class-description class)))
 
 (defun spawn-object (object-id pose)
   (cram-gazebo-utilities:spawn-gazebo-model object-id pose (get-object-urdf-path object-id)))
@@ -190,6 +200,7 @@ base-class itself does not count towards the enlisted classes."
                         `((:pose ,(tf:make-pose (tf:make-3d-vector tx ty tz)
                                                 (tf:make-quaternion qw qx qy qz))))))))))
           (get-class-semantic-handles class)))
+
 
 ;;;
 ;;; Location related reasoning functions (mostly for convenience)

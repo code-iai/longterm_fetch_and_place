@@ -101,8 +101,9 @@
       )))
 
 (def-cram-function pick-object (object)
-  ;; Assumptions: Object accessible, approached
+  ;; Assumptions: Object accessible
   (format t "Trying to pick object up~%")
+  (achieve `(cram-plan-library:object-in-hand ,object))
   )
 
 (def-cram-function fetch-object (object)
