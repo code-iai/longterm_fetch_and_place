@@ -181,7 +181,28 @@
   (init-3d-world))
 
 (defun spawn-scene () ;; (instantiate-object "Milk")
-  (spawn-class "milk0" "Milk" (pose-on-countertop (first (get-countertops)))))
+  (let ((base-pose (pose-on-countertop (first (get-countertops)))))
+    (spawn-object-relative "Milk" (tf:make-identity-pose) base-pose)))
+
+(defun object-instance (class index)
+  (concatenate 'string class (write-to-string index)))
+
+(defun object-instance-spawned (class index)
+  (let ((instance-name (object-instance class index)))
+    (cram-gazebo-utilities::model-present instance-name)))
+
+(defun spawn-object-relative (class relative-pose relative-to)
+  (let ((index 0))
+    (loop while (object-instance-spawned class index) do
+      (incf index))
+    (let ((pose (tf:pose->pose-stamped
+                 "map" 0.0
+                 (cl-transforms:transform-pose
+                  (cl-transforms:pose->transform relative-to)
+                  relative-pose)))
+          (instance-name (object-instance class index)))
+      (spawn-class instance-name class pose)
+      instance-name)))
 
 (defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
   (when (or (eql side :left) (not side))
