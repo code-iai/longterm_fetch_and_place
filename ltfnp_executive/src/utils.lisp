@@ -181,7 +181,7 @@
   (init-3d-world)
   (semantic-map-collision-environment:publish-semantic-map-collision-objects))
 
-(defun spawn-scene () ;; (instantiate-object "Milk")
+(defun spawn-scene ()
   (let ((base-pose (pose-on-countertop (first (get-countertops)))))
     (spawn-object-relative "Milk" (tf:make-identity-pose) base-pose)))
 
