@@ -181,9 +181,35 @@
   (init-3d-world)
   (semantic-map-collision-environment:publish-semantic-map-collision-objects))
 
+(defun lift-up (pose distance)
+  (let* ((origin (cl-transforms:origin pose))
+         (lifted-origin (cl-transforms:make-3d-vector
+                         (cl-transforms:x origin)
+                         (cl-transforms:y origin)
+                         (+ (cl-transforms:z origin)
+                            distance))))
+    (cl-transforms:copy-pose pose :origin lifted-origin)))
+
 (defun spawn-scene ()
-  (let ((base-pose (pose-on-countertop (first (get-countertops)))))
-    (spawn-object-relative "Milk" (tf:make-identity-pose) base-pose)))
+  (delete-scene)
+  (let ((base-pose (tf:make-pose
+                    (tf:make-3d-vector 1.40 0.50 0.90)
+                    (tf:euler->quaternion))))
+    (flet* ((spawn (class &optional
+                    (translation (tf:make-identity-vector))
+                    (orientation (tf:make-identity-rotation)))
+              (spawn-object-relative class (tf:make-pose translation orientation) base-pose))
+            (spawn-series-simplified (series)
+              (dolist (item series)
+                (destructuring-bind (class (x y) theta) item
+                  (spawn class (tf:make-3d-vector x y 0.0) (tf:euler->quaternion :az theta))))))
+      (spawn-series-simplified `(("RedMetalPlate" (0.0 0.0) 0.0)
+                                 ("RedMetalBowl" (0.1 0.2) 0.0)
+                                 ("RedMetalCup" (0.1 -0.2) 0.0)))
+      (spawn-series-simplified `(("Milk" (-0.05 0.5) 0.0))))))
+
+(defun delete-scene ()
+  (cram-gazebo-utilities:delete-spawned-objects))
 
 (defun object-instance (class index)
   (concatenate 'string class (write-to-string index)))
@@ -196,12 +222,15 @@
   (let ((index 0))
     (loop while (object-instance-spawned class index) do
       (incf index))
-    (let ((pose (tf:pose->pose-stamped
+    (let* ((dimensions (get-class-dimensions class))
+           (pose (tf:pose->pose-stamped
                  "map" 0.0
-                 (cl-transforms:transform-pose
-                  (cl-transforms:pose->transform relative-to)
-                  relative-pose)))
-          (instance-name (object-instance class index)))
+                 (lift-up
+                  (cl-transforms:transform-pose
+                   (cl-transforms:pose->transform relative-to)
+                   relative-pose)
+                  (/ (third dimensions) 2))))
+           (instance-name (object-instance class index)))
       (spawn-class instance-name class pose)
       instance-name)))
 
