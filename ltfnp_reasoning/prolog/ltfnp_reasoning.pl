@@ -40,7 +40,8 @@
 	   ltfnp_assert_string/3,
 	   ltfnp_instance_of_class/2,
 	   ltfnp_class_semantic_handle/2,
-	   ltfnp_semantic_handle_details/9
+	   ltfnp_semantic_handle_details/9,
+	   ltfnp_get_class_dimensions/4
 	  ]).
 
 
@@ -64,7 +65,8 @@
     ltfnp_assert_string(r, r, r),
     ltfnp_instance_of_class(r, r),
     ltfnp_class_semantic_handle(r, r),
-    ltfnp_semantic_handle_details(r, r, r, r, r, r, r, r, r).
+    ltfnp_semantic_handle_details(r, r, r, r, r, r, r, r, r),
+    ltfnp_get_class_dimensions(r, r, r, r).
 
 
 :- rdf_db:rdf_register_ns(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
@@ -165,6 +167,12 @@ ltfnp_assert_string(Subject, Field, Content) :-
     rdf_assert(Subject, Field, literal(type(string, ContentAtom))).
 
 
+ltfnp_get_class_dimensions(Class, W, H, D) :-
+    ltfnp_object_class(Class),
+    class_properties(Class, knowrob:'boundingBoxSize', literal(type(_, Size))),
+    parse_vector(Size, [W, H, D]).
+
+
 %% ltfnp_get_object_pose(?Object, ?Translation, ?Rotation) is nondet.
 %
 % ...
@@ -213,5 +221,4 @@ ltfnp_class_semantic_handle(Class, SemanticHandle) :-
 ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY, QZ) :-
     owl_has(SemanticHandle, knowrob:'graspType', literal(type(_, GraspType))),
     owl_has(SemanticHandle, knowrob:'handlePose', Pose),
-    position_to_list(Pose, [TX, TY, TZ]),
-    quaternion_to_list(Pose, [QW, QX, QY, QZ]).
+    object_pose(Pose, [TX, TY, TZ], [QW, QX, QY, QZ]).
