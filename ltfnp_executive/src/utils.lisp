@@ -178,7 +178,8 @@
   (gazebo-perception-pm::ignore-object "ground_plane")
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen")
-  (init-3d-world))
+  (init-3d-world)
+  (semantic-map-collision-environment:publish-semantic-map-collision-objects))
 
 (defun spawn-scene () ;; (instantiate-object "Milk")
   (let ((base-pose (pose-on-countertop (first (get-countertops)))))
