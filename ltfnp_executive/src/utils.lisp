@@ -26,6 +26,7 @@
 
 
 (defvar *action-client-torso* nil)
+(defvar *gazebo* nil)
 
 ;;;
 ;;; Add utility functions here
@@ -268,3 +269,27 @@
      action-client goal
      :result-timeout 30.0
      :exec-timeout 30.0)))
+
+(defmethod cram-language::on-grasp-object (object-name side)
+  (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
+  (when *gazebo*
+    (roslisp:call-service "/gazebo/attach"
+                          'attache_msgs-srv:Attachment
+                          :model1 "pr2"
+                          :link1 (case side
+                                   (:left "l_wrist_roll_link")
+                                   (:right "r_wrist_roll_link"))
+                          :model2 object-name
+                          :link2 "link")))
+
+(defmethod cram-language::on-putdown-object (object-name side)
+  (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
+  (when *gazebo*
+    (roslisp:call-service "/gazebo/detach"
+                          'attache_msgs-srv:Attachment
+                          :model1 "pr2"
+                          :link1 (case side
+                                   (:left "l_wrist_roll_link")
+                                   (:right "r_wrist_roll_link"))
+                          :model2 object-name
+                          :link2 "link")))

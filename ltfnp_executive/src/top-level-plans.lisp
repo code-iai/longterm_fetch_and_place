@@ -29,10 +29,12 @@
 ;;; Entry Point
 ;;;
 
-(defun start-scenario ()
+(defun start-scenario (&key (simulated t))
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
+  (when simulated
+    (setf *gazebo* t))
   (roslisp-utilities:startup-ros)
   (prepare-settings)
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
@@ -62,8 +64,8 @@
     ;(go-to-origin)
     (with-designators ((loc-on-sink :location `((:on "CounterTop")
                                                 (:name "iai_kitchen_sink_area_counter_top")))
-                       (milk :object `((:type "Milk")
-                                       (:at ,loc-on-sink)))
+                       (cup :object `((:type "RedMetalCup")
+                                      (:at ,loc-on-sink)))
                        (fetch-action :action `((:to :fetch)
-                                               (:obj ,milk))))
+                                               (:obj ,cup))))
       (perform fetch-action))))
