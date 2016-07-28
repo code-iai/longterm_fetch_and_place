@@ -41,6 +41,7 @@
   (spawn-scene)
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (move-arms-up)
+  (move-torso)
   (longterm-fetch-and-place))
 
 
