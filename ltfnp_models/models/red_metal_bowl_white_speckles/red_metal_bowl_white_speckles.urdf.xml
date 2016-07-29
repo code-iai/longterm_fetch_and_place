@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<robot name="corn"
+<robot name="red_metal_bowl_white_speckles"
        xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <link name="metal_bowl">
+  <link name="link">
     <!--MAIN_BODY-->
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
