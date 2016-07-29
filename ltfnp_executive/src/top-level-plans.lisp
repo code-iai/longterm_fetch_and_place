@@ -63,10 +63,23 @@
   ;;     if either fails, go to 6
   (with-process-modules
     ;(go-to-origin)
-    (with-designators ((loc-on-sink :location `((:on "CounterTop")
-                                                (:name "iai_kitchen_sink_area_counter_top")))
-                       (cup :object `((:type "RedMetalCup")
-                                      (:at ,loc-on-sink)))
-                       (fetch-action :action `((:to :fetch)
-                                               (:obj ,cup))))
-      (perform fetch-action))))
+    (with-designators ((loc-on-sink
+                        :location
+                        `((:on "CounterTop")
+                          (:name "iai_kitchen_sink_area_counter_top")))
+                       (loc-on-meal-table
+                        :location
+                        `((:on "CounterTop")
+                          (:name "iai_kitchen_meal_table_counter_top")))
+                       (cup
+                        :object `((:type "RedMetalCup")
+                                  (:at ,loc-on-sink)))
+                       (fetch-action
+                        :action `((:to :fetch)
+                                  (:obj ,cup)))
+                       (place-action
+                        :action `((:to :place)
+                                  (:obj ,cup)
+                                  (:at ,loc-on-meal-table))))
+      (perform fetch-action)
+      (perform place-action))))
