@@ -103,8 +103,7 @@
 (def-cram-function pick-object (object)
   ;; Assumptions: Object accessible
   (format t "Trying to pick object up~%")
-  (achieve `(cram-plan-library:object-in-hand ,object))
-  )
+  (achieve `(cram-plan-library:object-in-hand ,object)))
 
 (def-cram-function fetch-object (object)
   (with-designators ((find-action :action `((:to :find)
@@ -120,7 +119,8 @@
 
 (def-cram-function put-object (object location)
   ;; Assumptions: Location accessible, approached
-  )
+  (format t "Trying to place object~%")
+  (achieve `(cram-plan-library:object-placed-at ,object ,location)))
 
 (def-cram-function place-object (object location)
   ;; Assumptions: Object in hand

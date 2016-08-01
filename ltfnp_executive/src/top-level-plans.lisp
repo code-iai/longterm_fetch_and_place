@@ -69,4 +69,12 @@
                                       (:at ,loc-on-sink)))
                        (fetch-action :action `((:to :fetch)
                                                (:obj ,cup))))
-      (perform fetch-action))))
+      (perform fetch-action)
+      (with-designators ((loc-on-meal-table :location
+                                            `((:on "CounterTop")
+                                              (:name "iai_kitchen_meal_table_counter_top")))
+                         (place-action :action
+                                       `((:to :place)
+                                         (:obj ,cup)
+                                         (:at ,loc-on-meal-table))))
+        (perform place-action)))))
