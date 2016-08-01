@@ -70,7 +70,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
-        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+        <owl:hasValue rdf:datatype="&xsd;string">0.1 0.1 0.1</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -117,7 +117,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
-        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+        <owl:hasValue rdf:datatype="&xsd;string">0.1 0.1 0.1</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -164,7 +164,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
-        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+        <owl:hasValue rdf:datatype="&xsd;string">0.1 0.1 0.1</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -211,7 +211,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
-        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+        <owl:hasValue rdf:datatype="&xsd;string">0.1 0.1 0.1</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -244,7 +244,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
-        <owl:hasValue rdf:datatype="&xsd;string">0.0 0.0 0.0</owl:hasValue>
+        <owl:hasValue rdf:datatype="&xsd;string">0.1 0.1 0.1</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
