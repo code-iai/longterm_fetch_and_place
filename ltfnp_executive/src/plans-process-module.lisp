@@ -32,7 +32,7 @@
     (desig-prop ?action-designator (:obj ?object))
     (desig:current-designator ?object ?current-object))
   
-  (<- (action-desig ?action-designator (fetch-object ?current-object ?destination))
+  (<- (action-desig ?action-designator (place-object ?current-object ?destination))
     (desig-prop ?action-designator (:to :place))
     (desig-prop ?action-designator (:obj ?object))
     (desig-prop ?action-designator (:at ?destination))
