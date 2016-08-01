@@ -80,10 +80,11 @@
           (tf:make-identity-rotation))
    :target-frame "/map"))
 
-(defun init-3d-world ()
+(defun init-3d-world (&key (robot t))
   (let* ((urdf-robot
-           (cl-urdf:parse-urdf
-            (roslisp:get-param "robot_description_lowres")))
+           (and robot
+                (cl-urdf:parse-urdf
+                 (roslisp:get-param "robot_description_lowres"))))
          (urdf-kitchen
            (cl-urdf:parse-urdf
             (roslisp:get-param "kitchen_description")))
@@ -101,15 +102,18 @@
                          ?w :static-plane floor
                          ((0 0 0) (0 0 0 1))
                          :normal (0 0 1) :constant 0))
-            (btr::robot ?robot)
-            (btr:assert (btr:object
-                         ?w :urdf ?robot ,(get-robot-pose)
-                         :urdf ,urdf-robot))
             (btr:assert (btr:object
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
                          :urdf ,urdf-kitchen))
-            (btr:debug-window ?w))))))
+            (btr:debug-window ?w))))
+    (when robot
+      (force-ll
+       (cram-prolog:prolog
+        `(and (btr::robot ?robot)
+              (btr:assert (btr:object
+                           ?w :urdf ?robot ,(get-robot-pose)
+                           :urdf ,urdf-robot))))))))
 
 (cram-language:def-top-level-cram-function test-perception ()
   (with-process-modules
