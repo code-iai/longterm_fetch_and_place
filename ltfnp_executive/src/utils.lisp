@@ -110,7 +110,8 @@
     (when robot
       (force-ll
        (cram-prolog:prolog
-        `(and (btr::robot ?robot)
+        `(and (btr:bullet-world ?w)
+              (btr::robot ?robot)
               (btr:assert (btr:object
                            ?w :urdf ?robot ,(get-robot-pose)
                            :urdf ,urdf-robot))))))))
