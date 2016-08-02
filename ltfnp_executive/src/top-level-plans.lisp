@@ -73,8 +73,15 @@
       (with-designators ((loc-on-meal-table :location
                                             `((:on "CounterTop")
                                               (:name "iai_kitchen_meal_table_counter_top")))
+                         (loc-on-meal-table-fixed
+                          :location
+                          `((:pose ,(tf:make-pose-stamped
+                                     "map" 0.0
+                                     (tf:make-3d-vector -0.879149615765 -1.00139844418 0.8)
+                                     (tf:make-quaternion 0 0 -0.697222083344 0.71685519214)))))
                          (place-action :action
                                        `((:to :place)
                                          (:obj ,cup)
-                                         (:at ,loc-on-meal-table))))
+                                         (:at ,loc-on-meal-table-fixed))))
+                                         ;(:at ,loc-on-meal-table ))))
         (perform place-action)))))
