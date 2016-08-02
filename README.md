@@ -25,9 +25,9 @@ present.
 
 In CRAM, start the current state like this:
 ```lisp
-LTFNP> (roslisp-utils:startup-ros)
-LTFNP> (longterm-fetch-and-place)
-```
+CL-USER> (swank:operate-on-system-for-emacs "ltfnp-executive" (quote load-op))
+CL-USER> (in-package :ltfnp)
+LTFNP> (start-scenario)
 
 
 ### The Structure Explained
