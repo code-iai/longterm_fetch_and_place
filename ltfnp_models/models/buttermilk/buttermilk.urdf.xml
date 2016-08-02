@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
-<robot name="milk" xmlns:xacro="http://ros.org/wiki/xacro">
-  <link name="milk_link">
+<robot name="buttermilk" xmlns:xacro="http://ros.org/wiki/xacro">
+  <link name="link">
     <!--MAIN_BODY-->
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>

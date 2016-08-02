@@ -72,3 +72,15 @@
      ltfnp-costmap-area-restriction
      (make-ltfnp-area-restriction-cost-function)
      ?cm)))
+
+(def-fact-group ltfnp-intrusive-hooks (close-radius)
+
+  ;; NOTE(winkler): We could add extra rules below this one that
+  ;; define `close-radius` properties when we're not currently
+  ;; simulating. This is handled by the PR2 manipulation process
+  ;; module though, so we just silently fail here.
+  (<- (close-radius ?object ?radius)
+    (symbol-value *gazebo* ?simulated)
+    (cram-prolog:bound ?simulated)
+    (equal ?simulated t)
+    (equal ?radius 0.08)))

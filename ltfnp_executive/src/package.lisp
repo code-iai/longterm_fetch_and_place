@@ -43,7 +43,8 @@
                 perceived-object-invalid
                 object-handle)
   (:import-from :pr2-manipulation-process-module
-                reorient-object)
+                reorient-object
+                close-radius)
   (:import-from :location-costmap
                 desig-costmap)
   (:import-from :cram-language-designator-support with-designators)

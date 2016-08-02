@@ -103,8 +103,7 @@
 (def-cram-function pick-object (object)
   ;; Assumptions: Object accessible
   (format t "Trying to pick object up~%")
-  (achieve `(cram-plan-library:object-in-hand ,object))
-  )
+  (achieve `(cram-plan-library:object-in-hand ,object)))
 
 (def-cram-function fetch-object (object)
   (with-designators ((find-action :action `((:to :find)
@@ -120,17 +119,14 @@
 
 (def-cram-function put-object (object location)
   ;; Assumptions: Location accessible, approached
-  )
+  (format t "Trying to place object~%")
+  (achieve `(cram-plan-library:object-placed-at ,object ,location)))
 
 (def-cram-function place-object (object location)
   ;; Assumptions: Object in hand
-  (with-retry-counters ((location-resampling 2)
-                        (pose-resampling 2)
+  (with-retry-counters ((pose-resampling 2)
                         (manipulation-retry 2))
-    (when-failure ((:location-not-reached
-                    (do-retry location-resampling
-                      (cpl:retry)))
-                   (:manipulation-pose-unreachable
+    (when-failure ((:manipulation-pose-unreachable
                     (do-retry pose-resampling
                       (cpl:retry)))
                    (:manipulation-failed
@@ -145,35 +141,27 @@
                    (:manipulation-failed
                     (do-retry manipulation-retry
                       (cpl:retry)))
-                   (:pose-occupied
+                   (:manipulation-pose-occupied
                     (do-retry pose-resampling
                       (cpl:retry))))
       (put-object object location))))
 
 (def-cram-function fetch-and-place-object (object location)
   ;; Most naive implementation, develop further.
-  (with-retry-counters ((location-resampling 2)
-                        (pose-resampling 2)
+  (with-retry-counters ((pose-resampling 2)
                         (not-found-retry 2))
-    (when-failure ((:location-not-reached
-                    (do-retry location-resampling
-                      (cpl:retry)))
-                   (:object-not-found
+    (when-failure ((:object-not-found
                     (do-retry not-found-retry
                       (cpl:retry)))
                    (:manipulation-pose-unreachable
                     (do-retry pose-resampling
                       (cpl:retry))))
       (fetch-object object)))
-  (with-retry-counters ((location-resampling 2)
-                        (pose-resampling 2))
-    (when-failure ((:location-not-reached
-                    (do-retry location-resampling
-                      (cpl:retry)))
-                   (:manipulation-pose-unreachable
+  (with-retry-counters ((pose-resampling 2))
+    (when-failure ((:manipulation-pose-unreachable
                     (do-retry pose-resampling
                       (cpl:retry)))
-                   (:pose-occupied
+                   (:manipulation-pose-occupied
                     (do-retry pose-resampling
                       (cpl:retry))))
       (place-object object location))))

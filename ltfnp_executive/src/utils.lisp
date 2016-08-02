@@ -26,6 +26,7 @@
 
 
 (defvar *action-client-torso* nil)
+(defvar *gazebo* nil)
 
 ;;;
 ;;; Add utility functions here
@@ -79,10 +80,11 @@
           (tf:make-identity-rotation))
    :target-frame "/map"))
 
-(defun init-3d-world ()
+(defun init-3d-world (&key (robot t))
   (let* ((urdf-robot
-           (cl-urdf:parse-urdf
-            (roslisp:get-param "robot_description_lowres")))
+           (and robot
+                (cl-urdf:parse-urdf
+                 (roslisp:get-param "robot_description_lowres"))))
          (urdf-kitchen
            (cl-urdf:parse-urdf
             (roslisp:get-param "kitchen_description")))
@@ -100,15 +102,19 @@
                          ?w :static-plane floor
                          ((0 0 0) (0 0 0 1))
                          :normal (0 0 1) :constant 0))
-            (btr::robot ?robot)
-            (btr:assert (btr:object
-                         ?w :urdf ?robot ,(get-robot-pose)
-                         :urdf ,urdf-robot))
             (btr:assert (btr:object
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
                          :urdf ,urdf-kitchen))
-            (btr:debug-window ?w))))))
+            (btr:debug-window ?w))))
+    (when robot
+      (force-ll
+       (cram-prolog:prolog
+        `(and (btr:bullet-world ?w)
+              (btr::robot ?robot)
+              (btr:assert (btr:object
+                           ?w :urdf ?robot ,(get-robot-pose)
+                           :urdf ,urdf-robot))))))))
 
 (cram-language:def-top-level-cram-function test-perception ()
   (with-process-modules
@@ -178,11 +184,38 @@
   (gazebo-perception-pm::ignore-object "ground_plane")
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen")
-  (init-3d-world))
+  (init-3d-world)
+  (semantic-map-collision-environment:publish-semantic-map-collision-objects))
 
-(defun spawn-scene () ;; (instantiate-object "Milk")
-  (let ((base-pose (pose-on-countertop (first (get-countertops)))))
-    (spawn-object-relative "Milk" (tf:make-identity-pose) base-pose)))
+(defun lift-up (pose distance)
+  (let* ((origin (cl-transforms:origin pose))
+         (lifted-origin (cl-transforms:make-3d-vector
+                         (cl-transforms:x origin)
+                         (cl-transforms:y origin)
+                         (+ (cl-transforms:z origin)
+                            distance))))
+    (cl-transforms:copy-pose pose :origin lifted-origin)))
+
+(defun spawn-scene ()
+  (delete-scene)
+  (let ((base-pose (tf:make-pose
+                    (tf:make-3d-vector 1.40 0.50 0.90)
+                    (tf:euler->quaternion))))
+    (flet* ((spawn (class &optional
+                    (translation (tf:make-identity-vector))
+                    (orientation (tf:make-identity-rotation)))
+              (spawn-object-relative class (tf:make-pose translation orientation) base-pose))
+            (spawn-series-simplified (series)
+              (dolist (item series)
+                (destructuring-bind (class (x y) theta) item
+                  (spawn class (tf:make-3d-vector x y 0.0) (tf:euler->quaternion :az theta))))))
+      (spawn-series-simplified `(("RedMetalPlate" (0.0 0.0) 0.0)
+                                 ("RedMetalBowl" (0.1 0.2) 0.0)
+                                 ("RedMetalCup" (0.1 -0.2) 0.0)))
+      (spawn-series-simplified `(("Milk" (-0.05 0.5) 0.0))))))
+
+(defun delete-scene ()
+  (cram-gazebo-utilities:delete-spawned-objects))
 
 (defun object-instance (class index)
   (concatenate 'string class (write-to-string index)))
@@ -195,12 +228,15 @@
   (let ((index 0))
     (loop while (object-instance-spawned class index) do
       (incf index))
-    (let ((pose (tf:pose->pose-stamped
+    (let* ((dimensions (get-class-dimensions class))
+           (pose (tf:pose->pose-stamped
                  "map" 0.0
-                 (cl-transforms:transform-pose
-                  (cl-transforms:pose->transform relative-to)
-                  relative-pose)))
-          (instance-name (object-instance class index)))
+                 (lift-up
+                  (cl-transforms:transform-pose
+                   (cl-transforms:pose->transform relative-to)
+                   relative-pose)
+                  (/ (third dimensions) 2))))
+           (instance-name (object-instance class index)))
       (spawn-class instance-name class pose)
       instance-name)))
 
@@ -238,3 +274,27 @@
      action-client goal
      :result-timeout 30.0
      :exec-timeout 30.0)))
+
+(defmethod cram-language::on-grasp-object (object-name side)
+  (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
+  (when *gazebo*
+    (roslisp:call-service "/gazebo/attach"
+                          'attache_msgs-srv:Attachment
+                          :model1 "pr2"
+                          :link1 (case side
+                                   (:left "l_wrist_roll_link")
+                                   (:right "r_wrist_roll_link"))
+                          :model2 object-name
+                          :link2 "link")))
+
+(defmethod cram-language::on-putdown-object (object-name side)
+  (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
+  (when *gazebo*
+    (roslisp:call-service "/gazebo/detach"
+                          'attache_msgs-srv:Attachment
+                          :model1 "pr2"
+                          :link1 (case side
+                                   (:left "l_wrist_roll_link")
+                                   (:right "r_wrist_roll_link"))
+                          :model2 object-name
+                          :link2 "link")))

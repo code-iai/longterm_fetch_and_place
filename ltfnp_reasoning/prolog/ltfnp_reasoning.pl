@@ -167,10 +167,9 @@ ltfnp_assert_string(Subject, Field, Content) :-
     rdf_assert(Subject, Field, literal(type(string, ContentAtom))).
 
 
-ltfnp_get_class_dimensions(Class, W, H, D) :-
+ltfnp_get_class_dimensions(Class, D, W, H) :-
     ltfnp_object_class(Class),
-    class_properties(Class, knowrob:'boundingBoxSize', literal(type(_, Size))),
-    parse_vector(Size, [W, H, D]).
+    class_dimensions(Class, D, W, H).
 
 
 %% ltfnp_get_object_pose(?Object, ?Translation, ?Rotation) is nondet.

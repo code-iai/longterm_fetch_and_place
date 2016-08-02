@@ -29,17 +29,19 @@
 ;;; Entry Point
 ;;;
 
-(defun start-scenario ()
+(defun start-scenario (&key (simulated t))
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
+  (when simulated
+    (setf *gazebo* t))
   (roslisp-utilities:startup-ros)
   (prepare-settings)
-  (init-3d-world)
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (spawn-scene)
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (move-arms-up)
+  (move-torso)
   (longterm-fetch-and-place))
 
 
@@ -63,8 +65,23 @@
     ;(go-to-origin)
     (with-designators ((loc-on-sink :location `((:on "CounterTop")
                                                 (:name "iai_kitchen_sink_area_counter_top")))
-                       (milk :object `((:type "Milk")
-                                       (:at ,loc-on-sink)))
+                       (cup :object `((:type "RedMetalCup")
+                                      (:at ,loc-on-sink)))
                        (fetch-action :action `((:to :fetch)
-                                               (:obj ,milk))))
-      (perform fetch-action))))
+                                               (:obj ,cup))))
+      (perform fetch-action)
+      (with-designators ((loc-on-meal-table :location
+                                            `((:on "CounterTop")
+                                              (:name "iai_kitchen_meal_table_counter_top")))
+                         (loc-on-meal-table-fixed
+                          :location
+                          `((:pose ,(tf:make-pose-stamped
+                                     "map" 0.0
+                                     (tf:make-3d-vector -0.879149615765 -1.00139844418 0.8)
+                                     (tf:make-quaternion 0 0 -0.697222083344 0.71685519214)))))
+                         (place-action :action
+                                       `((:to :place)
+                                         (:obj ,cup)
+                                         (:at ,loc-on-meal-table-fixed))))
+                                         ;(:at ,loc-on-meal-table ))))
+        (perform place-action)))))

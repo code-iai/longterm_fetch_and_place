@@ -143,11 +143,15 @@ base-class itself does not count towards the enlisted classes."
   (get-class-urdf-path (get-object-class object-id)))
 
 (defun make-class-description (class)
-  (append
-   `((:type ,class))
-   (mapcar (lambda (handle-object)
-             `(:handle ,handle-object))
-           (get-class-semantic-handle-objects class))))
+  (let ((dimensions (get-class-dimensions class)))
+    (append
+     `((:type ,class))
+     `((:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
+                                                   (second dimensions)
+                                                   (third dimensions))))
+     (mapcar (lambda (handle-object)
+               `(:handle ,handle-object))
+             (get-class-semantic-handle-objects class)))))
 
 (defun spawn-class (object-id class pose)
   (cram-gazebo-utilities:spawn-gazebo-model
@@ -200,6 +204,11 @@ base-class itself does not count towards the enlisted classes."
                         `((:pose ,(tf:make-pose (tf:make-3d-vector tx ty tz)
                                                 (tf:make-quaternion qw qx qy qz))))))))))
           (get-class-semantic-handles class)))
+
+(defun get-class-dimensions (class)
+  (with-first-prolog-vars-bound (?d ?w ?h)
+      `("ltfnp_get_class_dimensions" ,(add-prolog-namespace class) ?d ?w ?h)
+    `(,?d ,?w ,?h)))
 
 
 ;;;
