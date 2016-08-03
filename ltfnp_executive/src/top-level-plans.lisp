@@ -62,26 +62,30 @@
   ;;   8 Sample target location for places to put down object and try putting it down;
   ;;     if either fails, go to 6
   (with-process-modules
-    ;(go-to-origin)
-    (with-designators ((loc-on-sink :location `((:on "CounterTop")
-                                                (:name "iai_kitchen_sink_area_counter_top")))
-                       (cup :object `((:type "RedMetalCup")
-                                      (:at ,loc-on-sink)))
-                       (fetch-action :action `((:to :fetch)
-                                               (:obj ,cup))))
-      (perform fetch-action)
-      (with-designators ((loc-on-meal-table :location
-                                            `((:on "CounterTop")
-                                              (:name "iai_kitchen_meal_table_counter_top")))
-                         (loc-on-meal-table-fixed
-                          :location
-                          `((:pose ,(tf:make-pose-stamped
-                                     "map" 0.0
-                                     (tf:make-3d-vector -0.879149615765 -1.00139844418 0.8)
-                                     (tf:make-quaternion 0 0 -0.697222083344 0.71685519214)))))
-                         (place-action :action
-                                       `((:to :place)
-                                         (:obj ,cup)
-                                         (:at ,loc-on-meal-table-fixed))))
-                                         ;(:at ,loc-on-meal-table ))))
-        (perform place-action)))))
+    (let ((base-pose (tf:make-pose-stamped
+                      "map" 0.0
+                      (tf:make-3d-vector -1.15 -0.85 0.851)
+                      (tf:make-quaternion 0.0 0.0 -0.70711 0.70711))))
+      (with-designators ((loc-on-sink
+                          :location `((:on "CounterTop")
+                                      (:name "iai_kitchen_sink_area_counter_top")))
+                         (cup :object `((:type "RedMetalCup")
+                                        (:at ,loc-on-sink)))
+                         (bowl :object `((:type "RedMetalBowl")
+                                         (:at ,loc-on-sink))))
+        (dolist (object `(,cup ,bowl))
+          (with-designators ((fetch-action :action `((:to :fetch)
+                                                     (:obj ,object))))
+            (perform fetch-action)
+            (format t "Got object: ~a~%" (desig:current-desig object))
+            (with-designators ((loc-destination
+                                :location
+                                `((:pose ,(destination-pose
+                                           (desig:desig-prop-value
+                                            (desig:current-desig object) :name)
+                                           base-pose))))
+                               (place-action :action
+                                             `((:to :place)
+                                               (:obj ,object)
+                                               (:at ,loc-destination))))
+              (perform place-action))))))))
