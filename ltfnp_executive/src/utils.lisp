@@ -214,6 +214,26 @@
                                  ("RedMetalCup" (0.1 -0.2) 0.0)))
       (spawn-series-simplified `(("Milk" (-0.05 0.5) 0.0))))))
 
+(defun destination-pose (object-id base-pose)
+  (let ((rel-pose (relative-destination-pose object-id)))
+    (tf:pose->pose-stamped
+     (tf:frame-id base-pose)
+     0.0
+     (cl-transforms:transform-pose
+      (tf:pose->transform base-pose)
+      rel-pose))))
+
+(defun relative-destination-pose (object-id)
+  (let* ((poses `(("RedMetalPlate" (0.0 0.0) 0.0)
+                  ("RedMetalBowl" (0.1 0.2) 0.0)
+                  ("RedMetalCup" (0.1 -0.2) 0.0)
+                  ("Milk" (-0.05 0.5) 0.0)))
+         (pose-data (assoc object-id poses :test #'equal)))
+    (destructuring-bind (object-id (x y) theta) pose-data
+      (declare (ignore object-id))
+      (tf:make-pose (tf:make-3d-vector x y 0.0)
+                    (tf:euler->quaternion :az theta)))))
+
 (defun delete-scene ()
   (cram-gazebo-utilities:delete-spawned-objects))
 
