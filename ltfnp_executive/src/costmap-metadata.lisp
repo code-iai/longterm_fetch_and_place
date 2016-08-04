@@ -30,8 +30,8 @@
   (<- (costmap-origin -5 -5))
   (<- (costmap-resolution 0.05))
   
-  (<- (costmap-padding 0.5))
-  (<- (costmap-manipulation-padding 0.7))
+  (<- (costmap-padding 0.4))
+  (<- (costmap-manipulation-padding 0.6))
   (<- (costmap-in-reach-distance 1.0))
   (<- (costmap-reach-minimal-distance 0.5)))
 

@@ -64,7 +64,7 @@
   (with-process-modules
     (let ((base-pose (tf:make-pose-stamped
                       "map" 0.0
-                      (tf:make-3d-vector -1.15 -0.85 0.851)
+                      (tf:make-3d-vector -1.15 -0.95 0.76)
                       (tf:make-quaternion 0.0 0.0 -0.70711 0.70711))))
       (with-designators ((loc-on-sink
                           :location `((:on "CounterTop")
