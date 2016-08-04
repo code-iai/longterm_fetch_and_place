@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.4">
   <world name="default">
+
     <!-- A ground plane -->
     <include>
       <uri>model://ground_plane</uri>
@@ -10,6 +11,15 @@
     <include>
       <uri>model://sun</uri>
     </include>
+
+    <!-- initial camera perspective -->
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>-2.36603 -4.4773 3.65853 0 0.599643 1.01619</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
     
     <plugin name="attache" filename="libattache.so"/>
 
