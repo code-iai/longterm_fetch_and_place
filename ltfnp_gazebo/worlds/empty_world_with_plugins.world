@@ -17,7 +17,7 @@
       <camera name='user_camera'>
         <pose frame=''>-2.36603 -4.4773 3.65853 0 0.599643 1.01619</pose>
         <view_controller>orbit</view_controller>
-        <projection_type>perspective</projection_type>
+        <!--projection_type>perspective</projection_type-->
       </camera>
     </gui>
     
