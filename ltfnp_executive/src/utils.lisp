@@ -210,14 +210,14 @@
                 (destructuring-bind (class (x y) theta) item
                   (spawn class (tf:make-3d-vector x y 0.0) (tf:euler->quaternion :az theta))))))
       (spawn-series-simplified `(("RedMetalPlate" (0.0 0.0) 0.0)
-                                 ("RedMetalBowl" (0.1 0.2) 0.0)
-                                 ("RedMetalCup" (0.1 -0.2) 0.0)))
+                                 ("RedMetalBowl" (0.05 0.2) 0.0)
+                                 ("RedMetalCup" (0.05 -0.2) 0.0)))
       (spawn-series-simplified `(("Milk" (-0.05 0.5) 0.0))))))
 
 (defun relative-destination-pose (object-id)
   (let* ((poses `(("RedMetalPlate0" (0.0 0.0) 0.0)
-                  ("RedMetalBowl0" (0.1 0.2) 0.0)
-                  ("RedMetalCup0" (0.1 -0.2) 0.0)
+                  ("RedMetalBowl0" (0.05 0.2) 0.0)
+                  ("RedMetalCup0" (0.05 -0.2) 0.0)
                   ("Milk0" (-0.05 0.5) 0.0)))
          (pose-data (assoc object-id poses :test #'equal)))
     (destructuring-bind (object-id (x y) theta) pose-data
@@ -281,19 +281,21 @@
      :allowed-collision-objects allowed-collision-objects)))
 
 (defun move-torso (&optional (position 0.3))
-  (let* ((action-client (or *action-client-torso*
-                            (setf *action-client-torso*
-                                  (actionlib:make-action-client
-                                   "/torso_controller/position_joint_action"
-                                   "pr2_controllers_msgs/SingleJointPositionAction"))))
+  ;; Hack
+  (setf *action-client-torso* nil)
+  (let* ((action-client (actionlib:make-action-client
+                         "/torso_controller/position_joint_action"
+                         "pr2_controllers_msgs/SingleJointPositionAction"))
          (goal (actionlib:make-action-goal
                    action-client
                  position position)))
-    (setf *action-client-torso* action-client)
+    (format t "1~%")
+    (actionlib:wait-for-server action-client)
     (actionlib:send-goal-and-wait
      action-client goal
      :result-timeout 30.0
-     :exec-timeout 30.0)))
+     :exec-timeout 30.0)
+    (format t "2~%")))
 
 (defmethod cram-language::on-grasp-object (object-name side)
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
