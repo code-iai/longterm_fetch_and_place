@@ -53,10 +53,9 @@ def runWorker(w, args = []):
         line = w.nextLine()
         
         if line != None:
-            if not line[0] == '%':
-                print "Line:", line
+            print "Line:", line
 
 
 if __name__ == "__main__":
     w = Worker("roslaunch")
-    runWorker(w, ["ltfnp_reasoning", "ltfnp_reasoning.launch"])
+    runWorker(w, ["ltfnp_executive", "ltfnp_simulation.launch"])
