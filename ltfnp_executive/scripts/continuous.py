@@ -40,6 +40,7 @@ from threading import Thread
 from tools.Worker import Worker
 
 
+workers_schedule = []
 workers = []
 
 
@@ -92,7 +93,7 @@ def isChecklistDone(checklist):
     return all_match
 
 
-def runWorker(w, args = []):
+def runWorker(w, args = [], checklist = {}):
     workers.append(w)
     
     thrdRun = Thread(target=run, args=(w, args))
@@ -101,35 +102,74 @@ def runWorker(w, args = []):
     thrdRun.start()
     time.sleep(1)
     
-    checklist = {}
-    addToChecklist(checklist, "moveit", "match",
-                   "All is well! Everyone is happy! You can start planning now!",
-                   "MoveIt! launched successfully")
-    addToChecklist(checklist, "attache", "contains",
-                   "Attache plugin loaded",
-                   "Attache plugin present")
-    addToChecklist(checklist, "spawn_model", "match",
-                   "spawn_model script started",
-                   "Gazebo accepts spawn_model requests")
-    addToChecklist(checklist, "reasoning", "contains",
-                   "ltfnp_reasoning/prolog/init.pl compiled",
-                   "Reasoning started successfully")
-    addToChecklist(checklist, "gzclient", "contains",
-                   "Connected to gazebo master",
-                   "Gazebo Client successfully connected to gzserver")
-    
     while w.hasLines() or not w.isDone():
         line = w.nextLine()
         
         if line != None:
             if maintainChecklist(checklist, line):
                 if isChecklistDone(checklist):
-                    # TODO: Do something once the checklist is
-                    # complete; probably running the next worker
-                    pass
+                    print "All done, moving '" + w.executable + "' into background"
+                    break
+
+
+def runNextWorker():
+    global workers_schedule
+    
+    if len(workers_schedule) > 0:
+        current_worker = workers_schedule[0]
+        workers_schedule = workers_schedule[1:]
+        
+        print "Running worker '" + current_worker[0] + "'"
+        
+        w = Worker(current_worker[0])
+        runWorker(w, current_worker[1], current_worker[2])
+        
+        print "Worker '" + current_worker[0] + "' completed"
+        
+        return True
+    
+    return False
+
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signalHandler)
     
-    w = Worker("roslaunch")
-    runWorker(w, ["ltfnp_executive", "ltfnp_simulation.launch"])
+    # From here, the actual parameterization of the scenario starts;
+    # you can put whatever you want in these worker checklists.
+    cl1 = {}
+    addToChecklist(cl1, "moveit", "match",
+                   "All is well! Everyone is happy! You can start planning now!",
+                   "MoveIt! launched successfully")
+    addToChecklist(cl1, "attache", "contains",
+                   "Attache plugin loaded",
+                   "Attache plugin present")
+    addToChecklist(cl1, "spawn_model", "match",
+                   "spawn_model script started",
+                   "Gazebo accepts spawn_model requests")
+    addToChecklist(cl1, "reasoning", "contains",
+                   "ltfnp_reasoning/prolog/init.pl compiled",
+                   "Reasoning started successfully")
+    addToChecklist(cl1, "gzclient", "contains",
+                   "Connected to gazebo master",
+                   "Gazebo Client successfully connected to gzserver")
+    
+    workers_schedule.append(["roslaunch", ["ltfnp_executive", "ltfnp_simulation.launch"], cl1])
+    
+    cl2 = {}
+    addToChecklist(cl2, "connect_ros", "contains",
+                   "Connecting to ROS",
+                   "Connecting to ROS")
+    addToChecklist(cl2, "running", "contains",
+                   "Running Longterm Fetch and Place",
+                   "Started scenario execution")
+    addToChecklist(cl2, "done", "contains",
+                   "Done with LTFnP",
+                   "Scenario completed")
+    
+    workers_schedule.append(["rosrun", ["ltfnp_executive", "start.sh"], cl2])
+    
+    while runNextWorker():
+        pass
+    
+    print "Done! All scheduled workers completed their tasks! Shutting down."
+    signalHandler(None, None)
