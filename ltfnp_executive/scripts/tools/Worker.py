@@ -99,5 +99,7 @@ class Worker(object):
        return self.done 
     
     def kill(self):
-        self.process.kill()
-
+        self.process.terminate()
+        print "Terminated '" + self.executable + "', wait for it to shut down"
+        self.process.wait()
+        print "Shutdown complete for " + self.executable
