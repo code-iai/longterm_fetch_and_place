@@ -28,6 +28,7 @@ In CRAM, start the current state like this:
 CL-USER> (swank:operate-on-system-for-emacs "ltfnp-executive" (quote load-op))
 CL-USER> (in-package :ltfnp)
 LTFNP> (start-scenario)
+```
 
 
 ### The Structure Explained
