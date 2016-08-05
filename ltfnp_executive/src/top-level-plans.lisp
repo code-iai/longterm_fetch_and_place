@@ -29,7 +29,7 @@
 ;;; Entry Point
 ;;;
 
-(defun start-scenario (&key (simulated t))
+(defun start-scenario (&key (simulated t) (logged nil))
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
@@ -43,6 +43,8 @@
   (move-arms-up)
   (move-torso)
   (longterm-fetch-and-place)
+  (when logged
+    (beliefstate:extract-files))
   (roslisp:ros-info (ltfnp) "Done with LTFnP"))
 
 

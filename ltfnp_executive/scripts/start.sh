@@ -44,4 +44,4 @@
 (in-package :ltfnp)
 
 ;; Start the scenario
-(ltfnp:start-scenario)
+(ltfnp:start-scenario :logged t)
