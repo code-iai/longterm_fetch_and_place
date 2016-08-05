@@ -42,7 +42,8 @@
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (move-arms-up)
   (move-torso)
-  (longterm-fetch-and-place))
+  (longterm-fetch-and-place)
+  (roslisp:ros-info (ltfnp) "Done with LTFnP"))
 
 
 ;;;

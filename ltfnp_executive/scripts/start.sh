@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-"true";exec /usr/bin/env /usr/bin/sbcl --noinform --end-runtime-options --noprint --no-userinit --disable-debugger --script "$0" "$@"
+"true"; exec /usr/bin/env /usr/bin/sbcl --noinform --end-runtime-options --noprint --no-userinit --disable-debugger --script "$0" "$@"
 
 
 (REQUIRE :ASDF)
@@ -39,6 +39,9 @@
 (roslisp:ros-info (ltfnp-aux) "Loading Longterm Fetch and Place scenario.")
 (ros-load:load-system "ltfnp_executive" "ltfnp-executive")
 (roslisp:ros-info (ltfnp-aux) "Longterm Fetch and Place scenario loaded.")
+
+;; Change into the package namespace
+(in-package :ltfnp)
 
 ;; Start the scenario
 (ltfnp:start-scenario)
