@@ -97,3 +97,7 @@ class Worker(object):
     
     def isDone(self):
        return self.done 
+    
+    def kill(self):
+        self.process.kill()
+
