@@ -1,0 +1,5 @@
+<launch>
+
+  <node name="continuous_execution" pkg="ltfnp_executive" type="continuous.py" output="screen" />
+  
+</launch>

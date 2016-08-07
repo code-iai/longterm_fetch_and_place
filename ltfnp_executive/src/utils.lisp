@@ -175,6 +175,7 @@
     )))
 
 (defun prepare-settings ()
+  (beliefstate:enable-logging t)
   (setf cram-tf::*tf-default-timeout* 100)
   (setf actionlib::*action-server-timeout* 20)
   (cram-designators:disable-location-validation-function

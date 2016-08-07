@@ -156,17 +156,44 @@ if __name__ == "__main__":
     workers_schedule.append(["roslaunch", ["ltfnp_executive", "ltfnp_simulation.launch"], cl1])
     
     cl2 = {}
-    addToChecklist(cl2, "connect_ros", "contains",
+    addToChecklist(cl2, "initialize", "contains",
+                   "Initialization complete. You can start using the system now.",
+                   "Semrec Initialized")
+    
+    workers_schedule.append(["rosrun", ["semrec", "semrec"], cl2])
+    
+    cl3 = {}
+    addToChecklist(cl3, "prep_db", "contains",
+                   "MongoDB ready for logging",
+                   "MongoDB prepared")
+    
+    workers_schedule.append(["rosrun", ["ltfnp_executive", "prep_mongodb.sh"], cl3])
+    
+    cl4 = {}
+    addToChecklist(cl4, "connect_ros", "contains",
                    "Connecting to ROS",
                    "Connecting to ROS")
-    addToChecklist(cl2, "running", "contains",
+    addToChecklist(cl4, "running", "contains",
                    "Running Longterm Fetch and Place",
                    "Started scenario execution")
-    addToChecklist(cl2, "done", "contains",
+    addToChecklist(cl4, "done", "contains",
                    "Done with LTFnP",
                    "Scenario completed")
     
-    workers_schedule.append(["rosrun", ["ltfnp_executive", "start.sh"], cl2])
+    workers_schedule.append(["rosrun", ["ltfnp_executive", "start.sh"], cl4])
+    
+    cl5 = {}
+    addToChecklist(cl5, "connect_ros", "contains",
+                   "Connecting to ROS",
+                   "Connecting to ROS")
+    addToChecklist(cl5, "running", "contains",
+                   "Running Longterm Fetch and Place",
+                   "Started scenario execution")
+    addToChecklist(cl5, "done", "contains",
+                   "Done with LTFnP",
+                   "Scenario completed")
+    
+    workers_schedule.append(["rosrun", ["ltfnp_executive", "package_log.sh"], cl5])
     
     while runNextWorker():
         pass
