@@ -1,5 +1,9 @@
 <launch>
 
-  <node name="continuous_execution" pkg="ltfnp_executive" type="continuous.py" output="screen" />
+  <node name="continuous_execution"
+        pkg="ltfnp_executive"
+        type="continuous.py"
+        output="screen"
+	args="$(find ltfnp_executive)/assets/ltfnp_automation.yaml" />
   
 </launch>
