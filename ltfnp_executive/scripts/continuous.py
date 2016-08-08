@@ -42,6 +42,7 @@ from tools.Worker import Worker
 
 workers_schedule = []
 workers = []
+killed = False
 
 
 def run(w, args):
@@ -49,6 +50,8 @@ def run(w, args):
 
 
 def signalHandler(signal, frame):
+    killed = True
+    
     for w in workers:
         w.kill()
 
@@ -195,7 +198,7 @@ if __name__ == "__main__":
     
     workers_schedule.append(["rosrun", ["ltfnp_executive", "package_log.sh"], cl5])
     
-    while runNextWorker():
+    while runNextWorker() and not killed:
         pass
     
     print "Done! All scheduled workers completed their tasks! Shutting down."
