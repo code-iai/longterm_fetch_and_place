@@ -174,8 +174,10 @@
   (at-location (origin-loc)
     )))
 
-(defun prepare-settings ()
+(defun prepare-settings (&key (simulated t))
   (beliefstate:enable-logging t)
+  (when simulated
+    (setf beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw"))
   (setf cram-tf::*tf-default-timeout* 100)
   (setf actionlib::*action-server-timeout* 20)
   (cram-designators:disable-location-validation-function

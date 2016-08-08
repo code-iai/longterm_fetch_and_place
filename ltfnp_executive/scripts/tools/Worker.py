@@ -50,6 +50,9 @@ class Worker(object):
         self.done = True
         self.lines = []
     
+    def fullName(self):
+        return self.executable
+    
     def run(self, args = []):
         if self.done:
             self.process = subprocess.Popen([self.executable] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
@@ -100,6 +103,6 @@ class Worker(object):
     
     def kill(self):
         self.process.terminate()
-        print "Terminated '" + self.executable + "', wait for it to shut down"
+        print "\rTerminated '" + self.executable + "', wait for it to shut down"
         self.process.wait()
         print "Shutdown complete for " + self.executable
