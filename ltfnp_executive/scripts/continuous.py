@@ -257,7 +257,5 @@ if __name__ == "__main__":
         
         message("Core", "All tasks completed", "Tearing down workers")
         signalHandler(None, None)
-        
-        print workers_schedule
     else:
         message("Core", "Invalid", "No or no valid yaml configuration supplied")
