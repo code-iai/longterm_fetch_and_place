@@ -38,6 +38,7 @@ import time
 import signal
 import sys
 import yaml
+import multiprocessing
 from threading import Thread
 from tools.Worker import Worker
 
@@ -92,6 +93,8 @@ def signalHandler(signal, frame):
     
     for w in workers:
         w.kill()
+    
+    w = []
 
 
 def addToChecklist(checklist, item, matchmode, template, message):
@@ -137,11 +140,8 @@ def isChecklistDone(checklist):
     return all_match
 
 
-def runWorker(w, args = [], checklist = {}, timeout = None):
+def runWorker(w, args, checklist):
     global killed
-    
-    # TODO: Add timeout handling here (kill process after `timeout`
-    # seconds)
     
     workers.append(w)
     
@@ -163,6 +163,23 @@ def runWorker(w, args = [], checklist = {}, timeout = None):
                     break
 
 
+def runWorkerWithTimeout(w, args = [], checklist = {}, timeout = None):
+    global killed
+    
+    if timeout:
+        p = multiprocessing.Process(target=runWorker, args=(w, args, checklist))
+        p.start()
+        
+        p.join(timeout)
+        
+        if p.is_alive():
+            message(w.fullName(), "Run", "Timeout reached, shutting down.")
+            killed = True
+            signalHandler(None, None)
+    else:
+        runWorker(w, args, checklist)
+
+
 def runNextWorker():
     global workers_schedule
     
@@ -173,7 +190,7 @@ def runNextWorker():
         w = Worker(current_worker[0])
         
         message(w.fullName(), "Run worker with parameters", str(current_worker[1]))
-        runWorker(w, current_worker[1], current_worker[2], current_worker[3])
+        runWorkerWithTimeout(w, current_worker[1], current_worker[2], current_worker[3])
         message(w.fullName(), "Run complete", "Advancing pipeline")
         
         return True
@@ -233,14 +250,13 @@ if __name__ == "__main__":
     if doc:
         loadWorkersFromYaml(doc)
         
-        # signal.signal(signal.SIGINT, signalHandler)
+        signal.signal(signal.SIGINT, signalHandler)
         
-        # while runNextWorker() and not killed:
-        #     pass
+        while runNextWorker() and not killed:
+            pass
         
-        # message("Core", "All tasks completed", "Tearing down workers")
-        
-        # signalHandler(None, None)
+        message("Core", "All tasks completed", "Tearing down workers")
+        signalHandler(None, None)
         
         print workers_schedule
     else:
