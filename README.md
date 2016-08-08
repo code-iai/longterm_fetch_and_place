@@ -30,6 +30,14 @@ CL-USER> (in-package :ltfnp)
 LTFNP> (start-scenario)
 ```
 
+In order to continuously run in loop the long term fetch and place, run
+```bash
+$ roslaunch ltfnp_executive ltfnp_automated.launch
+```
+This launch file will run the python script ```continuous.py``` which
+at its turn will run in separate threads each launch file required
+for running the demo and for collecting the generated episodic memories.
+
 
 ### The Structure Explained
 
