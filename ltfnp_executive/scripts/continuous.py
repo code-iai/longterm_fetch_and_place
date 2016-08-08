@@ -137,8 +137,11 @@ def isChecklistDone(checklist):
     return all_match
 
 
-def runWorker(w, args = [], checklist = {}):
+def runWorker(w, args = [], checklist = {}, timeout = None):
     global killed
+    
+    # TODO: Add timeout handling here (kill process after `timeout`
+    # seconds)
     
     workers.append(w)
     
@@ -170,7 +173,7 @@ def runNextWorker():
         w = Worker(current_worker[0])
         
         message(w.fullName(), "Run worker with parameters", str(current_worker[1]))
-        runWorker(w, current_worker[1], current_worker[2])
+        runWorker(w, current_worker[1], current_worker[2], current_worker[3])
         message(w.fullName(), "Run complete", "Advancing pipeline")
         
         return True
@@ -178,8 +181,43 @@ def runNextWorker():
     return False
 
 
+def loadWorker(worker):
+    details = {}
+    
+    for detail in worker:
+        key = detail.keys()[0]
+        details[key] = detail[key]
+    
+    if not "command" in details:
+        details["command"] = ""
+    
+    if not "parameters" in details:
+        details["parameters"] = []
+    
+    if not "checklist" in details:
+        details["checklist"] = {}
+    
+    if not "timeout" in details:
+        details["timeout"] = None
+    
+    checklist = {}
+    
+    for item in details["checklist"]:
+        data = item["item"]
+        checklistitem = {}
+        
+        for detail in data:
+            key = detail.keys()[0]
+            checklistitem[key] = detail[key]
+        
+        addToChecklist(checklist, checklistitem["name"], checklistitem["matchmode"], checklistitem["template"], checklistitem["message"])
+    
+    addWorker(details["command"], details["parameters"], checklist, details["timeout"])
+
+
 def loadWorkersFromYaml(doc):
-    print doc
+    for worker_wrap in doc:
+        loadWorker(worker_wrap["worker"])
 
 
 if __name__ == "__main__":
@@ -195,75 +233,15 @@ if __name__ == "__main__":
     if doc:
         loadWorkersFromYaml(doc)
         
-        signal.signal(signal.SIGINT, signalHandler)
+        # signal.signal(signal.SIGINT, signalHandler)
         
-        # From here, the actual parameterization of the scenario starts;
-        # you can put whatever you want in these worker checklists.
+        # while runNextWorker() and not killed:
+        #     pass
         
-        # cl1 = {}
-        # addToChecklist(cl1, "moveit", "match",
-        #                "All is well! Everyone is happy! You can start planning now!",
-        #                "MoveIt! launched successfully")
-        # addToChecklist(cl1, "attache", "contains",
-        #                "Attache plugin loaded",
-        #                "Attache plugin present")
-        # addToChecklist(cl1, "spawn_model", "match",
-        #                "spawn_model script started",
-        #                "Gazebo accepts spawn_model requests")
-        # addToChecklist(cl1, "reasoning", "contains",
-        #                "ltfnp_reasoning/prolog/init.pl compiled",
-        #                "Reasoning started successfully")
-        # addToChecklist(cl1, "gzclient", "contains",
-        #                "Connected to gazebo master",
-        #                "Gazebo Client successfully connected to gzserver")
+        # message("Core", "All tasks completed", "Tearing down workers")
         
-        # addWorker("roslaunch", ["ltfnp_executive", "ltfnp_simulation.launch"], cl1)
+        # signalHandler(None, None)
         
-        # cl2 = {}
-        # addToChecklist(cl2, "initialize", "contains",
-        #                "Initialization complete. You can start using the system now.",
-        #                "Semrec Initialized")
-        
-        # addWorker("rosrun", ["semrec", "semrec"], cl2)
-        ## continue here
-        # cl3 = {}
-        # addToChecklist(cl3, "prep_db", "contains",
-        #                "MongoDB shell",
-        #                "MongoDB Logging started")
-        
-        # addWorker("rosrun", ["ltfnp_executive", "prep_mongodb.sh"], cl3)
-        
-        # cl4 = {}
-        # addToChecklist(cl4, "connect_ros", "contains",
-        #                "Connecting to ROS",
-        #                "Connecting to ROS")
-        # addToChecklist(cl4, "running", "contains",
-        #                "Running Longterm Fetch and Place",
-        #                "Started scenario execution")
-        # addToChecklist(cl4, "done", "contains",
-        #                "Done with LTFnP",
-        #                "Scenario completed")
-        
-        # addWorker("rosrun", ["ltfnp_executive", "start.sh"], cl4)
-        
-        # cl5 = {}
-        # addToChecklist(cl5, "connect_ros", "contains",
-        #                "Connecting to ROS",
-        #                "Connecting to ROS")
-        # addToChecklist(cl5, "running", "contains",
-        #                "Running Longterm Fetch and Place",
-        #                "Started scenario execution")
-        # addToChecklist(cl5, "done", "contains",
-        #                "Done with LTFnP",
-        #                "Scenario completed")
-        
-        # addWorker("rosrun", ["ltfnp_executive", "package_log.sh"], cl5)
-        
-        while runNextWorker() and not killed:
-            pass
-        
-        message("Core", "All tasks completed", "Tearing down workers")
-        
-        signalHandler(None, None)
+        print workers_schedule
     else:
         message("Core", "Invalid", "No or no valid yaml configuration supplied")

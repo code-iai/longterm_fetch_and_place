@@ -29,6 +29,7 @@
       - matchmode: contains
       - template: "Connected to gazebo master"
       - message: "Gazebo Client successfully connected to gzserver"
+  - timeout: 60
 - worker:
   - command: rosrun
   - parameters:
@@ -40,3 +41,44 @@
       - matchmode: contains
       - template: "Initialization complete. You can start using the system now."
       - message: "Semrec Initialized"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_mongodb.sh
+  - checklist:
+    - item:
+      - name: prep_db
+      - matchmode: contains
+      - template: "MongoDB shell"
+      - message: "MongoDB Logging started"
+  - timeout: 10
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - start.sh
+  - checklist:
+    - item:
+      - name: connect_ros
+      - matchmode: contains
+      - template: "Connecting to ROS"
+      - message: "Connecting to ROS"
+    - item:
+      - name: running
+      - matchmode: contains
+      - template: "Running Longterm Fetch and Place"
+      - message: "Started scenario execution"
+    - item:
+      - name: done
+      - matchmode: contains
+      - template: "Done with LTFnP"
+      - message: "Scenario completed"
+  - timeout: 1800
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - package_log.sh
+  - timeout: 60
