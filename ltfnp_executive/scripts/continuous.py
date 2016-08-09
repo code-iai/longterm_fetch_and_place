@@ -222,7 +222,12 @@ def runNextWorker():
         
         w = Worker(current_worker[0])
         
-        message(w.fullName(), "Run worker with parameters", str(current_worker[1]))
+        if current_worker[3]:
+            to_msg = " and a timeout of " + str(current_worker[3]) + " sec"
+        else:
+            to_msg = ""
+        
+        message(w.fullName(), "Run worker with parameters", str(current_worker[1]) + to_msg)
         runWorkerWithTimeout(w, current_worker[1], current_worker[2], current_worker[3])
         message(w.fullName(), "Run complete", "Advancing pipeline")
         
