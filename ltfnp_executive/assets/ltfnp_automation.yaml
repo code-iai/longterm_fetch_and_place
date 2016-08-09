@@ -46,6 +46,11 @@
   - command: rosrun
   - parameters:
     - ltfnp_executive
+    - prep_camera.sh
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
     - prep_mongodb.sh
   - checklist:
     - item:
