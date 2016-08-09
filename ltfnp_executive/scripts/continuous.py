@@ -33,15 +33,58 @@
 # Author: Jan Winkler
 
 
+import os.path
 import time
 import signal
 import sys
+import yaml
+import multiprocessing
+import subprocess
 from threading import Thread
 from tools.Worker import Worker
+from Queue import Queue, Empty
 
 
-workers_schedule = []
-workers = []
+def getTerminalWidth():
+    rows, columns = subprocess.check_output(['stty', 'size']).split()
+    
+    return int(columns)
+
+
+def message(sender, subject, msg, do_newline = True):
+    global last_message_did_newline
+    max_width_no_newline = getTerminalWidth() - 15 # Terminal width - ("[Line] Out: " + some safety)
+    
+    sys.stdout.write('\r')
+    
+    for i in range(0, max_width_no_newline):
+        sys.stdout.write(" ")
+    
+    sys.stdout.write('\r')
+    
+    last_message_did_newline = do_newline
+    
+    color0 = "\033[0;37m" # paranthesises
+    color1 = "\033[0;32m" # sender
+    color2 = "\033[1;33m" # subject
+    color3 = "\033[1;37m" # message
+    
+    fullmsg = color0 + "[" + color1 + sender + color0 + "] " + color2 + subject + ": " + color3 + msg
+    
+    if not do_newline:
+        if len(fullmsg) > max_width_no_newline:
+            fullmsg = fullmsg[:max_width_no_newline]
+    
+    sys.stdout.write(fullmsg)
+    
+    if do_newline:
+        sys.stdout.write('\n')
+    
+    sys.stdout.flush()
+
+
+def addWorker(cmd, args, checklist, timeout = None):
+    workers_schedule.append([cmd, args, checklist, timeout])
 
 
 def run(w, args):
@@ -49,8 +92,22 @@ def run(w, args):
 
 
 def signalHandler(signal, frame):
+    global workers
+    global processes
+    
+    killed = True
+    
+    for p in processes:
+        p.queue.put("quit")
+        p.queue.get()
+        p.terminate()
+        p.join()
+    
     for w in workers:
         w.kill()
+    
+    workers = []
+    processes = []
 
 
 def addToChecklist(checklist, item, matchmode, template, message):
@@ -61,7 +118,7 @@ def addToChecklist(checklist, item, matchmode, template, message):
     checklist[item]["matched"] = False
 
 
-def maintainChecklist(checklist, line):
+def maintainChecklist(w, checklist, line):
     for item in checklist:
         if not checklist[item]["matched"]:
             match = False
@@ -75,9 +132,12 @@ def maintainChecklist(checklist, line):
             
             if match:
                 checklist[item]["matched"] = True
-                print checklist[item]["message"]
+                message(w.fullName(), "Checklist", checklist[item]["message"])
                 
                 return True
+    
+    if len(checklist) == 0:
+        return True
     
     return False
 
@@ -93,8 +153,9 @@ def isChecklistDone(checklist):
     return all_match
 
 
-def runWorker(w, args = [], checklist = {}):
-    workers.append(w)
+def runWorker(w, args, checklist, queue=None):
+    global killed
+    global workers
     
     thrdRun = Thread(target=run, args=(w, args))
     thrdRun.daemon = True
@@ -102,101 +163,149 @@ def runWorker(w, args = [], checklist = {}):
     thrdRun.start()
     time.sleep(1)
     
-    while w.hasLines() or not w.isDone():
+    while (w.hasLines() or not w.isDone()) and not killed:
         line = w.nextLine()
         
         if line != None:
-            if maintainChecklist(checklist, line):
+            message("Line", "Out", line.strip(), False)
+            
+            if maintainChecklist(w, checklist, line):
                 if isChecklistDone(checklist):
-                    print "All done, moving '" + w.executable + "' into background"
+                    message(w.fullName(), "Run complete", "Moving into background")
                     break
+        
+        if queue:
+            try:
+                queued_command = queue.get_nowait()
+                
+                if queued_command == "quit":
+                    print "I was told to quit"
+                    print "I was told to quit"
+                    print "I was told to quit"
+                    print "I was told to quit"
+                    w.kill()
+                    queue.put("ok")
+            except Empty:
+                pass
+
+
+def runWorkerWithTimeout(w, args = [], checklist = {}, timeout = None):
+    global killed
+    global workers
+    global processes
+    
+    if timeout:
+        queue = Queue()
+        p = multiprocessing.Process(target=runWorker, args=(w, args, checklist, queue))
+        p.queue = queue
+        p.start()
+        
+        processes.append(p)
+        
+        p.join(timeout)
+        
+        if p.is_alive():
+            message(w.fullName(), "Run", "Timeout reached, shutting down.")
+            killed = True
+            signalHandler(None, None)
+    else:
+        workers.append(w)
+        runWorker(w, args, checklist)
 
 
 def runNextWorker():
     global workers_schedule
     
-    if len(workers_schedule) > 0:
+    if len(workers_schedule) > 0 and not killed:
         current_worker = workers_schedule[0]
         workers_schedule = workers_schedule[1:]
         
-        print "Running worker '" + current_worker[0] + "'"
-        
         w = Worker(current_worker[0])
-        runWorker(w, current_worker[1], current_worker[2])
         
-        print "Worker '" + current_worker[0] + "' completed"
+        if current_worker[3]:
+            to_msg = " and a timeout of " + str(current_worker[3]) + " sec"
+        else:
+            to_msg = ""
+        
+        message(w.fullName(), "Run worker with parameters", str(current_worker[1]) + to_msg)
+        runWorkerWithTimeout(w, current_worker[1], current_worker[2], current_worker[3])
+        message(w.fullName(), "Run complete", "Advancing pipeline")
         
         return True
     
     return False
 
 
+def loadWorker(worker):
+    details = {}
+    
+    for detail in worker:
+        key = detail.keys()[0]
+        details[key] = detail[key]
+    
+    if not "command" in details:
+        details["command"] = ""
+    
+    if not "parameters" in details:
+        details["parameters"] = []
+    
+    if not "checklist" in details:
+        details["checklist"] = {}
+    
+    if not "timeout" in details:
+        details["timeout"] = None
+    
+    checklist = {}
+    
+    for item in details["checklist"]:
+        data = item["item"]
+        checklistitem = {}
+        
+        for detail in data:
+            key = detail.keys()[0]
+            checklistitem[key] = detail[key]
+        
+        addToChecklist(checklist, checklistitem["name"], checklistitem["matchmode"], checklistitem["template"], checklistitem["message"])
+    
+    addWorker(details["command"], details["parameters"], checklist, details["timeout"])
+
+
+def loadWorkersFromYaml(doc):
+    for worker_wrap in doc:
+        loadWorker(worker_wrap["worker"])
+
+
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, signalHandler)
+    global workers_schedule
+    global workers
+    global killed
+    global last_message_did_newline
+    global processes
     
-    # From here, the actual parameterization of the scenario starts;
-    # you can put whatever you want in these worker checklists.
-    cl1 = {}
-    addToChecklist(cl1, "moveit", "match",
-                   "All is well! Everyone is happy! You can start planning now!",
-                   "MoveIt! launched successfully")
-    addToChecklist(cl1, "attache", "contains",
-                   "Attache plugin loaded",
-                   "Attache plugin present")
-    addToChecklist(cl1, "spawn_model", "match",
-                   "spawn_model script started",
-                   "Gazebo accepts spawn_model requests")
-    addToChecklist(cl1, "reasoning", "contains",
-                   "ltfnp_reasoning/prolog/init.pl compiled",
-                   "Reasoning started successfully")
-    addToChecklist(cl1, "gzclient", "contains",
-                   "Connected to gazebo master",
-                   "Gazebo Client successfully connected to gzserver")
+    workers_schedule = []
+    workers = []
+    killed = False
+    last_message_did_newline = True
+    processes = []
     
-    workers_schedule.append(["roslaunch", ["ltfnp_executive", "ltfnp_simulation.launch"], cl1])
+    doc = None
     
-    cl2 = {}
-    addToChecklist(cl2, "initialize", "contains",
-                   "Initialization complete. You can start using the system now.",
-                   "Semrec Initialized")
+    if len(sys.argv) > 1:
+        yamlfile = sys.argv[1]
+        
+        if os.path.isfile(yamlfile):
+            with open(yamlfile, 'r') as f:
+                doc = yaml.load(f)
     
-    workers_schedule.append(["rosrun", ["semrec", "semrec"], cl2])
-    
-    cl3 = {}
-    addToChecklist(cl3, "prep_db", "contains",
-                   "MongoDB ready for logging",
-                   "MongoDB prepared")
-    
-    workers_schedule.append(["rosrun", ["ltfnp_executive", "prep_mongodb.sh"], cl3])
-    
-    cl4 = {}
-    addToChecklist(cl4, "connect_ros", "contains",
-                   "Connecting to ROS",
-                   "Connecting to ROS")
-    addToChecklist(cl4, "running", "contains",
-                   "Running Longterm Fetch and Place",
-                   "Started scenario execution")
-    addToChecklist(cl4, "done", "contains",
-                   "Done with LTFnP",
-                   "Scenario completed")
-    
-    workers_schedule.append(["rosrun", ["ltfnp_executive", "start.sh"], cl4])
-    
-    cl5 = {}
-    addToChecklist(cl5, "connect_ros", "contains",
-                   "Connecting to ROS",
-                   "Connecting to ROS")
-    addToChecklist(cl5, "running", "contains",
-                   "Running Longterm Fetch and Place",
-                   "Started scenario execution")
-    addToChecklist(cl5, "done", "contains",
-                   "Done with LTFnP",
-                   "Scenario completed")
-    
-    workers_schedule.append(["rosrun", ["ltfnp_executive", "package_log.sh"], cl5])
-    
-    while runNextWorker():
-        pass
-    
-    print "Done! All scheduled workers completed their tasks! Shutting down."
-    signalHandler(None, None)
+    if doc:
+        loadWorkersFromYaml(doc)
+        
+        signal.signal(signal.SIGINT, signalHandler)
+        
+        while runNextWorker() and not killed:
+            pass
+        
+        message("Core", "All tasks completed", "Tearing down workers")
+        signalHandler(None, None)
+    else:
+        message("Core", "Invalid", "No or no valid yaml configuration supplied")

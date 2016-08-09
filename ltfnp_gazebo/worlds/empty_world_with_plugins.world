@@ -11,7 +11,14 @@
     <include>
       <uri>model://sun</uri>
     </include>
-
+    
+    <include>
+      <name>cam1</name>
+      <uri>model://scene_camera</uri>
+      
+      <pose>-2.36603 -4.4773 3.65853 0 0.599643 1.01619</pose>
+    </include>
+    
     <!-- initial camera perspective -->
     <gui fullscreen='0'>
       <camera name='user_camera'>

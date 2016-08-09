@@ -49,6 +49,10 @@ class Worker(object):
         self.executable = executable
         self.done = True
         self.lines = []
+        self.process = None
+    
+    def fullName(self):
+        return self.executable
     
     def run(self, args = []):
         if self.done:
@@ -100,6 +104,6 @@ class Worker(object):
     
     def kill(self):
         self.process.terminate()
-        print "Terminated '" + self.executable + "', wait for it to shut down"
+        print "\rTerminated '" + self.executable + "', wait for it to shut down"
         self.process.wait()
         print "Shutdown complete for " + self.executable
