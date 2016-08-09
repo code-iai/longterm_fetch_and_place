@@ -39,19 +39,21 @@ import signal
 import sys
 import yaml
 import multiprocessing
+import subprocess
 from threading import Thread
 from tools.Worker import Worker
+from Queue import Queue, Empty
 
 
-workers_schedule = []
-workers = []
-killed = False
-last_message_did_newline = True
+def getTerminalWidth():
+    rows, columns = subprocess.check_output(['stty', 'size']).split()
+    
+    return int(columns)
 
 
 def message(sender, subject, msg, do_newline = True):
     global last_message_did_newline
-    max_width_no_newline = 60
+    max_width_no_newline = getTerminalWidth() - 15 # Terminal width - ("[Line] Out: " + some safety)
     
     sys.stdout.write('\r')
     
@@ -62,14 +64,15 @@ def message(sender, subject, msg, do_newline = True):
     
     last_message_did_newline = do_newline
     
-    color = ""
-    if not do_newline:
-        color = "\033[0m"
+    color0 = "\033[0;37m" # paranthesises
+    color1 = "\033[0;32m" # sender
+    color2 = "\033[1;33m" # subject
+    color3 = "\033[1;37m" # message
     
-    fullmsg = color + "[" + sender + "] " + subject + ": " + msg
+    fullmsg = color0 + "[" + color1 + sender + color0 + "] " + color2 + subject + ": " + color3 + msg
     
     if not do_newline:
-        if len(fullmsg) > 30:
+        if len(fullmsg) > max_width_no_newline:
             fullmsg = fullmsg[:max_width_no_newline]
     
     sys.stdout.write(fullmsg)
@@ -89,12 +92,22 @@ def run(w, args):
 
 
 def signalHandler(signal, frame):
+    global workers
+    global processes
+    
     killed = True
+    
+    for p in processes:
+        p.queue.put("quit")
+        p.queue.get()
+        p.terminate()
+        p.join()
     
     for w in workers:
         w.kill()
     
-    w = []
+    workers = []
+    processes = []
 
 
 def addToChecklist(checklist, item, matchmode, template, message):
@@ -140,10 +153,9 @@ def isChecklistDone(checklist):
     return all_match
 
 
-def runWorker(w, args, checklist):
+def runWorker(w, args, checklist, queue=None):
     global killed
-    
-    workers.append(w)
+    global workers
     
     thrdRun = Thread(target=run, args=(w, args))
     thrdRun.daemon = True
@@ -155,20 +167,40 @@ def runWorker(w, args, checklist):
         line = w.nextLine()
         
         if line != None:
-            message("Line", "Out", line, False)
+            message("Line", "Out", line.strip(), False)
             
             if maintainChecklist(w, checklist, line):
                 if isChecklistDone(checklist):
                     message(w.fullName(), "Run complete", "Moving into background")
                     break
+        
+        if queue:
+            try:
+                queued_command = queue.get_nowait()
+                
+                if queued_command == "quit":
+                    print "I was told to quit"
+                    print "I was told to quit"
+                    print "I was told to quit"
+                    print "I was told to quit"
+                    w.kill()
+                    queue.put("ok")
+            except Empty:
+                pass
 
 
 def runWorkerWithTimeout(w, args = [], checklist = {}, timeout = None):
     global killed
+    global workers
+    global processes
     
     if timeout:
-        p = multiprocessing.Process(target=runWorker, args=(w, args, checklist))
+        queue = Queue()
+        p = multiprocessing.Process(target=runWorker, args=(w, args, checklist, queue))
+        p.queue = queue
         p.start()
+        
+        processes.append(p)
         
         p.join(timeout)
         
@@ -177,13 +209,14 @@ def runWorkerWithTimeout(w, args = [], checklist = {}, timeout = None):
             killed = True
             signalHandler(None, None)
     else:
+        workers.append(w)
         runWorker(w, args, checklist)
 
 
 def runNextWorker():
     global workers_schedule
     
-    if len(workers_schedule) > 0:
+    if len(workers_schedule) > 0 and not killed:
         current_worker = workers_schedule[0]
         workers_schedule = workers_schedule[1:]
         
@@ -238,6 +271,18 @@ def loadWorkersFromYaml(doc):
 
 
 if __name__ == "__main__":
+    global workers_schedule
+    global workers
+    global killed
+    global last_message_did_newline
+    global processes
+    
+    workers_schedule = []
+    workers = []
+    killed = False
+    last_message_did_newline = True
+    processes = []
+    
     doc = None
     
     if len(sys.argv) > 1:

@@ -49,6 +49,7 @@ class Worker(object):
         self.executable = executable
         self.done = True
         self.lines = []
+        self.process = None
     
     def fullName(self):
         return self.executable
