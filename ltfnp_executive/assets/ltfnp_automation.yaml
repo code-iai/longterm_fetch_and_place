@@ -29,7 +29,7 @@
       - matchmode: contains
       - template: "Connected to gazebo master"
       - message: "Gazebo Client successfully connected to gzserver"
-  - timeout: 60
+  - timeout: 120
 - worker:
   - command: rosrun
   - parameters:
