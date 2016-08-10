@@ -13,29 +13,29 @@
     </include>
     
     <include>
-      <name>cam1</name>
-      <uri>model://scene_camera</uri>
+      <name>scene_camera_1</name>
+      <uri>model://scene_camera_1</uri>
       
       <pose>-2.36603 -4.4773 3.65853 0 0.599643 1.01619</pose>
     </include>
     
     <include>
-      <name>cam2</name>
-      <uri>model://scene_camera</uri>
+      <name>scene_camera_2</name>
+      <uri>model://scene_camera_2</uri>
       
       <pose>1.47331 1.62815 3.30684 0 0.963643 -2.055</pose>
     </include>
     
     <include>
-      <name>cam3</name>
-      <uri>model://scene_camera</uri>
+      <name>scene_camera_3</name>
+      <uri>model://scene_camera_3</uri>
       
       <pose>-2.562 2.05389 4.24548 4.27224e-17 0.863643 -0.682996</pose>
     </include>
     
     <include>
-      <name>cam4</name>
-      <uri>model://scene_camera</uri>
+      <name>scene_camera_4</name>
+      <uri>model://scene_camera_4</uri>
       
       <pose>-0.764667 -0.116615 7.21995 0 1.5698 0.001005</pose>
     </include>

@@ -37,13 +37,53 @@
   - parameters:
     - ltfnp_executive
     - prep_camera.sh
+    - 1
   - checklist:
     - item:
       - name: prep_cam
       - matchmode: contains
       - template: "Camera prepared"
-      - message: "Camera prepared"
-  - timeout: 180
+      - message: "Camera 1 prepared"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_camera.sh
+    - 2
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera 2 prepared"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_camera.sh
+    - 3
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera 3 prepared"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_camera.sh
+    - 4
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera 4 prepared"
+  - timeout: 5
 - worker:
   - command: rosrun
   - parameters:

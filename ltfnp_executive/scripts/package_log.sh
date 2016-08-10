@@ -12,12 +12,23 @@ cd $LOGS_PATH
 
 if [ -d "current-experiment/scene_camera" ]; then
     cd current-experiment/scene_camera
-    mogrify -resize 800x600 *.jpg
-    convert *.jpg -delay 1 -morph 1 %05d.jpg
-    #ffmpeg -r 25 -qscale 2 -i %05d.jpg ../preview.mp4
-    avconv -i "%05d.jpg" -r 30 -c:v libx264 -crf 20 -pix_fmt yuv420p ../preview.mov
+    
+    # Process camera perspectives
+    for camera_index in "1 2 3 4"; do
+	# Mogrification can do more; its just not used very thoroughly
+	# at the moment.
+	mogrify -resize 800x800 scene_camera_${camera_index}_*.jpg
+	
+	# For stretching the individual frames
+	convert *.jpg -delay 1 -morph 1 mogrified_${camera_index}_%05d.jpg
+	
+	# Actually stitching them together to form a video
+	avconv -i "mogrified_${camera_index}_%05d.jpg" -r 30 -c:v libx264 -crf 20 -pix_fmt yuv420p ../preview_${camera_index}.mov
+    done
+    
+    # Cleanup
     cd -
-    rm -Rf scene_camera
+    rm -Rf current-experiment/scene_camera
 fi
 
 ./package.sh
