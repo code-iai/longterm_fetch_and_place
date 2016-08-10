@@ -12,6 +12,11 @@
   <author email="winkler@cs.uni-bremen.de">Jan Winkler</author>
   
   <license>BSD</license>
-  
+
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>map_server</build_depend>
+  
+  <run_depend>map_server</run_depend>
+
 </package>
