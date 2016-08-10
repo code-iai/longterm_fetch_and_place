@@ -36,7 +36,7 @@ $ rosrun ltfnp_executive run_n.sh <N>
 ```
 Where `<N>` is the number of times you'd like to run it in a
 loop. This script starts a launch file coverning the python script
-``continuous.py`` which at its turn will run in separate threads each
+```continuous.py``` which at its turn will run in separate threads each
 launch file required for running the demo and for collecting the
 generated episodic memories.
 
