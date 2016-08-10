@@ -73,7 +73,9 @@ def message(sender, subject, msg, do_newline = True):
     color2 = "\033[1;33m" # subject
     color3 = "\033[1;37m" # message
     
-    fullmsg = color0 + "[" + color1 + sender + color0 + "] " + color2 + subject + ": " + color3 + msg
+    sender = time.strftime("%H:%M:%S", time.gmtime()) + " " + color1 + sender
+    
+    fullmsg = color0 + "[" + sender + color0 + "] " + color2 + subject + ": " + color3 + msg
     
     if not do_newline:
         if len(fullmsg) > max_width_no_newline:
