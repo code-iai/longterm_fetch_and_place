@@ -15,20 +15,10 @@
       - template: "Attache plugin loaded"
       - message: "Attache plugin present"
     - item:
-      - name: spawn_model
-      - matchmode: match
-      - template: "spawn_model script started"
-      - message: "Gazebo accepts spawn_model requests"
-    - item:
       - name: reasoning
       - matchmode: contains
       - template: "ltfnp_reasoning/prolog/init.pl compiled"
       - message: "Reasoning started successfully"
-    - item:
-      - name: gzclient
-      - matchmode: contains
-      - template: "Connected to gazebo master"
-      - message: "Gazebo Client successfully connected to gzserver"
   - timeout: 180
 - worker:
   - command: rosrun
@@ -47,6 +37,12 @@
   - parameters:
     - ltfnp_executive
     - prep_camera.sh
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera prepared"
   - timeout: 180
 - worker:
   - command: rosrun
