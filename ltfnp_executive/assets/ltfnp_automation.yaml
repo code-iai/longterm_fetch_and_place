@@ -81,6 +81,12 @@
       - matchmode: contains
       - template: "Done with LTFnP"
       - message: "Scenario completed"
+  - quithooks:
+    - item:
+      - name: unhandled_condition
+      - matchmode: contains
+      - template: "unhandled condition in --disable-debugger mode, quitting"
+      - message: "Unhandled condition"
   - timeout: 1800
 - worker:
   - command: rosrun

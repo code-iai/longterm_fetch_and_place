@@ -45,6 +45,10 @@ from tools.Worker import Worker
 from Queue import Queue, Empty
 
 
+def globalKill():
+    signalHandler(None, None)
+
+
 def getTerminalWidth():
     rows, columns = subprocess.check_output(['stty', 'size']).split()
     
@@ -83,8 +87,8 @@ def message(sender, subject, msg, do_newline = True):
     sys.stdout.flush()
 
 
-def addWorker(cmd, args, checklist, timeout = None):
-    workers_schedule.append([cmd, args, checklist, timeout])
+def addWorker(cmd, args, checklist, quithooks, timeout = None):
+    workers_schedule.append([cmd, args, checklist, quithooks, timeout])
 
 
 def run(w, args):
@@ -92,6 +96,7 @@ def run(w, args):
 
 
 def signalHandler(signal, frame):
+    global killed
     global workers
     global processes
     
@@ -153,7 +158,26 @@ def isChecklistDone(checklist):
     return all_match
 
 
-def runWorker(w, args, checklist, queue=None):
+def checkQuitHooks(w, quithooks, line):
+    for item in quithooks:
+        match = False
+        
+        if quithooks[item]["matchmode"] == "match":
+            if line == quithooks[item]["template"]:
+                match = True
+        elif quithooks[item]["matchmode"] == "contains":
+            if quithooks[item]["template"] in line:
+                match = True
+        
+        if match:
+            message(w.fullName(), "Quithooks", quithooks[item]["message"])
+            
+            return True
+    
+    return False
+
+
+def runWorker(w, args, checklist, quithooks, queue=None):
     global killed
     global workers
     
@@ -173,30 +197,29 @@ def runWorker(w, args, checklist, queue=None):
                 if isChecklistDone(checklist):
                     message(w.fullName(), "Run complete", "Moving into background")
                     break
+            else:
+                if checkQuitHooks(w, quithooks, line):
+                    globalKill()
         
         if queue:
             try:
                 queued_command = queue.get_nowait()
                 
                 if queued_command == "quit":
-                    print "I was told to quit"
-                    print "I was told to quit"
-                    print "I was told to quit"
-                    print "I was told to quit"
                     w.kill()
                     queue.put("ok")
             except Empty:
                 pass
 
 
-def runWorkerWithTimeout(w, args = [], checklist = {}, timeout = None):
+def runWorkerWithTimeout(w, args = [], checklist = {}, quithooks = {}, timeout = None):
     global killed
     global workers
     global processes
     
     if timeout:
         queue = Queue()
-        p = multiprocessing.Process(target=runWorker, args=(w, args, checklist, queue))
+        p = multiprocessing.Process(target=runWorker, args=(w, args, checklist, quithooks, queue))
         p.queue = queue
         p.start()
         
@@ -206,11 +229,10 @@ def runWorkerWithTimeout(w, args = [], checklist = {}, timeout = None):
         
         if p.is_alive():
             message(w.fullName(), "Run", "Timeout reached, shutting down.")
-            killed = True
-            signalHandler(None, None)
+            globalKill()
     else:
         workers.append(w)
-        runWorker(w, args, checklist)
+        runWorker(w, args, checklist, quithooks)
 
 
 def runNextWorker():
@@ -223,12 +245,12 @@ def runNextWorker():
         w = Worker(current_worker[0])
         
         if current_worker[3]:
-            to_msg = " and a timeout of " + str(current_worker[3]) + " sec"
+            to_msg = " and a timeout of " + str(current_worker[4]) + " sec"
         else:
             to_msg = ""
         
         message(w.fullName(), "Run worker with parameters", str(current_worker[1]) + to_msg)
-        runWorkerWithTimeout(w, current_worker[1], current_worker[2], current_worker[3])
+        runWorkerWithTimeout(w, current_worker[1], current_worker[2], current_worker[3], current_worker[4])
         message(w.fullName(), "Run complete", "Advancing pipeline")
         
         return True
@@ -252,10 +274,14 @@ def loadWorker(worker):
     if not "checklist" in details:
         details["checklist"] = {}
     
+    if not "quithooks" in details:
+        details["quithooks"] = {}
+    
     if not "timeout" in details:
         details["timeout"] = None
     
     checklist = {}
+    quithooks = {}
     
     for item in details["checklist"]:
         data = item["item"]
@@ -267,7 +293,17 @@ def loadWorker(worker):
         
         addToChecklist(checklist, checklistitem["name"], checklistitem["matchmode"], checklistitem["template"], checklistitem["message"])
     
-    addWorker(details["command"], details["parameters"], checklist, details["timeout"])
+    for item in details["quithooks"]:
+        data = item["item"]
+        quithooksitem = {}
+        
+        for detail in data:
+            key = detail.keys()[0]
+            quithooksitem[key] = detail[key]
+        
+        addToChecklist(quithooks, quithooksitem["name"], quithooksitem["matchmode"], quithooksitem["template"], quithooksitem["message"])
+    
+    addWorker(details["command"], details["parameters"], checklist, quithooks, details["timeout"])
 
 
 def loadWorkersFromYaml(doc):
@@ -306,6 +342,6 @@ if __name__ == "__main__":
             pass
         
         message("Core", "All tasks completed", "Tearing down workers")
-        signalHandler(None, None)
+        globalKill()
     else:
         message("Core", "Invalid", "No or no valid yaml configuration supplied")
