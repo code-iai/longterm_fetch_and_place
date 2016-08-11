@@ -80,7 +80,9 @@
           (format t "Got object: ~a~%" (desig:current-desig object))
           (with-designators ((loc-on-meal-table
                               :location
-                              `((:theme :meal-table-setting)))
+                              `((:on "CounterTop")
+                                (:name "iai_kitchen_meal_table_counter_top")
+                                (:theme :meal-table-setting)))
                              (loc-destination
                               :location
                               `((:pose ,(destination-pose
