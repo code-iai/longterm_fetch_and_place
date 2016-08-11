@@ -39,8 +39,10 @@ if [ -d "current-experiment/scene_camera" ]; then
     avconv -i preview_3.mov -i preview_4.mov -filter_complex "[0:v:0]pad=iw*2:ih[bg]; [bg][1:v:0]overlay=w" preview_bottom.mov
     avconv -i preview_top.mov -i preview_bottom.mov -filter_complex "[0:v:0]pad=iw:2*ih[bg]; [bg][1:v:0]overlay=0:main_h/2" preview.mov
     
-    rm -Rf preview_1.mov preview_2.mov preview_3.mov preview_4.mov preview_top.mov preview_bottom.mov
+    rm preview_1.mov preview_2.mov preview_3.mov preview_4.mov preview_top.mov preview_bottom.mov
     cd -
 fi
 
 ./package.sh
+
+echo "Packaging complete"
