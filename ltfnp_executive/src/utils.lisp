@@ -292,13 +292,11 @@
          (goal (actionlib:make-action-goal
                    action-client
                  position position)))
-    (format t "1~%")
     (actionlib:wait-for-server action-client)
     (actionlib:send-goal-and-wait
      action-client goal
      :result-timeout 30.0
-     :exec-timeout 30.0)
-    (format t "2~%")))
+     :exec-timeout 30.0)))
 
 (defmethod cram-language::on-grasp-object (object-name side)
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
