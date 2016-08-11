@@ -129,4 +129,10 @@
   - parameters:
     - ltfnp_executive
     - package_log.sh
-  - timeout: 60
+  - checklist:
+    - item:
+      - name: packaging_done
+      - matchmode: contains
+      - template: "Packaging complete"
+      - message: "Packaging complete"
+  - timeout: 1200
