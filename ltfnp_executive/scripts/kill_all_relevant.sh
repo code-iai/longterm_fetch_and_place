@@ -7,6 +7,7 @@ rosrun ltfnp_executive scripts/kill_type.sh gzserver
 rosrun ltfnp_executive scripts/kill_type.sh gazebo
 rosrun ltfnp_executive scripts/kill_type.sh /opt/ros/
 rosrun ltfnp_executive scripts/kill_type.sh nav_pcontroller
+rosrun ltfnp_executive scripts/kill_type.sh "args4j/args4j/"
 
 killall gzclient -q
 killall gzserver -q
