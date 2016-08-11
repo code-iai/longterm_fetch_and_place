@@ -212,24 +212,6 @@ def runWorker(w, args, checklist, quithooks, queue=None):
                     queue.put("ok")
             except Empty:
                 pass
-    
-    # Done, check return value in queue
-    run_ok = False
-    
-    try:
-        queued_result = queue.get_nowait()
-        
-        if queued_result == "no-error":
-            # Everything is fine
-            run_ok = True
-        elif queued_result == "fail-popen":
-            message(w.fullName(), "Run failed", "Popen threw exception; is the worker defined correctly?")
-        else:
-            message(w.fullName(), "Run failed", "An unknown error occured")
-    except Empty:
-        message(w.fullName(), "Run failed", "No return value was passed; this is abnormal, something went wrong")
-    
-    return run_ok
 
 
 def runWorkerWithTimeout(w, args = [], checklist = {}, quithooks = {}, timeout = None):
@@ -253,7 +235,7 @@ def runWorkerWithTimeout(w, args = [], checklist = {}, quithooks = {}, timeout =
             globalKill()
     else:
         workers.append(w)
-        return runWorker(w, args, checklist, quithooks)
+        runWorker(w, args, checklist, quithooks)
 
 
 def runNextWorker():
