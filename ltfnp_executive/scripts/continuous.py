@@ -282,6 +282,12 @@ def loadWorker(worker):
     if not "timeout" in details:
         details["timeout"] = None
     
+    parameters = []
+    for parameter in details["parameters"]:
+        parameters.append(str(parameter))
+    
+    details["parameters"] = parameters
+    
     checklist = {}
     quithooks = {}
     
