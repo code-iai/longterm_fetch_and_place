@@ -149,6 +149,7 @@ base-class itself does not count towards the enlisted classes."
      `((:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
                                                    (second dimensions)
                                                    (third dimensions))))
+     `((:urdf-model ,(get-class-urdf-path class)))
      (mapcar (lambda (handle-object)
                `(:handle ,handle-object))
              (get-class-semantic-handle-objects class)))))
