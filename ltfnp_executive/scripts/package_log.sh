@@ -14,10 +14,12 @@ if [ -d "current-experiment/scene_camera" ]; then
     cd current-experiment/scene_camera
     
     # Process camera perspectives
-    for camera_index in "1 2 3 4"; do
+    for camera_index in 1 2 3 4; do
+	echo "Processing scene camera ${camera_index}"
+	
 	# Mogrification can do more; its just not used very thoroughly
 	# at the moment.
-	mogrify -resize 800x800 scene_camera_${camera_index}_*.jpg
+	mogrify -resize 800x800 "scene_camera_${camera_index}_*.jpg"
 	
 	# For stretching the individual frames
 	convert *.jpg -delay 1 -morph 1 mogrified_${camera_index}_%05d.jpg
