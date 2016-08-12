@@ -42,8 +42,9 @@
      ,@body))
 
 (defun go-to-pose (position orientation)
-  (let ((pose (tf:make-pose-stamped "/base_link" 0.0 position orientation)))
-    (with-designators ((loc :location `((:pose ,pose))))
+  (let* ((pose (tf:make-pose-stamped "base_link" 0.0 position orientation))
+         (pose-map (tf:transform-pose-stamped *transformer* :pose pose :target-frame "map")))
+    (with-designators ((loc :location `((:pose ,pose-map))))
       (at-location (loc)))))
 
 (defun look-at (loc-desig)
