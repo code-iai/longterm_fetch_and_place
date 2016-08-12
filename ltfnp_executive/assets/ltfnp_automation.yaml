@@ -26,11 +26,12 @@
     - semrec
     - semrec
     - "-q"
+    - "-s"
   - checklist:
     - item:
       - name: initialize
       - matchmode: contains
-      - template: "Initialization complete. You can start using the system now."
+      - template: "Signify: semrec init complete"
       - message: "Semrec Initialized"
   - timeout: 5
 - worker:
