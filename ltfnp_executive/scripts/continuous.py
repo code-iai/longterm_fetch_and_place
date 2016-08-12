@@ -45,6 +45,17 @@ from tools.Worker import Worker
 from Queue import Queue, Empty
 
 
+def logLine(line):
+    global logged_lines
+    
+    logged_lines.append(line)
+    length = len(logged_lines)
+    max_len = 50
+    
+    if length > max_len:
+        logged_lines = logged_lines[length - max_len:]
+
+
 def globalKill():
     signalHandler(None, None)
 
@@ -174,6 +185,10 @@ def checkQuitHooks(w, quithooks, line):
         if match:
             message(w.fullName(), "Quithooks", quithooks[item]["message"])
             
+            message(w.fullName(), "Failure output", "Last 50 lines of output")
+            for line in logged_lines:
+                print line
+            
             return True
     
     return False
@@ -194,6 +209,7 @@ def runWorker(w, args, checklist, quithooks, queue=None):
         
         if line != None:
             message("Line", "Out", line.strip(), False)
+            logLine(line)
             
             if maintainChecklist(w, checklist, line):
                 if isChecklistDone(checklist):
@@ -326,12 +342,14 @@ if __name__ == "__main__":
     global killed
     global last_message_did_newline
     global processes
+    global logged_lines
     
     workers_schedule = []
     workers = []
     killed = False
     last_message_did_newline = True
     processes = []
+    logged_lines = []
     
     doc = None
     
