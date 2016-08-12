@@ -68,7 +68,8 @@
   (with-process-modules
     (with-designators ((loc-on-sink
                         :location `((:on "CounterTop")
-                                    (:name "iai_kitchen_sink_area_counter_top"))))
+                                    ;;(:name "iai_kitchen_sink_area_counter_top")
+                                    )))
       (let ((locations `(,loc-on-sink)))
         (labels ((random-source-location ()
                    (elt locations (random (length locations)))))
@@ -107,5 +108,5 @@
                                          (place-action :action
                                                        `((:to :place)
                                                          (:obj ,object)
-                                                         (:at ,loc-destination))))
+                                                         (:at ,loc-on-meal-table))));,loc-destination))))
                         (perform place-action)))))))))))))
