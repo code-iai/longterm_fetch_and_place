@@ -25,6 +25,7 @@
   - parameters:
     - semrec
     - semrec
+    - "-q"
   - checklist:
     - item:
       - name: initialize
