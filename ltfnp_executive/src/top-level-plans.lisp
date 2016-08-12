@@ -68,29 +68,44 @@
   (with-process-modules
     (with-designators ((loc-on-sink
                         :location `((:on "CounterTop")
-                                    (:name "iai_kitchen_sink_area_counter_top")))
-                       (cup :object `((:type "RedMetalCup")
-                                      (:at ,loc-on-sink)))
-                       (bowl :object `((:type "RedMetalBowl")
-                                       (:at ,loc-on-sink))))
-      (dolist (object `(,cup ,bowl))
-        (with-designators ((fetch-action :action `((:to :fetch)
-                                                   (:obj ,object))))
-          (perform fetch-action)
-          (format t "Got object: ~a~%" (desig:current-desig object))
-          (with-designators ((loc-on-meal-table
-                              :location
-                              `((:on "CounterTop")
-                                (:name "iai_kitchen_meal_table_counter_top")
-                                (:theme :meal-table-setting)))
-                             (loc-destination
-                              :location
-                              `((:pose ,(destination-pose
-                                         (desig:desig-prop-value
-                                          (desig:current-desig object) :name)
-                                         (desig:reference loc-on-meal-table)))))
-                             (place-action :action
-                                           `((:to :place)
-                                             (:obj ,object)
-                                             (:at ,loc-destination))))
-            (perform place-action)))))))
+                                    (:name "iai_kitchen_sink_area_counter_top"))))
+      (let ((locations `(,loc-on-sink)))
+        (labels ((random-source-location ()
+                   (elt locations (random (length locations)))))
+          (with-designators ((cup :object `((:type "RedMetalCup")
+                                            (:at ,(random-source-location))))
+                             (bowl :object `((:type "RedMetalBowl")
+                                             (:at ,(random-source-location)))))
+            (let ((objects `(,cup ,bowl)))
+              (labels ((random-object ()
+                         (elt objects (random (length objects))))
+                       (random-object-subset (size)
+                         (loop while (< (length set) size)
+                               as object = (random-object)
+                               when (not (find object set))
+                                 collect object into set
+                               finally (return set))))
+                (let ((random-set (loop while (not set)
+                                        as set = (random-object-subset (random (length objects)))
+                                        finally (return set))))
+                  (dolist (object random-set)
+                    (with-designators ((fetch-action :action `((:to :fetch)
+                                                               (:obj ,object))))
+                      (perform fetch-action)
+                      (format t "Got object: ~a~%" (desig:current-desig object))
+                      (with-designators ((loc-on-meal-table
+                                          :location
+                                          `((:on "CounterTop")
+                                            (:name "iai_kitchen_meal_table_counter_top")
+                                            (:theme :meal-table-setting)))
+                                         (loc-destination
+                                          :location
+                                          `((:pose ,(destination-pose
+                                                     (desig:desig-prop-value
+                                                      (desig:current-desig object) :name)
+                                                     (desig:reference loc-on-meal-table)))))
+                                         (place-action :action
+                                                       `((:to :place)
+                                                         (:obj ,object)
+                                                         (:at ,loc-destination))))
+                        (perform place-action)))))))))))))
