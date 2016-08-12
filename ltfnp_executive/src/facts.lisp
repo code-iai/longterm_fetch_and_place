@@ -49,7 +49,7 @@
 (defun make-ltfnp-meal-table-restriction-cost-function ()
   (let ((x-margin 0.6)
         (y-margin 0.1)
-        (base-x -1.35)
+        (base-x -1.40)
         (base-y -0.95))
     (lambda (x y)
       (if (and (>= x (- base-x x-margin))
