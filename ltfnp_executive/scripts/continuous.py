@@ -45,6 +45,13 @@ from tools.Worker import Worker
 from Queue import Queue, Empty
 
 
+def printLoggedLines(name):
+    message(name, "Failure output", "Last 50 lines of output")
+    
+    for line in logged_lines:
+        print line
+
+
 def logLine(line):
     global logged_lines
     
@@ -106,6 +113,12 @@ def addWorker(cmd, args, checklist, quithooks, timeout = None):
 
 def run(w, args):
     w.run(args)
+
+
+def signalHandlerProxy(signal, frame):
+    printLoggedLines("SIGINT")
+    
+    signalHandler(signal, frame)
 
 
 def signalHandler(signal, frame):
@@ -184,10 +197,7 @@ def checkQuitHooks(w, quithooks, line):
         
         if match:
             message(w.fullName(), "Quithooks", quithooks[item]["message"])
-            
-            message(w.fullName(), "Failure output", "Last 50 lines of output")
-            for line in logged_lines:
-                print line
+            printLoggedLines(w.fullName())
             
             return True
     
@@ -363,7 +373,7 @@ if __name__ == "__main__":
     if doc:
         loadWorkersFromYaml(doc)
         
-        signal.signal(signal.SIGINT, signalHandler)
+        signal.signal(signal.SIGINT, signalHandlerProxy)
         
         while runNextWorker() and not killed:
             pass
