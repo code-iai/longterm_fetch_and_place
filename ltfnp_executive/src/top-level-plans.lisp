@@ -42,10 +42,11 @@
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (move-arms-up)
   (move-torso)
-  (longterm-fetch-and-place)
-  (when logged
-    (beliefstate:extract-files))
-  (roslisp:ros-info (ltfnp) "Done with LTFnP"))
+  (prog1
+      (longterm-fetch-and-place)
+    (when logged
+      (beliefstate:extract-files))
+    (roslisp:ros-info (ltfnp) "Done with LTFnP")))
 
 
 ;;;
@@ -76,8 +77,12 @@
           (with-designators ((cup :object `((:type "RedMetalCup")
                                             (:at ,(random-source-location))))
                              (bowl :object `((:type "RedMetalBowl")
+                                             (:at ,(random-source-location))))
+                             (plate :object `((:type "RedMetalPlate")
+                                             (:at ,(random-source-location))))
+                             (milk :object `((:type "Milk")
                                              (:at ,(random-source-location)))))
-            (let ((objects `(,cup ,bowl)))
+            (let ((objects `(,cup ,bowl ,plate ,milk)))
               (labels ((random-object ()
                          (elt objects (random (length objects))))
                        (random-object-subset (size)
@@ -86,9 +91,10 @@
                                when (not (find object set))
                                  collect object into set
                                finally (return set))))
-                (let ((random-set (loop while (not set)
-                                        as set = (random-object-subset (random (length objects)))
-                                        finally (return set))))
+                (let* ((random-set (loop while (not set)
+                                         as set = (random-object-subset (+ (random (length objects)) 1))
+                                         finally (return set)))
+                       (random-set objects))
                   (dolist (object random-set)
                     (with-designators ((fetch-action :action `((:to :fetch)
                                                                (:obj ,object))))
@@ -108,5 +114,5 @@
                                          (place-action :action
                                                        `((:to :place)
                                                          (:obj ,object)
-                                                         (:at ,loc-on-meal-table))));,loc-destination))))
+                                                         (:at ,loc-on-meal-table))))
                         (perform place-action)))))))))))))
