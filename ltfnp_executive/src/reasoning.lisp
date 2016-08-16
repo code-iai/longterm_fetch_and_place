@@ -148,14 +148,17 @@ base-class itself does not count towards the enlisted classes."
   (get-class-urdf-path (get-object-class object-id)))
 
 (defun make-class-description (class)
-  (let ((dimensions (get-class-dimensions class)))
+  (let* ((dimensions (get-class-dimensions class))
+         (shape-string (get-class-primitive-shape class))
+         (shape-prop (when shape-string (intern (string-upcase shape-string) :keyword))))
     (append
      `((:type ,class)
        (:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
                                                    (second dimensions)
                                                    (third dimensions)))
-       (:urdf-model ,(get-class-urdf-path class))
-       (:shape ,(get-class-primitive-shape class)))
+       (:urdf-model ,(get-class-urdf-path class)))
+     (when shape-prop
+       `((:shape ,shape-prop)))
      (mapcar (lambda (handle-object)
                `(:handle ,handle-object))
              (get-class-semantic-handle-objects class)))))
