@@ -45,6 +45,24 @@ from tools.Worker import Worker
 from Queue import Queue, Empty
 
 
+def printLoggedLines(name):
+    message(name, "Failure output", "Last 50 lines of output")
+    
+    for line in logged_lines:
+        print line
+
+
+def logLine(line):
+    global logged_lines
+    
+    logged_lines.append(line)
+    length = len(logged_lines)
+    max_len = 50
+    
+    if length > max_len:
+        logged_lines = logged_lines[length - max_len:]
+
+
 def globalKill():
     signalHandler(None, None)
 
@@ -95,6 +113,12 @@ def addWorker(cmd, args, checklist, quithooks, timeout = None):
 
 def run(w, args):
     w.run(args)
+
+
+def signalHandlerProxy(signal, frame):
+    printLoggedLines("SIGINT")
+    
+    signalHandler(signal, frame)
 
 
 def signalHandler(signal, frame):
@@ -173,6 +197,7 @@ def checkQuitHooks(w, quithooks, line):
         
         if match:
             message(w.fullName(), "Quithooks", quithooks[item]["message"])
+            printLoggedLines(w.fullName())
             
             return True
     
@@ -194,6 +219,7 @@ def runWorker(w, args, checklist, quithooks, queue=None):
         
         if line != None:
             message("Line", "Out", line.strip(), False)
+            logLine(line)
             
             if maintainChecklist(w, checklist, line):
                 if isChecklistDone(checklist):
@@ -221,6 +247,7 @@ def runWorkerWithTimeout(w, args = [], checklist = {}, quithooks = {}, timeout =
     
     if timeout:
         queue = Queue()
+        # TODO: Handle return value of runWorker here!
         p = multiprocessing.Process(target=runWorker, args=(w, args, checklist, quithooks, queue))
         p.queue = queue
         p.start()
@@ -282,6 +309,12 @@ def loadWorker(worker):
     if not "timeout" in details:
         details["timeout"] = None
     
+    parameters = []
+    for parameter in details["parameters"]:
+        parameters.append(str(parameter))
+    
+    details["parameters"] = parameters
+    
     checklist = {}
     quithooks = {}
     
@@ -319,12 +352,14 @@ if __name__ == "__main__":
     global killed
     global last_message_did_newline
     global processes
+    global logged_lines
     
     workers_schedule = []
     workers = []
     killed = False
     last_message_did_newline = True
     processes = []
+    logged_lines = []
     
     doc = None
     
@@ -338,7 +373,7 @@ if __name__ == "__main__":
     if doc:
         loadWorkersFromYaml(doc)
         
-        signal.signal(signal.SIGINT, signalHandler)
+        signal.signal(signal.SIGINT, signalHandlerProxy)
         
         while runNextWorker() and not killed:
             pass

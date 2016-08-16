@@ -78,4 +78,49 @@
     </joint>
   </macro>
   
+  <macro name="scene_camera" params="name">
+    <gazebo>
+      <static>true</static> 
+    </gazebo>
+    
+    <link name="link">
+      <collision>
+	<geometry>
+	  <box size="0.1 0.1 0.1" />
+	</geometry>
+      </collision>
+      
+      <inertial>
+	<mass value="0.01" />
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<box_inertia m="0.01" x="0.1" y="0.1" z="0.1" />
+      </inertial>
+    </link>
+    
+    <gazebo reference="link">
+      <sensor type="camera" name="${name}">
+	<update_rate>1.0</update_rate>
+	<camera>
+          <horizontal_fov>1.3962634</horizontal_fov>
+          <image>
+            <width>800</width>
+            <height>600</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+	</camera>
+	
+	<plugin name="${name}" filename="libgazebo_ros_camera.so">
+          <cameraName>${name}</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>link</frameName>
+	</plugin>
+      </sensor>
+    </gazebo>
+  </macro>
+  
 </robot>

@@ -25,11 +25,13 @@
   - parameters:
     - semrec
     - semrec
+    - "-q"
+    - "-s"
   - checklist:
     - item:
       - name: initialize
       - matchmode: contains
-      - template: "Initialization complete. You can start using the system now."
+      - template: "Signify: semrec init complete"
       - message: "Semrec Initialized"
   - timeout: 5
 - worker:
@@ -37,13 +39,53 @@
   - parameters:
     - ltfnp_executive
     - prep_camera.sh
+    - 1
   - checklist:
     - item:
       - name: prep_cam
       - matchmode: contains
       - template: "Camera prepared"
-      - message: "Camera prepared"
-  - timeout: 180
+      - message: "Camera 1 prepared"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_camera.sh
+    - 2
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera 2 prepared"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_camera.sh
+    - 3
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera 3 prepared"
+  - timeout: 5
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - prep_camera.sh
+    - 4
+  - checklist:
+    - item:
+      - name: prep_cam
+      - matchmode: contains
+      - template: "Camera prepared"
+      - message: "Camera 4 prepared"
+  - timeout: 5
 - worker:
   - command: rosrun
   - parameters:
@@ -89,4 +131,10 @@
   - parameters:
     - ltfnp_executive
     - package_log.sh
-  - timeout: 60
+  - checklist:
+    - item:
+      - name: packaging_done
+      - matchmode: contains
+      - template: "Packaging complete"
+      - message: "Packaging complete"
+  - timeout: 1200

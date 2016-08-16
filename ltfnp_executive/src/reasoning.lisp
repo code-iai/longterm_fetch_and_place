@@ -139,16 +139,23 @@ base-class itself does not count towards the enlisted classes."
       `("ltfnp_get_class_urdf_path" ,(add-prolog-namespace class) ?urdfpath)
     (json-symbol->string ?urdfpath)))
 
+(defun get-class-primitive-shape (class)
+  (with-first-prolog-vars-bound (?shape)
+      `("ltfnp_get_class_primitive_shape" ,(add-prolog-namespace class) ?shape)
+    (json-symbol->string ?shape)))
+
 (defun get-object-urdf-path (object-id)
   (get-class-urdf-path (get-object-class object-id)))
 
 (defun make-class-description (class)
   (let ((dimensions (get-class-dimensions class)))
     (append
-     `((:type ,class))
-     `((:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
+     `((:type ,class)
+       (:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
                                                    (second dimensions)
-                                                   (third dimensions))))
+                                                   (third dimensions)))
+       (:urdf-model ,(get-class-urdf-path class))
+       (:shape ,(get-class-primitive-shape class)))
      (mapcar (lambda (handle-object)
                `(:handle ,handle-object))
              (get-class-semantic-handle-objects class)))))

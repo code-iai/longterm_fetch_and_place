@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<robot name="scene_camera_1" xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find ltfnp_models)/defs/utils.xml"/>
+  
+  <scene_camera name="scene_camera_1"/>
+  
+</robot>

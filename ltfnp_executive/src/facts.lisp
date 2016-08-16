@@ -46,9 +46,31 @@
               (return-from validity-check 1.0d0))))
         0.0d0))))
 
+(defun make-ltfnp-meal-table-restriction-cost-function ()
+  (let ((x-margin 0.6)
+        (y-margin 0.1)
+        (base-x -1.40)
+        (base-y -0.95))
+    (lambda (x y)
+      (if (and (>= x (- base-x x-margin))
+               (<= x (+ base-x x-margin))
+               (>= y (- base-y y-margin))
+               (<= y (+ base-y y-margin)))
+          1.0d0
+          0.0d0))))
+
+(defun make-ltfnp-meal-table-orientation-generator ()
+  (lambda (x y previous-orientation)
+    (declare (ignore x y previous-orientation))
+    (lazy-mapcar #'identity `(,(tf:make-quaternion 0.0 0.0 -0.70711 0.70711)))))
+
 (defmethod costmap-generator-name->score
     ((name (common-lisp:eql 'ltfnp-costmap-area-restriction)))
   100)
+
+(defmethod costmap-generator-name->score
+    ((name (common-lisp:eql 'ltfnp-costmap-meal-table-restriction)))
+  101)
 
 (defun test-restriction-costmap ()
   "Asserts the debug costmap according to the area restriction as defined in this file into bullet. This function is intended for testing purposes in case the restriction changed."
@@ -71,6 +93,17 @@
     (costmap-add-function
      ltfnp-costmap-area-restriction
      (make-ltfnp-area-restriction-cost-function)
+     ?cm))
+
+  (<- (desig-costmap ?desig ?cm)
+    (desig-prop ?desig (:theme :meal-table-setting))
+    (costmap ?cm)
+    (costmap-add-function
+     ltfnp-costmap-meal-table-restriction
+     (make-ltfnp-meal-table-restriction-cost-function)
+     ?cm)
+    (costmap-add-orientation-generator
+     (make-ltfnp-meal-table-orientation-generator)
      ?cm)))
 
 (def-fact-group ltfnp-intrusive-hooks (close-radius)
