@@ -134,13 +134,15 @@
 
 (def-cram-function place-object (object location)
   ;; Assumptions: Object in hand
-  (with-retry-counters ((pose-resampling 2)
-                        (manipulation-retry 2))
+  (with-retry-counters ((pose-resampling 4)
+                        (manipulation-retry 4))
     (when-failure ((:manipulation-pose-unreachable
                     (do-retry pose-resampling
+                      (setf location (desig:next-solution location))
                       (cpl:retry)))
                    (:manipulation-failed
                     (do-retry manipulation-retry
+                      (setf location (desig:next-solution location))
                       (cpl:retry))))
       (access-location location)))
   (with-retry-counters ((pose-resampling 2)
