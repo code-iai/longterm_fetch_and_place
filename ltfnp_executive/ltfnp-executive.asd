@@ -37,6 +37,7 @@
                cram-plan-occasions-events
                cram-occasions-events
                cram-pr2-designators
+               cram-moveit-manager
                pr2-manipulation-process-module
                pr2-reachability-costmap
                pr2-navigation-process-module
@@ -53,7 +54,9 @@
                cram-robot-pose-gaussian-costmap
                gazebo-perception-process-module
                attache_msgs-srv
-               pr2_controllers_msgs-msg)
+               pr2_controllers_msgs-msg
+               ;;cram-giskard-manager ;; Commented out as giskard is not used atm
+               )
   :components
   ((:module "src"
     :components

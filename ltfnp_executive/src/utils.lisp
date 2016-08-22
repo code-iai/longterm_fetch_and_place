@@ -53,7 +53,9 @@
       (achieve `(cram-plan-library:looking-at ,reference)))))
 
 (defun move-arm-pose (arm pose)
-  (pr2-manip-pm::execute-move-arm-pose arm pose))
+  (let ((goal-spec (mot-man:make-goal-specification
+                    :moveit-goal-specification)))
+    (pr2-manip-pm::execute-move-arm-poses arm `(,pose) goal-spec)))
 
 (defun test-move-arm-pose ()
   (move-arm-pose :left (tf:make-pose-stamped
@@ -266,23 +268,15 @@
 
 (defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
   (when (or (eql side :left) (not side))
-    (pr2-manip-pm::execute-move-arm-pose
-     :left
-     (tf:make-pose-stamped
-      "torso_lift_link" (roslisp:ros-time)
-      (tf:make-3d-vector 0.1 0.45 0.3)
-      (tf:euler->quaternion :ay (/ pi -2)))
-     :ignore-collisions ignore-collisions
-     :allowed-collision-objects allowed-collision-objects))
+    (move-arm-pose :left (tf:make-pose-stamped
+                          "torso_lift_link" 0.0
+                          (tf:make-3d-vector 0.1 0.45 0.3)
+                          (tf:euler->quaternion :ay (/ pi -2)))))
   (when (or (eql side :right) (not side))
-    (pr2-manip-pm::execute-move-arm-pose
-     :right
-     (tf:make-pose-stamped
-      "torso_lift_link" (roslisp:ros-time)
-      (tf:make-3d-vector 0.1 -0.45 0.3)
-      (tf:euler->quaternion :ay (/ pi -2)))
-     :ignore-collisions ignore-collisions
-     :allowed-collision-objects allowed-collision-objects)))
+    (move-arm-pose :right (tf:make-pose-stamped
+                          "torso_lift_link" 0.0
+                          (tf:make-3d-vector 0.1 -0.45 0.3)
+                          (tf:euler->quaternion :ay (/ pi -2))))))
 
 (defun move-torso (&optional (position 0.3))
   ;; Hack
