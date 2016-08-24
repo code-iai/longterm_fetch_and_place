@@ -1,7 +1,6 @@
 <launch>
   
-  <include file="$(find ltfnp_maps)/launch/descriptions.launch" />
-  <include file="$(find ltfnp_maps)/launch/transformations.launch" />
-  <include file="$(find ltfnp_maps)/launch/map.launch" />
+  <!--include file="$(find ltfnp_maps)/launch/map.launch" /-->
+  <include file="$(find iai_maps)/launch/no-json.launch" />
   
 </launch>
