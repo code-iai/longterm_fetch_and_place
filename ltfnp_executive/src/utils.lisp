@@ -273,7 +273,7 @@
       (spawn-class instance-name class pose)
       instance-name)))
 
-(defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
+(defun move-arms-up (&key side)
   (when (or (eql side :left) (not side))
     (move-arm-pose :left (tf:make-pose-stamped
                           "torso_lift_link" 0.0
