@@ -1,6 +1,5 @@
 <launch>
   
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find ltfnp_maps)/maps/shopping_area.yaml" />
-  <!--node name="map_server" pkg="map_server" type="map_server" args="$(find ltfnp_maps)/maps/shopping_area_new.yaml" /-->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find iai_maps)/maps/map-2016-06-17.yaml" />
   
 </launch>

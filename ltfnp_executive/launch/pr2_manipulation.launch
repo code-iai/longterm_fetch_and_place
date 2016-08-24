@@ -1,0 +1,7 @@
+<launch>
+
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+  <include file="$(find pr2_navigation_global)/amcl_node.xml" />
+  <include file="$(find pr2_teleop)/launch/teleop_joystick.launch" />
+
+</launch>
