@@ -28,19 +28,25 @@
 (defvar *action-client-torso* nil)
 (defvar *simulated* nil)
 
+
 ;;;
 ;;; Add utility functions here
 ;;;
 
 (defmacro with-process-modules (&body body)
-  `(cpm:with-process-modules-running
-       (pr2-manipulation-process-module:pr2-manipulation-process-module
-        pr2-navigation-process-module:pr2-navigation-process-module
-        point-head-process-module:point-head-process-module
-        ,(if *simulated*
-             'gazebo-perception-process-module:gazebo-perception-process-module
-             'robosherlock-process-module:robosherlock-process-module))
-     ,@body))
+  (if *simulated*
+      `(cpm:with-process-modules-running
+           (pr2-manipulation-process-module:pr2-manipulation-process-module
+            pr2-navigation-process-module:pr2-navigation-process-module
+            point-head-process-module:point-head-process-module
+            gazebo-perception-process-module:gazebo-perception-process-module)
+         ,@body)
+      `(cpm:with-process-modules-running
+           (pr2-manipulation-process-module:pr2-manipulation-process-module
+            pr2-navigation-process-module:pr2-navigation-process-module
+            point-head-process-module:point-head-process-module
+            robosherlock-process-module:robosherlock-process-module)
+         ,@body)))
 
 (defun go-to-pose (position orientation)
   (let* ((pose (tf:make-pose-stamped "base_link" 0.0 position orientation))
@@ -120,10 +126,10 @@
                            ?w :urdf ?robot ,(get-robot-pose)
                            :urdf ,urdf-robot))))))))
 
-(cram-language:def-top-level-cram-function test-perception ()
-  (with-process-modules
-    (with-designators ((obj :object `((:name "IAI_kitchen"))))
-      (cram-plan-library:perceive-object :currently-visible obj))))
+;; (cram-language:def-top-level-cram-function test-perception ()
+;;   (with-process-modules
+;;     (with-designators ((obj :object `((:name "IAI_kitchen"))))
+;;       (cram-plan-library:perceive-object :currently-visible obj))))
 
 (defun make-handles (distance-from-center
                      &key
