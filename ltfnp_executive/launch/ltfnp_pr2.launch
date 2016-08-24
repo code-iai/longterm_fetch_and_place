@@ -1,0 +1,10 @@
+<launch>
+
+  <include file="$(find ltfnp_executive)/launch/ltfnp.launch"/>
+  
+  <include file="$(find pr2_moveit_node)/launch/move_group.launch"/>
+  <include file="$(find pr2_moveit_node)/launch/nav_pcontroller.launch"/>
+  
+  <include file="$(find ltfnp_executive)/launch/pr2_manipulation.launch"/>
+  
+</launch>
