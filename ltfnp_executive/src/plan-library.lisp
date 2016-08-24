@@ -130,17 +130,25 @@
                   (cpl:retry))
                  (:manipulation-failure
                   (cpl:retry)))
-    (achieve `(cram-plan-library:object-placed-at ,object ,location))))
+    ;; NOTE(winkler): If this fails, we probably already put the
+    ;; object where it belongs. This is done to the reason that
+    ;; `park`ing after placing the object could fail (e.g. no IK
+    ;; solution found) and would trigger a `manipulation-failure`
+    ;; failure. In this case, we just go on.
+    (when (cram-prolog:prolog `(pr2-manip-pm::object-in-hand ?o))
+      (achieve `(cram-plan-library:object-placed-at ,object ,location)))))
 
 (def-cram-function place-object (object location)
   ;; Assumptions: Object in hand
-  (with-retry-counters ((pose-resampling 2)
-                        (manipulation-retry 2))
+  (with-retry-counters ((pose-resampling 4)
+                        (manipulation-retry 4))
     (when-failure ((:manipulation-pose-unreachable
                     (do-retry pose-resampling
+                      (setf location (desig:next-solution location))
                       (cpl:retry)))
                    (:manipulation-failed
                     (do-retry manipulation-retry
+                      (setf location (desig:next-solution location))
                       (cpl:retry))))
       (access-location location)))
   (with-retry-counters ((pose-resampling 2)
