@@ -113,7 +113,7 @@
   ;; simulating. This is handled by the PR2 manipulation process
   ;; module though, so we just silently fail here.
   (<- (close-radius ?object ?radius)
-    (symbol-value *gazebo* ?simulated)
+    (symbol-value *simulated* ?simulated)
     (cram-prolog:bound ?simulated)
     (equal ?simulated t)
     (equal ?radius 0.08)))

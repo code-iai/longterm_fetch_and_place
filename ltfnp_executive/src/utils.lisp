@@ -26,7 +26,7 @@
 
 
 (defvar *action-client-torso* nil)
-(defvar *gazebo* nil)
+(defvar *simulated* nil)
 
 ;;;
 ;;; Add utility functions here
@@ -37,8 +37,9 @@
        (pr2-manipulation-process-module:pr2-manipulation-process-module
         pr2-navigation-process-module:pr2-navigation-process-module
         point-head-process-module:point-head-process-module
-        ;robosherlock-process-module:robosherlock-process-module
-        gazebo-perception-process-module:gazebo-perception-process-module)
+        ,(if *simulated*
+             'gazebo-perception-process-module:gazebo-perception-process-module
+             'robosherlock-process-module:robosherlock-process-module))
      ,@body))
 
 (defun go-to-pose (position orientation)
@@ -270,7 +271,7 @@
      :left
      (tf:make-pose-stamped
       "torso_lift_link" (roslisp:ros-time)
-      (tf:make-3d-vector 0.1 0.45 0.3)
+      (tf:make-3d-vector 0.1 0.50 0.3)
       (tf:euler->quaternion :ay (/ pi -2)))
      :ignore-collisions ignore-collisions
      :allowed-collision-objects allowed-collision-objects))
@@ -301,7 +302,7 @@
 
 (defmethod cram-language::on-grasp-object (object-name side)
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
-  (when *gazebo*
+  (when *simulated*
     (roslisp:call-service "/gazebo/attach"
                           'attache_msgs-srv:Attachment
                           :model1 "pr2"
@@ -313,7 +314,7 @@
 
 (defmethod cram-language::on-putdown-object (object-name side)
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
-  (when *gazebo*
+  (when *simulated*
     (roslisp:call-service "/gazebo/detach"
                           'attache_msgs-srv:Attachment
                           :model1 "pr2"

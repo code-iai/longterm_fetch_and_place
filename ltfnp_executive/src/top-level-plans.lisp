@@ -33,8 +33,9 @@
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
-  (when simulated
-    (setf *gazebo* t))
+  (setf *simulated* simulated)
+  (unless simulated
+    (setf cram-moveit::*needs-ft-fix* t))
   (roslisp-utilities:startup-ros)
   (prepare-settings)
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
