@@ -37,6 +37,7 @@
 	   ltfnp_set_object_pose/8,
 	   ltfnp_get_object_pose/8,
 	   ltfnp_get_class_urdf_path/2,
+           ltfnp_get_class_robosherlock_class/2,
 	   ltfnp_get_class_primitive_shape/2,
 	   ltfnp_assert_string/3,
 	   ltfnp_instance_of_class/2,
@@ -62,6 +63,7 @@
     ltfnp_object_literal_atom(r, r, r),
     ltfnp_set_object_pose(r, r, r, r, r, r, r, r),
     ltfnp_get_object_pose(r, r, r, r, r, r, r, r),
+    ltfnp_get_class_urdf_path(r, r),
     ltfnp_get_class_urdf_path(r, r),
     ltfnp_get_class_primitive_shape(r, r),
     ltfnp_assert_string(r, r, r),
@@ -198,6 +200,17 @@ ltfnp_get_class_urdf_path(Class, URDFPath) :-
     ltfnp_object_class(Class),
     class_properties(Class, knowrob:'pathToURDFModel', literal(type(_, URDFRelativePath))),
     ltfnp_reasoner_call('resolveRelativePath', [URDFRelativePath], URDFPath).
+
+
+%% ltfnp_get_class_robosherlock_class(?Class, ?RSClass) is nondet.
+%
+% ...
+% @param Class ...
+% @param RSClass ...
+%
+ltfnp_get_class_robosherlock_class(Class, RSClass) :-
+    ltfnp_object_class(Class),
+    class_properties(Class, knowrob:'roboSherlockClass', literal(type(_, RSClass))).
 
 
 %% ltfnp_get_class_primitive_shape(?Class, ?Shape) is nondet.
