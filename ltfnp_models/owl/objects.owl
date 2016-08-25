@@ -69,6 +69,13 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Milk</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
         <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
         <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
       </owl:Restriction>
@@ -111,6 +118,13 @@
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/buttermilk/buttermilk.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Buttermilk</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
@@ -177,6 +191,13 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Cup</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
 	<owl:hasValue rdf:resource="&knowrob;RedMetalCup_Handle_laok8b26"/>
       </owl:Restriction>
@@ -217,6 +238,13 @@
     
     <rdfs:subClassOf>
       <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Bowl</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
 	<owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
       </owl:Restriction>
@@ -252,6 +280,13 @@
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
 	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/red_metal_plate_white_speckles/red_metal_plate_white_speckles.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Plate</owl:hasValue>
       </owl:Restriction>
     </rdfs:subClassOf>
     
