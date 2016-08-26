@@ -63,12 +63,12 @@
   "Combines the functionality of `json-symbol->string' and `split-prolog-symbol', resulting in a namespace-less string representing the value of `symbol'."
   (split-prolog-symbol (json-symbol->string symbol)))
 
-(defun add-prolog-namespace (symbol &key (namespace "http://knowrob.org/kb/knowrob.owl") (delimiter '\#))
+(defun add-prolog-namespace (symbol &key (namespace "http://knowrob.org/kb/knowrob.owl") (delimiter "#"))
   "Concatenates a string that consists of the given `namespace', the `delimiter', and finally the `symbol'. The default namespace represents the base KnowRob OWL namespace, and the default delimiter is `#'."
   (concatenate
    'string
    namespace
-   (json-symbol->string (write-to-string delimiter))
+   delimiter
    symbol))
 
 
