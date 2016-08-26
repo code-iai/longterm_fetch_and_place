@@ -33,7 +33,7 @@
   "Evaluates the prolog query `prolog-query' and transforms variables `vars' via `body', returning the result."
   `(with-vars-bound ,vars
        (lazy-car
-        (json-prolog:prolog ,prolog-query))
+        (json-prolog:prolog ,prolog-query :package 'ltfnp))
      ,@body))
 
 (defmacro with-prolog-vars-bound (vars prolog-query &body body)
@@ -43,7 +43,7 @@
      (lambda (bdgs)
        (with-vars-bound ,vars bdgs
          ,@body))
-     (json-prolog:prolog ,prolog-query))))
+     (json-prolog:prolog ,prolog-query :package 'ltfnp))))
 
 (defun json-symbol->string (symbol)
   "Converts `symbol' as returned from json-prolog to a lisp-usable string by trimming `|' characters at the beginning and the end."
