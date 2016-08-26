@@ -33,20 +33,21 @@
 ;;; Add utility functions here
 ;;;
 
+(defmacro with-process-modules-simulated (&body body)
+  `(cpm:with-process-modules-running
+       (pr2-manipulation-process-module:pr2-manipulation-process-module
+        pr2-navigation-process-module:pr2-navigation-process-module
+        point-head-process-module:point-head-process-module
+        gazebo-perception-process-module:gazebo-perception-process-module)
+     ,@body))
+
 (defmacro with-process-modules (&body body)
-  (if *simulated*
-      `(cpm:with-process-modules-running
-           (pr2-manipulation-process-module:pr2-manipulation-process-module
-            pr2-navigation-process-module:pr2-navigation-process-module
-            point-head-process-module:point-head-process-module
-            gazebo-perception-process-module:gazebo-perception-process-module)
-         ,@body)
-      `(cpm:with-process-modules-running
-           (pr2-manipulation-process-module:pr2-manipulation-process-module
-            pr2-navigation-process-module:pr2-navigation-process-module
-            point-head-process-module:point-head-process-module
-            robosherlock-process-module:robosherlock-process-module)
-         ,@body)))
+  `(cpm:with-process-modules-running
+       (pr2-manipulation-process-module:pr2-manipulation-process-module
+        pr2-navigation-process-module:pr2-navigation-process-module
+        point-head-process-module:point-head-process-module
+        robosherlock-process-module:robosherlock-process-module)
+     ,@body))
 
 (defun go-to-pose (position orientation)
   (let* ((pose (tf:make-pose-stamped "base_link" 0.0 position orientation))
@@ -108,6 +109,7 @@
      (cram-prolog:prolog
       `(and (btr:clear-bullet-world)
             (btr:bullet-world ?w)
+            (btr:debug-window ?w)
             (btr:assert (btr:object
                          ?w :static-plane floor
                          ((0 0 0) (0 0 0 1))
@@ -115,8 +117,7 @@
             (btr:assert (btr:object
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
-                         :urdf ,urdf-kitchen))
-            (btr:debug-window ?w))))
+                         :urdf ,urdf-kitchen)))))
     (when robot
       (force-ll
        (cram-prolog:prolog
