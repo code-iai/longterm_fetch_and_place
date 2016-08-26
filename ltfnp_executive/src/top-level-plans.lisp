@@ -37,9 +37,10 @@
   (unless simulated
     (setf cram-moveit::*needs-ft-fix* t))
   (roslisp-utilities:startup-ros)
-  (prepare-settings)
+  (prepare-settings :simulated simulated)
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
-  (spawn-scene)
+  (when simulated
+    (spawn-scene))
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (move-arms-up)
   (move-torso)
