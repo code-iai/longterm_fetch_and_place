@@ -68,52 +68,55 @@
   ;;   8 Sample target location for places to put down object and try putting it down;
   ;;     if either fails, go to 6
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
-  (with-process-modules
-    (with-designators ((loc-on-sink
-                        :location `((:on "CounterTop")
-                                    ;;(:name "iai_kitchen_sink_area_counter_top")
-                                    )))
-      (let ((locations `(,loc-on-sink)))
-        (labels ((random-source-location ()
-                   (elt locations (random (length locations)))))
-          (with-designators ((cup :object `((:type "RedMetalCup")
-                                            (:at ,(random-source-location))))
-                             (bowl :object `((:type "RedMetalBowl")
-                                             (:at ,(random-source-location))))
-                             (plate :object `((:type "RedMetalPlate")
-                                             (:at ,(random-source-location))))
-                             (milk :object `((:type "Milk")
-                                             (:at ,(random-source-location)))))
-            (let ((objects `(,cup ,bowl ,plate ,milk)))
-              (labels ((random-object ()
-                         (elt objects (random (length objects))))
-                       (random-object-subset (size)
-                         (loop while (< (length set) size)
-                               as object = (random-object)
-                               when (not (find object set))
-                                 collect object into set
-                               finally (return set))))
-                (let* ((random-set (loop while (not set)
-                                         as set = (random-object-subset (+ (random (length objects)) 1))
-                                         finally (return set))))
-                  (dolist (object random-set)
-                    (with-designators ((fetch-action :action `((:to :fetch)
-                                                               (:obj ,object))))
-                      (perform fetch-action)
-                      (format t "Got object: ~a~%" (desig:current-desig object))
-                      (with-designators ((loc-on-meal-table
-                                          :location
-                                          `((:on "CounterTop")
-                                            (:name "iai_kitchen_meal_table_counter_top")
-                                            (:theme :meal-table-setting)))
-                                         (loc-destination
-                                          :location
-                                          `((:pose ,(destination-pose
-                                                     (desig:desig-prop-value
-                                                      (desig:current-desig object) :name)
-                                                     (desig:reference loc-on-meal-table)))))
-                                         (place-action :action
-                                                       `((:to :place)
-                                                         (:obj ,object)
-                                                         (:at ,loc-on-meal-table))))
-                        (perform place-action)))))))))))))
+  (cond (*simulated*
+         (with-process-modules-simulated
+           (fetch-and-place-instance)))
+        (t
+         (with-process-modules
+           (fetch-and-place-instance)))))
+
+(defun enrich-description (description)
+  (let ((object-class (cadr (assoc :type description))))
+    (desig:update-designator-properties
+     description
+     (when object-class
+       (make-class-description object-class)))))
+
+(defun make-random-tabletop-goal (objects target-table)
+  (let ((location (make-designator :location
+                                   `((:on "CounterTop")
+                                     (:name ,target-table)
+                                     (:theme :meal-table-setting)))))
+    (make-tabletop-goal
+     "tabletop-goal-0"
+     (mapcar (lambda (object)
+               `(,object ,location))
+             objects))))
+
+(def-cram-function fetch-and-place-instance ()
+  (with-designators ((loc-on-sink
+                      :location `((:on "CounterTop")
+                                  (:name "iai_kitchen_sink_area_counter_top"))))
+    (labels ((obj-desc (type) (enrich-description `((:type ,type) (:at ,loc-on-sink)))))
+      (with-designators ((cup :object (obj-desc "RedMetalCup"))
+                         (bowl :object (obj-desc "RedMetalBowl"))
+                         (plate :object (obj-desc "RedMetalPlate"))
+                         (milk :object (obj-desc "Milk")))
+        (let ((the-plan
+                (plan
+                 (make-empty-state)
+                 (make-random-tabletop-goal `(,cup ,bowl ,plate ,milk)
+                                            "iai_kitchen_meal_table_counter_top"))))
+          (dolist (action the-plan)
+            (destructuring-bind (type &rest rest) action
+                (case type
+                  (:fetch (destructuring-bind (object) rest
+                            (with-designators ((fetch-action :action `((:to :fetch)
+                                                                       (:obj ,object))))
+                              (perform fetch-action))))
+                  (:place (destructuring-bind (object location) rest
+                            (with-designators ((place-action :action
+                                                             `((:to :place)
+                                                               (:obj ,object)
+                                                               (:at ,location))))
+                              (perform place-action))))))))))))
