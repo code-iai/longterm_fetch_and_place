@@ -82,41 +82,54 @@
      (when object-class
        (make-class-description object-class)))))
 
-(defun make-random-tabletop-goal (objects target-table)
+(defun make-random-tabletop-goal (target-table)
   (let ((location (make-designator :location
                                    `((:on "CounterTop")
                                      (:name ,target-table)
-                                     (:theme :meal-table-setting)))))
-    (make-tabletop-goal
-     "tabletop-goal-0"
-     (mapcar (lambda (object)
-               `(,object ,location))
-             objects))))
+                                     (:theme :meal-table-setting))))
+        (countertop (make-designator :location
+                                     `((:on "CounterTop")))))
+    ;; NOTE(winkler): Its just this one goal for now; in time, thi
+    ;; swill get increased to more goals. The mechanism after this
+    ;; will use this function's return value to determine which
+    ;; objects to spawn, and on which table not to put them (using the
+    ;; `target-table' parameter).
+    (labels ((obj-desc (type)
+               (enrich-description
+                `((:type ,type) (:at ,countertop)))))
+      (make-tabletop-goal
+       "tabletop-goal-0"
+       (mapcar (lambda (object-type)
+                 (let ((object (make-designator
+                                :object (obj-desc object-type))))
+                   `(,object ,location)))
+               `("RedMetalCup"
+                 "RedMetalPlate"
+                 "RedMetalBowl"
+                 "Milk"))))))
 
 (def-cram-function fetch-and-place-instance ()
   (with-designators ((loc-on-sink
                       :location `((:on "CounterTop")
                                   (:name "iai_kitchen_sink_area_counter_top"))))
     (labels ((obj-desc (type) (enrich-description `((:type ,type) (:at ,loc-on-sink)))))
-      (with-designators ((cup :object (obj-desc "RedMetalCup"))
-                         (bowl :object (obj-desc "RedMetalBowl"))
-                         (plate :object (obj-desc "RedMetalPlate"))
-                         (milk :object (obj-desc "Milk")))
-        (let ((the-plan
-                (plan
-                 (make-empty-state)
-                 (make-random-tabletop-goal `(,cup ,bowl ,plate ,milk)
-                                            "iai_kitchen_meal_table_counter_top"))))
-          (dolist (action the-plan)
-            (destructuring-bind (type &rest rest) action
-                (case type
-                  (:fetch (destructuring-bind (object) rest
-                            (with-designators ((fetch-action :action `((:to :fetch)
-                                                                       (:obj ,object))))
-                              (perform fetch-action))))
-                  (:place (destructuring-bind (object location) rest
-                            (with-designators ((place-action :action
-                                                             `((:to :place)
-                                                               (:obj ,object)
-                                                               (:at ,location))))
-                              (perform place-action))))))))))))
+      (let* ((goal (make-random-tabletop-goal
+                    `(,cup ,bowl ,plate ,milk)
+                    "iai_kitchen_meal_table_counter_top"))
+             (the-plan
+               (plan
+                (make-empty-state)
+                goal)))
+        (dolist (action the-plan)
+          (destructuring-bind (type &rest rest) action
+            (case type
+              (:fetch (destructuring-bind (object) rest
+                        (with-designators ((fetch-action :action `((:to :fetch)
+                                                                   (:obj ,object))))
+                          (perform fetch-action))))
+              (:place (destructuring-bind (object location) rest
+                        (with-designators ((place-action :action
+                                                         `((:to :place)
+                                                           (:obj ,object)
+                                                           (:at ,location))))
+                          (perform place-action)))))))))))
