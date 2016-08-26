@@ -2,8 +2,15 @@
 "true"; exec /usr/bin/env /usr/bin/sbcl --noinform --end-runtime-options --noprint --no-userinit --disable-debugger --script "$0" "$@"
 
 
+;; ASDF
 (REQUIRE :ASDF)
 
+;; Swank
+(load "/opt/ros/indigo/share/common-lisp/source/slime/swank-loader.lisp")
+(swank-loader:init)
+
+
+;; Utility functions
 (labels ((get-roslisp-path ()
            ;; calls rospack to find path to roslisp
            (let ((rospack-process
@@ -25,8 +32,11 @@
            (ASDF:OPERATE 'ASDF:LOAD-OP :ROS-LOAD-MANIFEST :VERBOSE NIL)))
   (load-ros-lookup))
 
+
 (PUSH :ROSLISP-STANDALONE-EXECUTABLE *FEATURES*)
 
+
+;; Roslisp
 (ros-load:load-system "roslisp" "roslisp")
 
 
@@ -41,7 +51,8 @@
 (roslisp:ros-info (ltfnp-aux) "Longterm Fetch and Place scenario loaded.")
 
 ;; Change into the package namespace
-(in-package :ltfnp)
+(swank:set-package "LTFNP")
 
 ;; Start the scenario
-(ltfnp:start-scenario :logged t)
+(roslisp:ros-info (ltfnp-aux) "Let's go!")
+(start-scenario :logged t)
