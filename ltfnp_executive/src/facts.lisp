@@ -33,7 +33,7 @@
             (-1.5 -0.75 1.2 0.75) ;; In front of meal table
             (1.3 0.1 0.3 0.75) ;; On sink area
             (-0.9 0.55 0.3 1.5) ;; On island area
-            (-1.5 -1.25 0.9 0.35) ;; On meal table
+            (-1.5 -1.15 0.9 0.35) ;; On meal table
             )))
     (lambda (x y)
       (block validity-check
