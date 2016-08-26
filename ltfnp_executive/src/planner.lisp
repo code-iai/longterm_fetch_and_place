@@ -76,4 +76,4 @@
               as next-action = (or (fetch-and-place-next-object-actions)
                                    (setf run nil))
               when next-action
-                collect next-action)))))
+                append next-action)))))
