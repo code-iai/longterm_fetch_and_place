@@ -88,7 +88,9 @@
                                      (:name ,target-table)
                                      (:theme :meal-table-setting))))
         (countertop (make-designator :location
-                                     `((:on "CounterTop")))))
+                                     `((:on "CounterTop")
+                                       ;;(:name "iai_kitchen_sink_area_counter_top")
+                                       ))))
     ;; NOTE(winkler): Its just this one goal for now; in time, thi
     ;; swill get increased to more goals. The mechanism after this
     ;; will use this function's return value to determine which
@@ -109,27 +111,21 @@
                  "Milk"))))))
 
 (def-cram-function fetch-and-place-instance ()
-  (with-designators ((loc-on-sink
-                      :location `((:on "CounterTop")
-                                  (:name "iai_kitchen_sink_area_counter_top"))))
-    (labels ((obj-desc (type) (enrich-description `((:type ,type) (:at ,loc-on-sink)))))
-      (let* ((goal (make-random-tabletop-goal
-                    `(,cup ,bowl ,plate ,milk)
-                    "iai_kitchen_meal_table_counter_top"))
-             (the-plan
-               (plan
-                (make-empty-state)
-                goal)))
-        (dolist (action the-plan)
-          (destructuring-bind (type &rest rest) action
-            (case type
-              (:fetch (destructuring-bind (object) rest
-                        (with-designators ((fetch-action :action `((:to :fetch)
-                                                                   (:obj ,object))))
-                          (perform fetch-action))))
-              (:place (destructuring-bind (object location) rest
-                        (with-designators ((place-action :action
-                                                         `((:to :place)
-                                                           (:obj ,object)
-                                                           (:at ,location))))
-                          (perform place-action)))))))))))
+  (let* ((goal (make-random-tabletop-goal "iai_kitchen_meal_table_counter_top"))
+         (the-plan
+           (plan
+            (make-empty-state)
+            goal)))
+    (dolist (action the-plan)
+      (destructuring-bind (type &rest rest) action
+        (case type
+          (:fetch (destructuring-bind (object) rest
+                    (with-designators ((fetch-action :action `((:to :fetch)
+                                                               (:obj ,object))))
+                      (perform fetch-action))))
+          (:place (destructuring-bind (object location) rest
+                    (with-designators ((place-action :action
+                                                     `((:to :place)
+                                                       (:obj ,object)
+                                                       (:at ,location))))
+                      (perform place-action)))))))))
