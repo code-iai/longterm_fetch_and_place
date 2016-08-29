@@ -33,7 +33,7 @@
   "Evaluates the prolog query `prolog-query' and transforms variables `vars' via `body', returning the result."
   `(with-vars-bound ,vars
        (lazy-car
-        (json-prolog:prolog ,prolog-query))
+        (json-prolog:prolog ,prolog-query :package 'ltfnp))
      ,@body))
 
 (defmacro with-prolog-vars-bound (vars prolog-query &body body)
@@ -43,7 +43,7 @@
      (lambda (bdgs)
        (with-vars-bound ,vars bdgs
          ,@body))
-     (json-prolog:prolog ,prolog-query))))
+     (json-prolog:prolog ,prolog-query :package 'ltfnp))))
 
 (defun json-symbol->string (symbol)
   "Converts `symbol' as returned from json-prolog to a lisp-usable string by trimming `|' characters at the beginning and the end."
@@ -63,12 +63,12 @@
   "Combines the functionality of `json-symbol->string' and `split-prolog-symbol', resulting in a namespace-less string representing the value of `symbol'."
   (split-prolog-symbol (json-symbol->string symbol)))
 
-(defun add-prolog-namespace (symbol &key (namespace "http://knowrob.org/kb/knowrob.owl") (delimiter '\#))
+(defun add-prolog-namespace (symbol &key (namespace "http://knowrob.org/kb/knowrob.owl") (delimiter "#"))
   "Concatenates a string that consists of the given `namespace', the `delimiter', and finally the `symbol'. The default namespace represents the base KnowRob OWL namespace, and the default delimiter is `#'."
   (concatenate
    'string
    namespace
-   (json-symbol->string (write-to-string delimiter))
+   delimiter
    symbol))
 
 
@@ -139,6 +139,11 @@ base-class itself does not count towards the enlisted classes."
       `("ltfnp_get_class_urdf_path" ,(add-prolog-namespace class) ?urdfpath)
     (json-symbol->string ?urdfpath)))
 
+(defun get-class-robosherlock-class (class)
+  (with-first-prolog-vars-bound (?rsclass)
+      `("ltfnp_get_class_robosherlock_class" ,(add-prolog-namespace class) ?rsclass)
+    (json-symbol->string ?rsclass)))
+
 (defun get-class-primitive-shape (class)
   (with-first-prolog-vars-bound (?shape)
       `("ltfnp_get_class_primitive_shape" ,(add-prolog-namespace class) ?shape)
@@ -147,16 +152,21 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-urdf-path (object-id)
   (get-class-urdf-path (get-object-class object-id)))
 
+(defun get-object-robosherlock-class (object-id)
+  (get-class-robosherlock-class (get-object-class object-id)))
+
 (defun make-class-description (class)
   (let* ((dimensions (get-class-dimensions class))
          (shape-string (get-class-primitive-shape class))
-         (shape-prop (when shape-string (intern (string-upcase shape-string) :keyword))))
+         (shape-prop (when shape-string (intern (string-upcase shape-string) :keyword)))
+         (rs-class (get-class-robosherlock-class class)))
     (append
      `((:type ,class)
        (:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
                                                    (second dimensions)
                                                    (third dimensions)))
-       (:urdf-model ,(get-class-urdf-path class)))
+       (:urdf-model ,(get-class-urdf-path class))
+       (:robosherlock-class ,rs-class))
      (when shape-prop
        `((:shape ,shape-prop)))
      (mapcar (lambda (handle-object)

@@ -65,6 +65,7 @@
      (:file "reasoning" :depends-on ("package" "costmap-metadata"))
      (:file "utils" :depends-on ("package" "costmap-metadata" "reasoning"))
      (:file "sem-map-config" :depends-on ("package"))
+     (:file "planner" :depends-on ("package"))
      (:file "facts" :depends-on ("package"))
      (:file "plan-library" :depends-on ("package"
                                         "utils"
@@ -86,4 +87,5 @@
                                            "sem-map-config"
                                            "plan-library"
                                            "facts"
-                                           "plans-process-module"))))))
+                                           "plans-process-module"
+                                           "planner"))))))

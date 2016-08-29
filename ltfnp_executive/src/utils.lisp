@@ -33,20 +33,21 @@
 ;;; Add utility functions here
 ;;;
 
+(defmacro with-process-modules-simulated (&body body)
+  `(cpm:with-process-modules-running
+       (pr2-manipulation-process-module:pr2-manipulation-process-module
+        pr2-navigation-process-module:pr2-navigation-process-module
+        point-head-process-module:point-head-process-module
+        gazebo-perception-process-module:gazebo-perception-process-module)
+     ,@body))
+
 (defmacro with-process-modules (&body body)
-  (if *simulated*
-      `(cpm:with-process-modules-running
-           (pr2-manipulation-process-module:pr2-manipulation-process-module
-            pr2-navigation-process-module:pr2-navigation-process-module
-            point-head-process-module:point-head-process-module
-            gazebo-perception-process-module:gazebo-perception-process-module)
-         ,@body)
-      `(cpm:with-process-modules-running
-           (pr2-manipulation-process-module:pr2-manipulation-process-module
-            pr2-navigation-process-module:pr2-navigation-process-module
-            point-head-process-module:point-head-process-module
-            robosherlock-process-module:robosherlock-process-module)
-         ,@body)))
+  `(cpm:with-process-modules-running
+       (pr2-manipulation-process-module:pr2-manipulation-process-module
+        pr2-navigation-process-module:pr2-navigation-process-module
+        point-head-process-module:point-head-process-module
+        robosherlock-process-module:robosherlock-process-module)
+     ,@body))
 
 (defun go-to-pose (position orientation)
   (let* ((pose (tf:make-pose-stamped "base_link" 0.0 position orientation))
@@ -108,6 +109,7 @@
      (cram-prolog:prolog
       `(and (btr:clear-bullet-world)
             (btr:bullet-world ?w)
+            (btr:debug-window ?w)
             (btr:assert (btr:object
                          ?w :static-plane floor
                          ((0 0 0) (0 0 0 1))
@@ -115,8 +117,7 @@
             (btr:assert (btr:object
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
-                         :urdf ,urdf-kitchen))
-            (btr:debug-window ?w))))
+                         :urdf ,urdf-kitchen)))))
     (when robot
       (force-ll
        (cram-prolog:prolog
@@ -174,6 +175,25 @@
                       `(,failure (f) (declare (ignore f)) ,@code))))
                 clauses)
      ,@body))
+
+(defmacro catch-all (context &body body)
+  `(labels ((notif (message)
+              (roslisp:ros-warn
+               (ltfnp catch-all) "Catch-All (~a): ~a"
+               ,context message)))
+     (when-failure ((:object-not-found
+                     (notif "object-not-found")
+                     (cram-language:retry))
+                    (:manipulation-pose-unreachable
+                     (notif "manipulation-pose-unreachable")
+                     (cram-language:retry))
+                    (:location-not-reached-failure
+                     (notif "location-not-reached-failure")
+                     (cram-language:retry))
+                    (:manipulation-failed
+                     (notif "manipulation-failed")
+                     (cram-language:retry)))
+       ,@body)))
 
 (defun go-to-origin ()
   (let* ((origin-pose (cl-tf:make-pose-stamped
@@ -273,7 +293,7 @@
       (spawn-class instance-name class pose)
       instance-name)))
 
-(defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
+(defun move-arms-up (&key side)
   (when (or (eql side :left) (not side))
     (move-arm-pose :left (tf:make-pose-stamped
                           "torso_lift_link" 0.0
@@ -323,3 +343,70 @@
                                    (:right "r_wrist_roll_link"))
                           :model2 object-name
                           :link2 "link")))
+
+(defun enrich-description (description)
+  (let ((object-class (cadr (assoc :type description))))
+    (desig:update-designator-properties
+     description
+     (when object-class
+       (make-class-description object-class)))))
+
+(defun make-random-tabletop-goal (target-table)
+  (let ((location (make-designator :location
+                                   `((:on "CounterTop")
+                                     (:name ,target-table)
+                                     (:theme :meal-table-setting))))
+        (countertop (make-designator :location
+                                     `((:on "CounterTop")
+                                       ;;(:name "iai_kitchen_sink_area_counter_top")
+                                       ))))
+    ;; NOTE(winkler): Its just this one goal for now; in time, this
+    ;; will get increased to more goals. The mechanism after this will
+    ;; use this function's return value to determine which objects to
+    ;; spawn, and on which table not to put them (using the
+    ;; `target-table' parameter).
+    (labels ((obj-desc (type)
+               (enrich-description
+                `((:type ,type) (:at ,countertop)))))
+      (make-tabletop-goal
+       "tabletop-goal-0"
+       (mapcar (lambda (object-type)
+                 (let ((object (make-designator
+                                :object (obj-desc object-type))))
+                   `(,object ,location)))
+               `("RedMetalCup"
+                 "RedMetalPlate"
+                 "RedMetalBowl"
+                 "Milk"))))))
+
+(defun spawn-goal-objects (goal table)
+  (when *simulated* ;; This is only necessary when simulating
+    (let ((objects
+            (loop for precondition in (slot-value goal 'preconditions)
+             as object = (destructuring-bind (type &rest rest)
+                             precondition
+                           (when (eql type :object-location)
+                             (first rest)))
+             when object
+               collect object))
+          (tables (remove-if
+                   (lambda (x) (string= x table))
+                   `("iai_kitchen_meal_table_counter_top"
+                     "iai_kitchen_sink_area_counter_top"
+                     "iai_kitchen_kitchen_island_counter_top"))))
+      (labels ((spawn (class &optional
+                       (translation (tf:make-identity-vector))
+                       (orientation (tf:make-identity-rotation)))
+                 (spawn-object-relative
+                  class (tf:make-pose translation orientation)
+                  (tf:pose->pose-stamped
+                   "map" 0.0 (tf:make-identity-pose)))))
+        (dolist (object objects)
+          (let* ((class (desig:desig-prop-value object :type))
+                 (random-table (elt tables (random (length tables))))
+                 (location (make-designator
+                            :location
+                            `((:on "CounterTop")
+                              (:name ,random-table))))
+                 (pose (desig:reference location)))
+            (spawn class (tf:origin pose) (tf:orientation pose))))))))
