@@ -3,4 +3,13 @@
   <!--include file="$(find ltfnp_maps)/launch/map.launch" /-->
   <include file="$(find iai_maps)/launch/no-json.launch" />
   
+  <node pkg="robot_state_chain_publisher" type="state_chain_publisher"
+    name="kitchen_state_publisher_2" output="screen">
+    <param name="tf_prefix" value="/iai_kitchen"/>
+    <param name="publish_frequency" value="2"/>
+    <remap from="robot_description" to="kitchen_description" />
+  </node>
+  
+  <node pkg="tf" type="static_transform_publisher" name="kitchen_world_map" args="0 0 0 0 0 0 map iai_kitchen/world 100" />
+  
 </launch>
