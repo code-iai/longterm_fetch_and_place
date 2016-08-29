@@ -176,6 +176,21 @@
                 clauses)
      ,@body))
 
+(defmacro catch-all (context &body body)
+  `(labels ((notif-retry (message)
+              (roslisp:ros-warn (ltfnp catch-all) "Catch-All (~a): ~a"
+                                ,context message)
+              (cpl:retry)))
+     (when-failure ((:object-not-found
+                     (notif-retry "object-not-found"))
+                    (:manipulation-pose-unreachable
+                     (notif-retry "object-not-found"))
+                    (:location-not-reached-failure
+                     (notif-retry "object-not-found"))
+                    (:manipulation-failed
+                     (notif-retry "object-not-found")))
+       ,@body)))
+
 (defun go-to-origin ()
   (let* ((origin-pose (cl-tf:make-pose-stamped
                        "map" 0.0
