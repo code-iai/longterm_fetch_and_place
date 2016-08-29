@@ -47,8 +47,16 @@
 
 (defun json-symbol->string (symbol)
   "Converts `symbol' as returned from json-prolog to a lisp-usable string by trimming `|' characters at the beginning and the end."
-  (let* ((string-symbol (write-to-string symbol)))
-    (subseq string-symbol 2 (- (length string-symbol) 2))))
+  ;;(let* ((string-symbol (write-to-string symbol)))
+  ;;  (subseq string-symbol 2 (- (length string-symbol) 2))))
+  (let* ((name (symbol-name symbol))
+         (stripped-name
+           (or (when (> (length name) 0)
+                 (when (and (equal (subseq name 0 1) "'")
+                            (equal (subseq name (- (length name) 1)) "'"))
+                   (subseq name 1 (- (length name) 1))))
+               name)))
+    stripped-name))
 
 (defun split-prolog-symbol (prolog-symbol &key (delimiter '\#))
   "Splits the namespace from the symbol of a prolog identifier symbol `prolog-symbol'. The two parts must be delimited by the delimiter `delimiter'. Returns a values list, consisting of the symbol, and the namespace."
