@@ -67,19 +67,17 @@
 (def-cram-function fetch-and-place-instance ()
   (let* ((target-table "iai_kitchen_meal_table_counter_top")
          (goal (make-random-tabletop-goal target-table))
-         (the-plan
-           (plan
-            (make-empty-state)
-            goal)))
+         (the-plan (plan (make-empty-state) goal)))
     (spawn-goal-objects goal target-table)
     (dolist (action the-plan)
       (destructuring-bind (type &rest rest) action
-        (case type
+        (ecase type
           (:fetch
            (catch-all "fetch"
              (destructuring-bind (object) rest
-               (with-designators ((fetch-action :action `((:to :fetch)
-                                                          (:obj ,object))))
+               (with-designators ((fetch-action :action
+                                                `((:to :fetch)
+                                                  (:obj ,object))))
                  (perform fetch-action)))))
           (:place
            (catch-all "place"
