@@ -177,18 +177,22 @@
      ,@body))
 
 (defmacro catch-all (context &body body)
-  `(labels ((notif-retry (message)
-              (roslisp:ros-warn (ltfnp catch-all) "Catch-All (~a): ~a"
-                                ,context message)
-              (cpl:retry)))
+  `(labels ((notif (message)
+              (roslisp:ros-warn
+               (ltfnp catch-all) "Catch-All (~a): ~a"
+               ,context message)))
      (when-failure ((:object-not-found
-                     (notif-retry "object-not-found"))
+                     (notif "object-not-found")
+                     (cram-language:retry))
                     (:manipulation-pose-unreachable
-                     (notif-retry "object-not-found"))
+                     (notif "manipulation-pose-unreachable")
+                     (cram-language:retry))
                     (:location-not-reached-failure
-                     (notif-retry "object-not-found"))
+                     (notif "location-not-reached-failure")
+                     (cram-language:retry))
                     (:manipulation-failed
-                     (notif-retry "object-not-found")))
+                     (notif "manipulation-failed")
+                     (cram-language:retry)))
        ,@body)))
 
 (defun go-to-origin ()
