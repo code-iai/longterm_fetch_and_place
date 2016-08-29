@@ -324,3 +324,70 @@
                                    (:right "r_wrist_roll_link"))
                           :model2 object-name
                           :link2 "link")))
+
+(defun enrich-description (description)
+  (let ((object-class (cadr (assoc :type description))))
+    (desig:update-designator-properties
+     description
+     (when object-class
+       (make-class-description object-class)))))
+
+(defun make-random-tabletop-goal (target-table)
+  (let ((location (make-designator :location
+                                   `((:on "CounterTop")
+                                     (:name ,target-table)
+                                     (:theme :meal-table-setting))))
+        (countertop (make-designator :location
+                                     `((:on "CounterTop")
+                                       ;;(:name "iai_kitchen_sink_area_counter_top")
+                                       ))))
+    ;; NOTE(winkler): Its just this one goal for now; in time, this
+    ;; will get increased to more goals. The mechanism after this will
+    ;; use this function's return value to determine which objects to
+    ;; spawn, and on which table not to put them (using the
+    ;; `target-table' parameter).
+    (labels ((obj-desc (type)
+               (enrich-description
+                `((:type ,type) (:at ,countertop)))))
+      (make-tabletop-goal
+       "tabletop-goal-0"
+       (mapcar (lambda (object-type)
+                 (let ((object (make-designator
+                                :object (obj-desc object-type))))
+                   `(,object ,location)))
+               `("RedMetalCup"
+                 "RedMetalPlate"
+                 "RedMetalBowl"
+                 "Milk"))))))
+
+(defun spawn-goal-objects (goal table)
+  (when *simulated* ;; This is only necessary when simulating
+    (let ((objects
+            (loop for precondition in (slot-value goal 'preconditions)
+             as object = (destructuring-bind (type &rest rest)
+                             precondition
+                           (when (eql type :object-location)
+                             (first rest)))
+             when object
+               collect object))
+          (tables (remove-if
+                   (lambda (x) (string= x table))
+                   `("iai_kitchen_meal_table_counter_top"
+                     "iai_kitchen_sink_area_counter_top"
+                     "iai_kitchen_kitchen_island_counter_top"))))
+      (labels ((spawn (class &optional
+                       (translation (tf:make-identity-vector))
+                       (orientation (tf:make-identity-rotation)))
+                 (spawn-object-relative
+                  class (tf:make-pose translation orientation)
+                  (tf:pose->pose-stamped
+                   "map" 0.0 (tf:make-identity-pose)))))
+        (dolist (object objects)
+          (let* ((class (desig:desig-prop-value object :type))
+                 (random-table (elt tables (random (length tables))))
+                 (location (make-designator
+                            :location
+                            `((:on "CounterTop")
+                              (:name ,random-table))))
+                 (pose (desig:reference location)))
+            (spawn class (tf:origin pose) (tf:orientation pose))))))))

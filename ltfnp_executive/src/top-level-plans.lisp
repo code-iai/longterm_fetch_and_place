@@ -39,8 +39,6 @@
   (roslisp-utilities:startup-ros)
   (prepare-settings :simulated simulated)
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
-  (when simulated
-    (spawn-scene))
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (move-arms-up)
   (move-torso)
@@ -75,47 +73,14 @@
          (with-process-modules
            (fetch-and-place-instance)))))
 
-(defun enrich-description (description)
-  (let ((object-class (cadr (assoc :type description))))
-    (desig:update-designator-properties
-     description
-     (when object-class
-       (make-class-description object-class)))))
-
-(defun make-random-tabletop-goal (target-table)
-  (let ((location (make-designator :location
-                                   `((:on "CounterTop")
-                                     (:name ,target-table)
-                                     (:theme :meal-table-setting))))
-        (countertop (make-designator :location
-                                     `((:on "CounterTop")
-                                       ;;(:name "iai_kitchen_sink_area_counter_top")
-                                       ))))
-    ;; NOTE(winkler): Its just this one goal for now; in time, thi
-    ;; swill get increased to more goals. The mechanism after this
-    ;; will use this function's return value to determine which
-    ;; objects to spawn, and on which table not to put them (using the
-    ;; `target-table' parameter).
-    (labels ((obj-desc (type)
-               (enrich-description
-                `((:type ,type) (:at ,countertop)))))
-      (make-tabletop-goal
-       "tabletop-goal-0"
-       (mapcar (lambda (object-type)
-                 (let ((object (make-designator
-                                :object (obj-desc object-type))))
-                   `(,object ,location)))
-               `("RedMetalCup"
-                 "RedMetalPlate"
-                 "RedMetalBowl"
-                 "Milk"))))))
-
 (def-cram-function fetch-and-place-instance ()
-  (let* ((goal (make-random-tabletop-goal "iai_kitchen_meal_table_counter_top"))
+  (let* ((goal (make-random-tabletop-goal
+                "iai_kitchen_meal_table_counter_top"))
          (the-plan
            (plan
             (make-empty-state)
             goal)))
+    (spawn-goal-objects goal "iai_kitchen_meal_table_counter_top")
     (dolist (action the-plan)
       (destructuring-bind (type &rest rest) action
         (case type
