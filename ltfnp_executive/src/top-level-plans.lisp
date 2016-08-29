@@ -67,7 +67,10 @@
 
 (def-cram-function fetch-and-place-instance ()
   (let* ((target-table "iai_kitchen_meal_table_counter_top")
-         (goal (make-random-tabletop-goal target-table))
+         (goal (make-random-tabletop-goal
+                target-table
+                :objects `("RedMetalCup")
+                :source "iai_kitchen_sink_area_counter_top"))
          (the-plan (plan (make-empty-state) goal)))
     (spawn-goal-objects goal target-table)
     (roslisp:ros-info (ltfnp) "The plan has ~a step(s)"

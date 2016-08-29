@@ -351,15 +351,16 @@
      (when object-class
        (make-class-description object-class)))))
 
-(defun make-random-tabletop-goal (target-table)
+(defun make-random-tabletop-goal (target-table &key objects source)
   (let ((location (make-designator :location
                                    `((:on "CounterTop")
                                      (:name ,target-table)
                                      (:theme :meal-table-setting))))
         (countertop (make-designator :location
-                                     `((:on "CounterTop")
-                                       ;;(:name "iai_kitchen_sink_area_counter_top")
-                                       ))))
+                                     (append
+                                      `((:on "CounterTop"))
+                                      (when source
+                                        `((:name ,source)))))))
     ;; NOTE(winkler): Its just this one goal for now; in time, this
     ;; will get increased to more goals. The mechanism after this will
     ;; use this function's return value to determine which objects to
