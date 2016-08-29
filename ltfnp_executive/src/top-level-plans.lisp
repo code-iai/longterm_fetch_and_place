@@ -36,12 +36,13 @@
   (setf *simulated* simulated)
   (unless simulated
     (setf cram-moveit::*needs-ft-fix* t))
+  (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (roslisp-utilities:startup-ros)
   (prepare-settings :simulated simulated)
-  (roslisp:ros-info (ltfnp) "Connecting to ROS")
-  (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
+  (roslisp:ros-info (ltfnp) "Putting the PR2 into defined start state")
   (move-arms-up)
   (move-torso)
+  (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (prog1
       (longterm-fetch-and-place)
     (when logged
@@ -69,6 +70,8 @@
          (goal (make-random-tabletop-goal target-table))
          (the-plan (plan (make-empty-state) goal)))
     (spawn-goal-objects goal target-table)
+    (roslisp:ros-info (ltfnp) "The plan has ~a step(s)"
+                      (length the-plan))
     (dolist (action the-plan)
       (destructuring-bind (type &rest rest) action
         (ecase type
