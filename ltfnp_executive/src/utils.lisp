@@ -361,11 +361,6 @@
                                       `((:on "CounterTop"))
                                       (when source
                                         `((:name ,source)))))))
-    ;; NOTE(winkler): Its just this one goal for now; in time, this
-    ;; will get increased to more goals. The mechanism after this will
-    ;; use this function's return value to determine which objects to
-    ;; spawn, and on which table not to put them (using the
-    ;; `target-table' parameter).
     (let ((arrangements
             `((("RedMetalPlate" ,(tf:make-pose-stamped
                                   "map" 0.0
@@ -382,6 +377,18 @@
                ("Milk" ,(tf:make-pose-stamped
                          "map" 0.0
                          (tf:make-3d-vector -1.4 -0.9 0.76)
+                         (tf:euler->quaternion :az (/ pi -2)))))
+              (("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.1 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -0.95 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))
+               ("Milk" ,(tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:make-3d-vector -1.3 -0.9 0.76)
                          (tf:euler->quaternion :az (/ pi -2))))))))
       (labels ((obj-desc (type)
                  (enrich-description
