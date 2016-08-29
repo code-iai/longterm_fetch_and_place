@@ -365,19 +365,46 @@
     ;; use this function's return value to determine which objects to
     ;; spawn, and on which table not to put them (using the
     ;; `target-table' parameter).
-    (labels ((obj-desc (type)
-               (enrich-description
-                `((:type ,type) (:at ,countertop)))))
-      (make-tabletop-goal
-       "tabletop-goal-0"
-       (mapcar (lambda (object-type)
-                 (let ((object (make-designator
-                                :object (obj-desc object-type))))
-                   `(,object ,location)))
-               `("RedMetalCup"
-                 "RedMetalPlate"
-                 "RedMetalBowl"
-                 "Milk"))))))
+    (let ((arrangements
+            `((("RedMetalPlate" (tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -1.0 -0.9 0.76)
+                                 (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" (tf:make-pose-stamped
+                               "map" 0.0
+                               (tf:make-3d-vector -0.85 -1.0 0.76)
+                               (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalBowl" (tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.65 -0.9 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))
+               ("Milk" (tf:make-pose-stamped
+                        "map" 0.0
+                        (tf:make-3d-vector -1.4 -0.9 0.76)
+                        (tf:euler->quaternion :az (/ pi -2))))))))
+      (labels ((obj-desc (type)
+                 (enrich-description
+                  `((:type ,type) (:at ,countertop))))
+               (make-random-arrangement-goal (name-prefix)
+                 (let ((random-index (random (length arrangements))))
+                   (make-tabletop-goal
+                    (concatenate 'string name-prefix (write-to-string random-index))
+                    (mapcar (lambda (object+pose)
+                              (destructuring-bind (object pose) object+pose
+                                `(,(make-designator :object (obj-desc object))
+                                  ,(make-designator :location `((:pose ,pose))))))
+                            (elt arrangements random-index))))))
+        (make-random-arrangement-goal "tabletop-goal-")))))
+        ;; (make-tabletop-goal
+        ;;  "tabletop-goal-0"
+        ;;  (mapcar (lambda (object-type)
+        ;;            (let ((object (make-designator
+        ;;                           :object (obj-desc object-type))))
+        ;;              `(,object ,location)))
+        ;;          `("RedMetalCup"
+        ;;            "RedMetalPlate"
+        ;;            "RedMetalBowl"
+        ;;            "Milk")))))))
 
 (defun spawn-goal-objects (goal table)
   (when *simulated* ;; This is only necessary when simulating
