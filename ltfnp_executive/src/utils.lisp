@@ -389,7 +389,23 @@
                ("Milk" ,(tf:make-pose-stamped
                          "map" 0.0
                          (tf:make-3d-vector -1.3 -0.9 0.76)
-                         (tf:euler->quaternion :az (/ pi -2))))))))
+                         (tf:euler->quaternion :az (/ pi -2)))))
+              (("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.1 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -0.95 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.4 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.25 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))))))
       (labels ((obj-desc (type)
                  (enrich-description
                   `((:type ,type) (:at ,countertop))))
