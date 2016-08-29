@@ -54,43 +54,38 @@
 ;;;
 
 (def-top-level-cram-function longterm-fetch-and-place ()
-  ;; Agenda:
-  ;;   1 Determine object to fetch and where to put it (both vaguely)
-  ;;   2 Resolve next location at which it could reside (lazily)
-  ;;   3 Approach location, and potentially articulate it (opening drawers/doors)
-  ;;   4 Detect objects at that location, verifying whether the one in
-  ;;     question is present; if not, articulate (close) and go to 2 until exhausted
-  ;;   5 Pick up object and articulate (close) container if applicable
-  ;;   6 Resolve next location that satisfies the target destination and approach it
-  ;;   7 If location could not be reached, go back to 6
-  ;;   8 Sample target location for places to put down object and try putting it down;
-  ;;     if either fails, go to 6
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   (cond (*simulated*
+         (roslisp:ros-info (ltfnp) "Environment: Simulated")
          (with-process-modules-simulated
            (fetch-and-place-instance)))
         (t
+         (roslisp:ros-info (ltfnp) "Environment: Real-World")
          (with-process-modules
            (fetch-and-place-instance)))))
 
 (def-cram-function fetch-and-place-instance ()
-  (let* ((goal (make-random-tabletop-goal
-                "iai_kitchen_meal_table_counter_top"))
+  (let* ((target-table "iai_kitchen_meal_table_counter_top")
+         (goal (make-random-tabletop-goal target-table))
          (the-plan
            (plan
             (make-empty-state)
             goal)))
-    (spawn-goal-objects goal "iai_kitchen_meal_table_counter_top")
+    (spawn-goal-objects goal target-table)
     (dolist (action the-plan)
       (destructuring-bind (type &rest rest) action
         (case type
-          (:fetch (destructuring-bind (object) rest
-                    (with-designators ((fetch-action :action `((:to :fetch)
-                                                               (:obj ,object))))
-                      (perform fetch-action))))
-          (:place (destructuring-bind (object location) rest
-                    (with-designators ((place-action :action
-                                                     `((:to :place)
-                                                       (:obj ,object)
-                                                       (:at ,location))))
-                      (perform place-action)))))))))
+          (:fetch
+           (catch-all "fetch"
+             (destructuring-bind (object) rest
+               (with-designators ((fetch-action :action `((:to :fetch)
+                                                          (:obj ,object))))
+                 (perform fetch-action)))))
+          (:place
+           (catch-all "place"
+             (destructuring-bind (object location) rest
+               (with-designators ((place-action :action
+                                                `((:to :place)
+                                                  (:obj ,object)
+                                                  (:at ,location))))
+                 (perform place-action))))))))))
