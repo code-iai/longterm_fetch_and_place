@@ -366,22 +366,22 @@
     ;; spawn, and on which table not to put them (using the
     ;; `target-table' parameter).
     (let ((arrangements
-            `((("RedMetalPlate" (tf:make-pose-stamped
-                                 "map" 0.0
-                                 (tf:make-3d-vector -1.0 -0.9 0.76)
-                                 (tf:euler->quaternion :az (/ pi -2))))
-               ("RedMetalCup" (tf:make-pose-stamped
-                               "map" 0.0
-                               (tf:make-3d-vector -0.85 -1.0 0.76)
-                               (tf:euler->quaternion :az (/ pi -2))))
-               ("RedMetalBowl" (tf:make-pose-stamped
+            `((("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.0 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
-                                (tf:make-3d-vector -1.65 -0.9 0.76)
+                                (tf:make-3d-vector -0.85 -1.0 0.76)
                                 (tf:euler->quaternion :az (/ pi -2))))
-               ("Milk" (tf:make-pose-stamped
-                        "map" 0.0
-                        (tf:make-3d-vector -1.4 -0.9 0.76)
-                        (tf:euler->quaternion :az (/ pi -2))))))))
+               ("RedMetalBowl" ,(tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -1.65 -0.9 0.76)
+                                 (tf:euler->quaternion :az (/ pi -2))))
+               ("Milk" ,(tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:make-3d-vector -1.4 -0.9 0.76)
+                         (tf:euler->quaternion :az (/ pi -2))))))))
       (labels ((obj-desc (type)
                  (enrich-description
                   `((:type ,type) (:at ,countertop))))
