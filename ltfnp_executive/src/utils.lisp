@@ -452,12 +452,33 @@
                   class (tf:make-pose translation orientation)
                   (tf:pose->pose-stamped
                    "map" 0.0 (tf:make-identity-pose)))))
-        (dolist (object objects)
-          (let* ((class (desig:desig-prop-value object :type))
-                 (random-table (elt tables (random (length tables))))
-                 (location (make-designator
-                            :location
-                            `((:on "CounterTop")
-                              (:name ,random-table))))
-                 (pose (desig:reference location)))
-            (spawn class (tf:origin pose) (tf:orientation pose))))))))
+        (let ((spawn-poses nil))
+          (labels ((is-pose-close-to-spawned-object (pose)
+                     (let ((threshold-distance 0.2))
+                       (block check
+                         (dolist (spawn-pose spawn-poses)
+                           (when (<= (tf:v-dist (tf:origin spawn-pose)
+                                                (tf:origin pose))
+                                     threshold-distance)
+                             (return-from check t))))))
+                   (get-free-spawn-pose (location)
+                     (let ((pose (desig:reference location)))
+                       (loop while (and (is-pose-close-to-spawned-object pose)
+                                        location)
+                             do (setf location (desig:next-solution location))
+                                (when location
+                                  (setf pose (desig:reference location))))
+                       ;; If all else fails, use the last pose we
+                       ;; got. This is not optimal, but works for most
+                       ;; situations for now.
+                       (push pose spawn-poses)
+                       pose)))
+            (dolist (object objects)
+              (let* ((class (desig:desig-prop-value object :type))
+                     (random-table (elt tables (random (length tables))))
+                     (location (make-designator
+                                :location
+                                `((:on "CounterTop")
+                                  (:name ,random-table))))
+                     (pose (get-free-spawn-pose location)))
+                (spawn class (tf:origin pose) (tf:orientation pose))))))))))
