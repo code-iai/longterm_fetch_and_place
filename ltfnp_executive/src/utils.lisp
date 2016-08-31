@@ -351,6 +351,22 @@
      (when object-class
        (make-class-description object-class)))))
 
+(defun make-fixed-tabletop-goal (objects+poses source)
+  (let ((countertop (make-designator
+                     :location
+                     `((:on "CounterTop")
+                       (:name ,source)))))
+    (labels ((obj-desc (type)
+               (enrich-description
+                `((:type ,type) (:at ,countertop)))))
+      (make-tabletop-goal
+       "fixed-tabletop-goal"
+       (mapcar (lambda (object+pose)
+                 (destructuring-bind (object pose) object+pose
+                   `(,(make-designator :object (obj-desc object))
+                     ,(make-designator :location `((:pose ,pose))))))
+               objects+poses)))))
+
 (defun make-random-tabletop-goal (target-table &key objects source)
   (let ((location (make-designator :location
                                    `((:on "CounterTop")
@@ -417,18 +433,20 @@
                               (destructuring-bind (object pose) object+pose
                                 `(,(make-designator :object (obj-desc object))
                                   ,(make-designator :location `((:pose ,pose))))))
-                            (elt arrangements random-index))))))
-        (make-random-arrangement-goal "tabletop-goal-")))))
-        ;; (make-tabletop-goal
-        ;;  "tabletop-goal-0"
-        ;;  (mapcar (lambda (object-type)
-        ;;            (let ((object (make-designator
-        ;;                           :object (obj-desc object-type))))
-        ;;              `(,object ,location)))
-        ;;          `("RedMetalCup"
-        ;;            "RedMetalPlate"
-        ;;            "RedMetalBowl"
-        ;;            "Milk")))))))
+                            (elt arrangements random-index)))))
+               (make-fixed-arrangement-goal (objects)
+                 (make-tabletop-goal
+                  "fixed-tabletop-goal"
+                  (mapcar (lambda (object)
+                            `(,(make-designator :object (obj-desc object))
+                              ,(make-designator :location
+                                                `((:on "CounterTop")
+                                                  (:name ,target-table)
+                                                  (:theme :meal-table-setting)))))
+                          objects))))
+        (make-random-arrangement-goal "tabletop-goal-")
+        (when (and objects)
+          (make-fixed-arrangement-goal objects))))))
 
 (defun spawn-goal-objects (goal table)
   (when *simulated* ;; This is only necessary when simulating
