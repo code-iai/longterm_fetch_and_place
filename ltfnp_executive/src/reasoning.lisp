@@ -163,17 +163,24 @@ base-class itself does not count towards the enlisted classes."
 (defun get-object-robosherlock-class (object-id)
   (get-class-robosherlock-class (get-object-class object-id)))
 
+(defun filename-from-path (path)
+  (let ((last-slash (position "/" path :test #'string= :from-end t)))
+    (cond (last-slash (subseq path (1+ last-slash)))
+          (t path))))
+
 (defun make-class-description (class)
   (let* ((dimensions (get-class-dimensions class))
          (shape-string (get-class-primitive-shape class))
          (shape-prop (when shape-string (intern (string-upcase shape-string) :keyword)))
-         (rs-class (get-class-robosherlock-class class)))
+         (rs-class (get-class-robosherlock-class class))
+         (urdf-path (get-class-urdf-path class)))
     (append
      `((:type ,class)
        (:dimensions ,(cl-transforms:make-3d-vector (first dimensions)
                                                    (second dimensions)
                                                    (third dimensions)))
-       (:urdf-model ,(get-class-urdf-path class))
+       (:urdf-model ,urdf-path)
+       (:urdf-model-filename ,(filename-from-path urdf-path))
        (:robosherlock-class ,rs-class))
      (when shape-prop
        `((:shape ,shape-prop)))
