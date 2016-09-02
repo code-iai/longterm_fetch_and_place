@@ -67,10 +67,29 @@
 
 (def-cram-function fetch-and-place-instance ()
   (let* ((target-table "iai_kitchen_meal_table_counter_top")
-         (goal (make-random-tabletop-goal
-                target-table
-                :objects `("RedMetalCup")
-                :source "iai_kitchen_sink_area_counter_top"))
+         (goal ;(make-random-tabletop-goal
+               ; target-table
+               ; :objects `("RedMetalCup")
+               ; :source "iai_kitchen_sink_area_counter_top"))
+           (make-fixed-tabletop-goal
+            `(("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.7 -1.15 0.74)
+                                (tf:euler->quaternion)))
+              ("RedMetalPlate" ,(tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -1.5 -1.00 0.77)
+                                 (tf:euler->quaternion)))
+              ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.1 -1.15 0.74)
+                                (tf:euler->quaternion)))
+              ("RedMetalPlate" ,(tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -0.9 -1.00 0.77)
+                                 (tf:euler->quaternion)))
+              )
+            "iai_kitchen_sink_area_counter_top"))
          (the-plan (plan (make-empty-state) goal)))
     (spawn-goal-objects goal target-table)
     (roslisp:ros-info (ltfnp) "The plan has ~a step(s)"
