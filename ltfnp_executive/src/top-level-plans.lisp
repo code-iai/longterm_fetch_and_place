@@ -34,8 +34,10 @@
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
   (setf *simulated* simulated)
-  (unless simulated
-    (setf cram-moveit::*needs-ft-fix* t))
+  (cond (*simulated*
+         (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed"))
+        (t (setf cram-moveit::*needs-ft-fix* t)
+           (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_raw/compressed")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (roslisp-utilities:startup-ros)
   (prepare-settings :simulated simulated)

@@ -406,7 +406,7 @@
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_laok8b26_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.707 0.0 0.0 0.707</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">-0.1 0.0 0.08</knowrob:translation>
+    <knowrob:translation rdf:datatype="&xsd;string">-0.08 0.0 0.08</knowrob:translation>
   </owl:NamedIndividual>
   
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_diuxn543">
@@ -418,7 +418,7 @@
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_diuxn543_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.707 0.0</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.1 0.0 0.08</knowrob:translation>
+    <knowrob:translation rdf:datatype="&xsd;string">0.08 0.0 0.08</knowrob:translation>
   </owl:NamedIndividual>
   
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_2diuxn543">
@@ -430,7 +430,7 @@
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_2diuxn543_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.5 0.5 0.5 0.5</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.0 -0.1 0.08</knowrob:translation>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 -0.08 0.08</knowrob:translation>
   </owl:NamedIndividual>
   
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_3diuxn543">
@@ -442,7 +442,7 @@
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_3diuxn543_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.5 -0.5 -0.5 0.5</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.1 0.08</knowrob:translation>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.08 0.08</knowrob:translation>
   </owl:NamedIndividual>
   
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_4diuxn543">
@@ -454,7 +454,7 @@
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalCup_Handle_4diuxn543_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.382 0.0 0.923</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">-0.12 0.0 0.12</knowrob:translation>
+    <knowrob:translation rdf:datatype="&xsd;string">-0.11 0.0 0.11</knowrob:translation>
   </owl:NamedIndividual>
   
   <!-- RedMetalBowl Handles -->
@@ -492,7 +492,7 @@
   <owl:NamedIndividual rdf:about="&knowrob;RedMetalPlate_Handle_laok8b26_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">-0.270 0.270 0.653 0.653</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.0 -0.18 0.08</knowrob:translation>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 -0.17 0.09</knowrob:translation>
   </owl:NamedIndividual>
   
   <!-- <owl:NamedIndividual rdf:about="&knowrob;RedMetalPlate_Handle_diuxn543"> -->
