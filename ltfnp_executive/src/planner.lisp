@@ -73,7 +73,14 @@
                        (:place ,object ,location)))))))
       (let ((run t))
         (loop while run
-              as next-action = (or (fetch-and-place-next-object-actions)
-                                   (setf run nil))
-              when next-action
-                append next-action)))))
+              as one = (fetch-and-place-next-object-actions)
+              as two = (fetch-and-place-next-object-actions)
+              when (and one two)
+                append `(,(first one) ,(first two)
+                         ,(second one) ,(second two))
+              when (and one (not two))
+                append (progn
+                         (setf run nil)
+                         one)
+              when (and (not one) (not two))
+                do (setf run nil))))))
