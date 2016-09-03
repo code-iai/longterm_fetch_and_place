@@ -1,4 +1,4 @@
-/**  <module> ltfnp_reasoning
+[6~/**  <module> ltfnp_reasoning
 
   Copyright (C) 2016 Jan Winkler
   All rights reserved.
@@ -43,7 +43,10 @@
 	   ltfnp_instance_of_class/2,
 	   ltfnp_class_semantic_handle/2,
 	   ltfnp_semantic_handle_details/9,
-	   ltfnp_get_class_dimensions/4
+	   ltfnp_get_class_dimensions/4,
+	   ltfnp_drawer_semantic_map_object/2,
+	   ltfnp_drawer_robosherlock_open/2,
+	   ltfnp_drawer_robosherlock_handle/2
 	  ]).
 
 
@@ -70,7 +73,10 @@
     ltfnp_instance_of_class(r, r),
     ltfnp_class_semantic_handle(r, r),
     ltfnp_semantic_handle_details(r, r, r, r, r, r, r, r, r),
-    ltfnp_get_class_dimensions(r, r, r, r).
+    ltfnp_get_class_dimensions(r, r, r, r),
+    ltfnp_drawer_semantic_map_object(r, r),
+    ltfnp_drawer_robosherlock_open(r, r),
+    ltfnp_drawer_robosherlock_handle(r, r).
 
 
 :- rdf_db:rdf_register_ns(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
@@ -247,3 +253,13 @@ ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY,
     owl_has(SemanticHandle, knowrob:'graspType', literal(type(_, GraspType))),
     owl_has(SemanticHandle, knowrob:'handlePose', Pose),
     object_pose(Pose, [TX, TY, TZ], [QW, QX, QY, QZ]).
+
+
+ltfnp_drawer_semantic_map_object(Drawer, SemanticMapObject) :-
+    class_properties(Drawer, knowrob:'semanticMapObject', SemanticMapObject).
+
+ltfnp_drawer_robosherlock_open(Drawer, RoboSherlockOpen) :-
+    class_properties(Drawer, knowrob:'roboSherlockOpen', RoboSherlockOpen).
+
+ltfnp_drawer_robosherlock_handle(Drawer, RoboSherlockHandle) :-
+    class_properties(Drawer, knowrob:'roboSherlockHandle', RoboSherlockHandle).
