@@ -37,7 +37,7 @@
   (cond (*simulated*
          (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed"))
         (t (setf cram-moveit::*needs-ft-fix* t)
-           (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_raw/compressed")))
+           (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (roslisp-utilities:startup-ros)
   (prepare-settings :simulated simulated)
@@ -67,31 +67,78 @@
          (with-process-modules
            (fetch-and-place-instance)))))
 
+(defun make-object-location-goal (name &rest objects+locations)
+  (make-instance
+   'goal
+   :name name
+   :preconditions
+   (mapcar (lambda (object+location)
+             (destructuring-bind (object location) object+location
+               `(:object-location ,(make-designator
+                                    :object
+                                    (enrich-description object))
+                                  ,location)))
+           objects+locations)))
+
+(defun merge-goals (&rest rest)
+  (let* ((names (loop for goal in rest
+                      as name = (slot-value goal 'name)
+                      collect name))
+         (preconditions
+           (loop for goal in rest
+                 as precondition = (slot-value goal 'preconditions)
+                 append precondition))
+         (all-merged (reduce (lambda (s0 s1)
+                               (concatenate 'string s0 "," s1))
+                             names))
+         (merged-name
+           (concatenate 'string "merged(" all-merged ")")))
+    (make-instance
+     'goal
+     :name merged-name
+     :preconditions preconditions)))
+
 (def-cram-function fetch-and-place-instance ()
   (let* ((target-table "iai_kitchen_meal_table_counter_top")
-         (goal ;(make-random-tabletop-goal
-               ; target-table
-               ; :objects `("RedMetalCup")
-               ; :source "iai_kitchen_sink_area_counter_top"))
-           (make-fixed-tabletop-goal
-            `(("RedMetalCup" ,(tf:make-pose-stamped
+         (goal
+           (merge-goals
+            ;; (make-object-location-goal
+            ;;  "fetch-fork"
+            ;;  `(((:name "Fork")
+            ;;     (:at ,(make-designator
+            ;;            :location
+            ;;            `((:in "Drawer")
+            ;;              (:name "iai_kitchen_sink_area_left_upper_drawer_main")
+            ;;              (:handle
+            ;;               ,(make-designator
+            ;;                 :object
+            ;;                 `((:name "drawer_sinkblock_upper_handle")))))))
+            ;;     (:location "drawer_sinkblock_upper"))
+            ;;    ,(make-designator
+            ;;      :location
+            ;;      `((:on "CounterTop")
+            ;;        (:name "iai_kitchen_meal_table_counter_top")))))
+            (make-fixed-tabletop-goal
+             `(("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
-                                (tf:make-3d-vector -1.7 -1.15 0.74)
-                                (tf:euler->quaternion)))
-              ("RedMetalPlate" ,(tf:make-pose-stamped
-                                 "map" 0.0
-                                 (tf:make-3d-vector -1.5 -1.00 0.77)
-                                 (tf:euler->quaternion)))
-              ("RedMetalCup" ,(tf:make-pose-stamped
+                                (tf:make-3d-vector -1.7 -1.15 0.73)
+                                (tf:euler->quaternion))))
+             "iai_kitchen_sink_area_counter_top")
+            (make-fixed-tabletop-goal
+             `(("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.5 -1.00 0.75)
+                                  (tf:euler->quaternion)))
+               ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
-                                (tf:make-3d-vector -1.1 -1.15 0.74)
+                                (tf:make-3d-vector -1.1 -1.15 0.73)
                                 (tf:euler->quaternion)))
-              ("RedMetalPlate" ,(tf:make-pose-stamped
-                                 "map" 0.0
-                                 (tf:make-3d-vector -0.9 -1.00 0.77)
-                                 (tf:euler->quaternion)))
-              )
-            "iai_kitchen_sink_area_counter_top"))
+               ("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -0.9 -1.00 0.75)
+                                  (tf:euler->quaternion))))
+             "iai_kitchen_sink_area_counter_top")
+            ))
          (the-plan (plan (make-empty-state) goal)))
     (spawn-goal-objects goal target-table)
     (roslisp:ros-info (ltfnp) "The plan has ~a step(s)"

@@ -61,15 +61,37 @@
            :the object))))))
 
 (def-cram-function access-location (location)
-  ;; Makes a location accessible by either just approaching it, or by
-  ;; approaching it and opening a container (drawer, cabinet, dish
-  ;; washer, ...).
-  
-  ;; 1. Get semantic information (location type, possible articulation
-  ;;    requirements, maybe ideal approach direction)
-  ;; 2. Approach location
-  ;; 3. Possibly articulate it to open it
-  )
+  (let ((in-drawer (string= (desig:desig-prop-value location :in)
+                            "Drawer"))
+        (on-countertop (string= (desig:desig-prop-value location :on)
+                                "CounterTop")))
+    (cond (on-countertop) ;; Do nothing.
+          (in-drawer ;; Open the drawer
+           (let* ((name (desig:desig-prop-value location :name))
+                  (sem-map-objs
+                    (cram-semantic-map-designators:designator->semantic-map-objects
+                     (make-designator
+                      :object `((:name ,name)))))
+                  (drawer-pose (slot-value (first sem-map-objs) 'cram-semantic-map-utils:pose))
+                  (in-front-of-pose
+                    (tf:make-pose-stamped
+                     "map" 0.0
+                     ;; This lacks generality (orientation of the
+                     ;; "back-up" distance) and would need
+                     ;; transformation via the given orientation in
+                     ;; `drawer-pose'. Works for now as all drawers
+                     ;; face x+.
+                     (tf:v+ (tf:origin drawer-pose)
+                            (tf:make-3d-vector -1.0 0.0 0.0))
+                     (tf:orientation drawer-pose))))
+             (go-to-pose (tf:origin in-front-of-pose)
+                         (tf:orientation in-front-of-pose))
+             (let* ((semantic-object (get-semantic-drawer name))
+                    (robosherlock-handle (get-robosherlock-drawer-handle semantic-object)))
+               ;; grasp handle
+               ;; pull open
+               ;; take away hand
+               ))))))
 
 (def-cram-function close-location (location)
   ;; If required, close this location after having opened it through
