@@ -261,3 +261,18 @@ base-class itself does not count towards the enlisted classes."
 (defun is-location-accessible (name)
   ;; T or nil
   )
+
+(defun get-semantic-drawer (name)
+  (with-first-prolog-vars-bound (?drawer)
+      `("ltfnp_drawer_semantic_map_object" ?drawer ,name)
+    (split-prolog-symbol (stripped-symbol-name ?drawer))))
+
+(defun get-robosherlock-drawer-handle (drawer)
+  (with-first-prolog-vars-bound (?handle)
+      `("ltfnp_drawer_robosherlock_handle" ,(add-prolog-namespace drawer) ?handle)
+    (stripped-symbol-name ?handle)))
+
+(defun get-robosherlock-drawer-open (drawer)
+  (with-first-prolog-vars-bound (?open)
+      `("ltfnp_drawer_robosherlock_open" ,(add-prolog-namespace drawer) ?open)
+    (stripped-symbol-name ?open)))
