@@ -1,4 +1,4 @@
-[6~/**  <module> ltfnp_reasoning
+/**  <module> ltfnp_reasoning
 
   Copyright (C) 2016 Jan Winkler
   All rights reserved.
@@ -256,10 +256,10 @@ ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY,
 
 
 ltfnp_drawer_semantic_map_object(Drawer, SemanticMapObject) :-
-    class_properties(Drawer, knowrob:'semanticMapObject', SemanticMapObject).
+    owl_has(Drawer, knowrob:'semanticMapObject', literal(type(_, SemanticMapObject))).
 
 ltfnp_drawer_robosherlock_open(Drawer, RoboSherlockOpen) :-
-    class_properties(Drawer, knowrob:'roboSherlockOpen', RoboSherlockOpen).
+    owl_has(Drawer, knowrob:'roboSherlockOpen', literal(type(_, RoboSherlockOpen))).
 
 ltfnp_drawer_robosherlock_handle(Drawer, RoboSherlockHandle) :-
-    class_properties(Drawer, knowrob:'roboSherlockHandle', RoboSherlockHandle).
+    owl_has(Drawer, knowrob:'roboSherlockHandle', literal(type(_, RoboSherlockHandle))).

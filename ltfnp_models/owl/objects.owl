@@ -49,6 +49,13 @@
     <rdfs:subClassOf rdf:resource="&knowrob;HumanScaleObject"/>
   </owl:Class>
   
+  <!-- Drawer -->
+  <owl:NamedIndividual rdf:about="&knowrob;Drawer0">
+    <knowrob:roboSherlockOpen rdf:datatype="&xsd;string">drawer_sinkblock_upper_open</knowrob:roboSherlockOpen>
+    <knowrob:roboSherlockHandle rdf:datatype="&xsd;string">drawer_sinkblock_upper_handle</knowrob:roboSherlockHandle>
+    <knowrob:semanticMapObject rdf:datatype="&xsd;string">iai_kitchen_sink_area_left_upper_drawer_main</knowrob:semanticMapObject>
+  </owl:NamedIndividual>
+  
   <!-- Milk -->
   <owl:Class rdf:about="&knowrob;Milk">
     <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
