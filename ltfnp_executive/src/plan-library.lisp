@@ -83,15 +83,87 @@
                      ;; face x+.
                      (tf:v+ (tf:origin drawer-pose)
                             (tf:make-3d-vector -1.0 0.0 0.0))
+                     (tf:orientation drawer-pose)))
+                  (look-at-pose
+                    (tf:make-pose-stamped
+                     "map" 0.0
+                     ;; This lacks generality (orientation of the
+                     ;; "back-up" distance) and would need
+                     ;; transformation via the given orientation in
+                     ;; `drawer-pose'. Works for now as all drawers
+                     ;; face x+.
+                     (tf:v+ (tf:origin drawer-pose)
+                            (tf:make-3d-vector 0.0 0.0 -0.3))
                      (tf:orientation drawer-pose))))
              (go-to-pose (tf:origin in-front-of-pose)
-                         (tf:orientation in-front-of-pose))
+                         (tf:orientation in-front-of-pose)
+                         :frame "map")
              (let* ((semantic-object (get-semantic-drawer name))
-                    (robosherlock-handle (get-robosherlock-drawer-handle semantic-object)))
-               ;; grasp handle
-               ;; pull open
-               ;; take away hand
-               ))))))
+                    (robosherlock-handle (get-robosherlock-drawer-handle
+                                          semantic-object))
+                    (drawer-pose-map
+                      (tf:pose->pose-stamped
+                       "map" 0.0
+                       drawer-pose)))
+               ;; look at semantic handle
+               (look-at (make-designator
+                         :location `((:pose ,look-at-pose))))
+               (sleep 3)
+               ;; perceive real handle
+               (let* ((perceived-handle
+                        (first
+                         (cram-uima::get-uima-result
+                          (make-designator
+                           :action
+                           `((:handle ,robosherlock-handle))))))
+                      (handle-pose-map
+                        (tf:transform-pose-stamped
+                         *transformer*
+                         :timeout 10.0
+                         :pose (desig:desig-prop-value
+                                perceived-handle :pose)
+                         :target-frame "map"))
+                      (handle-pose
+                        (tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:origin handle-pose-map)
+                         (tf:euler->quaternion)))
+                      (grasp-handle-pose
+                        (tf:copy-pose-stamped
+                         handle-pose
+                         :origin (tf:v+ (tf:origin handle-pose)
+                                        (tf:make-3d-vector
+                                         -0.3 0.0 0.0))
+                         :orientation (tf:euler->quaternion
+                                       :ax (/ pi 2))))
+                      (grasp-handle-pose-2
+                        (tf:copy-pose-stamped
+                         handle-pose
+                         :origin (tf:v+ (tf:origin handle-pose)
+                                        (tf:make-3d-vector
+                                         -0.2 0.0 0.0))
+                         :orientation (tf:euler->quaternion
+                                       :ax (/ pi 2))))
+                      (grasp-handle-pose-open
+                        (tf:copy-pose-stamped
+                         handle-pose
+                         :origin (tf:v+ (tf:origin handle-pose)
+                                        (tf:make-3d-vector
+                                         -0.4 0.0 0.0))
+                         :orientation (tf:euler->quaternion
+                                       :ax (/ pi 2)))))
+                 (pr2-manip-pm::publish-pose grasp-handle-pose "/ppp")
+                 ;; grasp handle: Use the left arm for now
+                 (move-arm-pose :left grasp-handle-pose)
+                 (pr2-manip-pm::open-gripper :left)
+                 (move-arm-pose :left grasp-handle-pose-2)
+                 (pr2-manip-pm::close-gripper :left)
+                 ;; pull open
+                 (move-arm-pose :left grasp-handle-pose-open)
+                 ;; take away hand
+                 (pr2-manip-pm::open-gripper :left)
+                 (move-arm-pose :left pr2-manip-pm::*park-pose-left-default*)
+                 )))))))
 
 (def-cram-function close-location (location)
   ;; If required, close this location after having opened it through
