@@ -29,10 +29,7 @@
 ;;; Entry Point
 ;;;
 
-(defun start-scenario (&key (simulated t) (logged nil))
-  ;; This function is mainly meant as an entry point for external
-  ;; runner scripts (for starting the scenario using launch files,
-  ;; etc.)
+(defun do-init (simulated)
   (setf *simulated* simulated)
   (cond (*simulated*
          (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed"))
@@ -43,8 +40,17 @@
   (prepare-settings :simulated simulated)
   (roslisp:ros-info (ltfnp) "Putting the PR2 into defined start state")
   (move-arms-up)
-  (move-torso)
+  (move-torso))
+
+
+(defun start-scenario (&key (simulated t) (logged nil) skip-init)
+  ;; This function is mainly meant as an entry point for external
+  ;; runner scripts (for starting the scenario using launch files,
+  ;; etc.)
+  (unless skip-init
+    (do-init simulated))
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
+  (beliefstate:enable-logging logged)
   (prog1
       (longterm-fetch-and-place)
     (when logged
@@ -119,7 +125,11 @@
             ;;      `((:on "CounterTop")
             ;;        (:name "iai_kitchen_meal_table_counter_top")))))
             (make-fixed-tabletop-goal
-             `(("RedMetalCup" ,(tf:make-pose-stamped
+             `(("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.5 -1.00 0.75)
+                                  (tf:euler->quaternion)))
+               ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
                                 (tf:make-3d-vector -1.7 -1.15 0.73)
                                 (tf:euler->quaternion))))
@@ -127,16 +137,12 @@
             (make-fixed-tabletop-goal
              `(("RedMetalPlate" ,(tf:make-pose-stamped
                                   "map" 0.0
-                                  (tf:make-3d-vector -1.5 -1.00 0.75)
+                                  (tf:make-3d-vector -0.9 -1.00 0.75)
                                   (tf:euler->quaternion)))
                ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
                                 (tf:make-3d-vector -1.1 -1.15 0.73)
-                                (tf:euler->quaternion)))
-               ("RedMetalPlate" ,(tf:make-pose-stamped
-                                  "map" 0.0
-                                  (tf:make-3d-vector -0.9 -1.00 0.75)
-                                  (tf:euler->quaternion))))
+                                (tf:euler->quaternion))))
              "iai_kitchen_sink_area_counter_top")
             ))
          (the-plan (plan (make-empty-state) goal)))
