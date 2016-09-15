@@ -138,3 +138,14 @@
       - template: "Packaging complete"
       - message: "Packaging complete"
   - timeout: 1200
+- worker:
+  - command: rosrun
+  - parameters:
+    - ltfnp_executive
+    - kill_all_relevant.sh
+  - checklist:
+    - item:
+      - name: cleanup_done
+      - matchmode: contains
+      - template: "Cleanup done."
+      - message: "Cleanup done."
