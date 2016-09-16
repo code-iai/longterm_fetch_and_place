@@ -37,19 +37,19 @@
         (t (setf cram-moveit::*needs-ft-fix* t)
            (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
-  (prepare-settings :simulated simulated :headless headless)
   (roslisp-utilities:startup-ros)
+  (prepare-settings :simulated simulated :headless headless)
   (roslisp:ros-info (ltfnp) "Putting the PR2 into defined start state")
   (move-arms-up)
   (move-torso))
+
+
 (defun start-scenario (&key (simulated t) (logged nil) skip-init headless)
-
-
   ;; This function is mainly meant as an entry point for external
-    (do-init simulated :headless headless))
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
   (unless skip-init
+    (do-init simulated :headless headless))
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (beliefstate:enable-logging logged)
   (prog1
