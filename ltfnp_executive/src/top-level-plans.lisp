@@ -32,7 +32,8 @@
 (defun do-init (simulated &key headless)
   (setf *simulated* simulated)
   (cond (*simulated*
-         (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed"))
+         (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed")
+         (setf pr2-manip-pm::*grasp-offset* pr2-manip-pm::*pregrasp-offset*))
         (t (setf cram-moveit::*needs-ft-fix* t)
            (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
