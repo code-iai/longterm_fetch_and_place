@@ -3,6 +3,7 @@
   - parameters:
     - ltfnp_executive
     - ltfnp_simulation.launch
+    - HEADLESS:=true
   - checklist:
     - item:
       - name: moveit
