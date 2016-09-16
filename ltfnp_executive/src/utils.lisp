@@ -502,3 +502,23 @@
                                   (:name ,random-table))))
                      (pose (get-free-spawn-pose location)))
                 (spawn class (tf:origin pose) (tf:orientation pose))))))))))
+
+(defun extract-semantic-map-ground (filepath)
+  (let* ((map (sem-map-utils:get-semantic-map))
+         (parts (slot-value map 'cram-semantic-map-utils::parts))
+         (datasets
+           (loop for part-name being the hash-key of parts
+                 as part = (gethash part-name parts)
+                 when (eql (type-of part) 'CRAM-SEMANTIC-MAP-UTILS:SEMANTIC-MAP-GEOM)
+                   collect
+                   (let* ((pose (slot-value part 'cram-semantic-map-utils::pose))
+                          (dimensions (slot-value part 'cram-semantic-map-utils::dimensions))
+                          (width (coerce (tf:x dimensions) 'float))
+                          (height (coerce (tf:y dimensions) 'float))
+                          (x (coerce (tf:x (tf:origin pose)) 'float))
+                          (y (coerce (tf:y (tf:origin pose)) 'float))
+                          (theta (coerce 0 'float))) ;; Fix this
+                     (format nil "{\"name\": \"~a\", \"width\": ~a, \"height\": ~a, \"x\": ~a, \"y\": ~a, \"theta\": ~a}" part-name width height x y theta)))))
+    (with-open-file (stream filepath :direction :output)
+      (dolist (line datasets)
+        (format stream "~a~%" line)))))
