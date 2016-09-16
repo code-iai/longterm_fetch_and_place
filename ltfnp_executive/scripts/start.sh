@@ -45,6 +45,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(setf *arguments* (read-from-string (second sb-ext:*posix-argv*)))
+
+(defun get-argument (arg-name)
+  (cadr (assoc arg-name *arguments*)))
+
+
 ;; Make sure the ltfnp package is loaded
 (roslisp:ros-info (ltfnp-aux) "Loading Longterm Fetch and Place scenario.")
 (ros-load:load-system "ltfnp_executive" "ltfnp-executive")
@@ -55,4 +61,4 @@
 
 ;; Start the scenario
 (roslisp:ros-info (ltfnp-aux) "Let's go!")
-(start-scenario :logged t)
+(start-scenario :logged t :headless (common-lisp-user::get-argument :headless))

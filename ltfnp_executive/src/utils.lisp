@@ -91,7 +91,7 @@
           (tf:make-identity-rotation))
    :target-frame "/map"))
 
-(defun init-3d-world (&key (robot t))
+(defun init-3d-world (&key (robot t) (debug-window t))
   (let* ((urdf-robot
            (and robot
                 (cl-urdf:parse-urdf
@@ -109,7 +109,6 @@
      (cram-prolog:prolog
       `(and (btr:clear-bullet-world)
             (btr:bullet-world ?w)
-            (btr:debug-window ?w)
             (btr:assert (btr:object
                          ?w :static-plane floor
                          ((0 0 0) (0 0 0 1))
@@ -118,6 +117,9 @@
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
                          :urdf ,urdf-kitchen)))))
+    (when debug-window
+      (cram-prolog:prolog `(and (btr:bullet-world ?w)
+                                (btr:debug-window ?w))))
     (when robot
       (force-ll
        (cram-prolog:prolog
@@ -204,7 +206,7 @@
   (at-location (origin-loc)
     )))
 
-(defun prepare-settings (&key (simulated t))
+(defun prepare-settings (&key (simulated t) headless)
   (beliefstate:enable-logging t)
   (when simulated
     (setf beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw"))
@@ -217,7 +219,7 @@
   (gazebo-perception-pm::ignore-object "ground_plane")
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen")
-  (init-3d-world)
+  (init-3d-world :debug-window (not headless))
   (semantic-map-collision-environment:publish-semantic-map-collision-objects))
 
 (defun lift-up (pose distance)

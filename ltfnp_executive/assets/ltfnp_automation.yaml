@@ -104,6 +104,7 @@
   - parameters:
     - ltfnp_executive
     - start.sh
+    - "((:headless t))"
   - checklist:
     - item:
       - name: connect_ros

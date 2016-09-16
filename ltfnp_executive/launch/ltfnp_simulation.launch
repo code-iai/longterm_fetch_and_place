@@ -6,6 +6,7 @@
   <arg     if="$(arg HEADLESS)" name="NOT_HEADLESS" value="false"/>
   
   <include file="$(find ltfnp_executive)/launch/ltfnp.launch"/>
+  
   <include file="$(find ltfnp_gazebo)/launch/ltfnp.launch">
     <arg name="GAZEBO_GUI" value="$(arg NOT_HEADLESS)"/>
   </include>
