@@ -33,18 +33,15 @@ workers:
   - command: roslaunch
     parameters: [ltfnp_executive, ltfnp_simulation.launch, "HEADLESS:=true"]
     checklist:
-    - item:
-      name: moveit
+    - name: moveit
       matchmode: match
       template: "All is well! Everyone is happy! You can start planning now!"
       message: "MoveIt! launched successfully"
-    - item:
-      name: attache
+    - name: attache
       matchmode: contains
       template: "Attache plugin loaded"
       message: "Attache plugin present"
-    - item:
-      name: reasoning
+    - name: reasoning
       matchmode: contains
       template: "ltfnp_reasoning/prolog/init.pl compiled"
       message: "Reasoning started successfully"
@@ -52,17 +49,15 @@ workers:
   - command: rosrun
     parameters: [semrec, semrec, "-q", "-s"]
     checklist:
-    - item:
-      name: initialize
+    - name: initialize
       matchmode: contains
       template: "Signify: semrec init complete"
       message: "Semrec Initialized"
-    timeout: 5
+    timeout: 15
   - command: rosrun
     parameters: [ltfnp_executive, prep_camera.sh, 1]
     checklist:
-    - item:
-      name: prep_cam
+    - name: prep_cam
       matchmode: contains
       template: "Camera prepared"
       message: "Camera 1 prepared"
@@ -70,8 +65,7 @@ workers:
   - command: rosrun
     parameters: [ltfnp_executive, prep_camera.sh, 2]
     checklist:
-    - item:
-      name: prep_cam
+    - name: prep_cam
       matchmode: contains
       template: "Camera prepared"
       message: "Camera 2 prepared"
@@ -79,8 +73,7 @@ workers:
   - command: rosrun
     parameters: [ltfnp_executive, prep_camera.sh, 3]
     checklist:
-    - item:
-      name: prep_cam
+    - name: prep_cam
       matchmode: contains
       template: "Camera prepared"
       message: "Camera 3 prepared"
@@ -88,8 +81,7 @@ workers:
   - command: rosrun
     parameters: [ltfnp_executive, prep_camera.sh, 4]
     checklist:
-    - item:
-      name: prep_cam
+    - name: prep_cam
       matchmode: contains
       template: "Camera prepared"
       message: "Camera 4 prepared"
@@ -97,8 +89,7 @@ workers:
   - command: rosrun
     parameters: [ltfnp_executive, prep_mongodb.sh]
     checklist:
-    - item:
-      name: prep_db
+    - name: prep_db
       matchmode: contains
       template: "MongoDB shell"
       message: "MongoDB Logging started"
@@ -107,24 +98,20 @@ workers:
     parameters: [ltfnp_executive, start.sh, "((:headless t))"]
     append-variance: true
     checklist:
-    - item:
-      name: connect_ros
+    - name: connect_ros
       matchmode: contains
       template: "Connecting to ROS"
       message: "Connecting to ROS"
-    - item:
-      name: running
+    - name: running
       matchmode: contains
       template: "Running Longterm Fetch and Place"
       message: "Started scenario execution"
-    - item:
-      name: done
+    - name: done
       matchmode: contains
       template: "Done with LTFnP"
       message: "Scenario completed"
     quithooks:
-    - item:
-      name: unhandled_condition
+    - name: unhandled_condition
       matchmode: contains
       template: "unhandled condition in --disable-debugger mode, quitting"
       message: "Unhandled condition"
@@ -132,8 +119,7 @@ workers:
   - command: rosrun
     parameters: [ltfnp_executive, package_log.sh]
     checklist:
-    - item:
-      name: packaging_done
+    - name: packaging_done
       matchmode: contains
       template: "Packaging complete"
       message: "Packaging complete"
@@ -142,8 +128,7 @@ cleaners:
   - command: rosrun
     parameters: [ltfnp_executive, kill_all_relevant.sh]
     checklist:
-    - item:
-      name: cleanup_done
+    - name: cleanup_done
       matchmode: contains
       template: "Cleanup done."
       message: "Cleanup done."
