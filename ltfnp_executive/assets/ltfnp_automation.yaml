@@ -11,22 +11,24 @@ changelog:
       - Moved to new YAML format for experiment description
       - Added meta information and task variances
 task-variances:
-  - name: meal-seat-amount
+  meal-seat-amount:
     label: "Amount of meal seats to set"
     value-type: [integer, range]
     value-range: [1, 2]
     default: [1, 2]
-  - name: object-availability-factor
+    distribution: normal
+  object-availability-factor:
     label: "Percentage of objects spawned based on how many are required to solve the task"
     value-type: [percentage, range]
     value-range: [0, 3]
     default: [1, 1]
     distribution: normal
-  - name: allowed-arms
+  allowed-arms:
     label: "Arms the PR2 is allowed to use"
     value-type: [multiple-choice]
     items: [["Left", left], ["Right", right]]
     allow-empty: false
+    default: [left, right]
 workers:
   - command: roslaunch
     parameters: [ltfnp_executive, ltfnp_simulation.launch, "HEADLESS:=true"]
