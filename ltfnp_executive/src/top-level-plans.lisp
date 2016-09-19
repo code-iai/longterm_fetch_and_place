@@ -29,8 +29,7 @@
 ;;; Entry Point
 ;;;
 
-(defun do-init (simulated &key headless (variance "{}"))
-  (format t "Got variance: ~a~%" variance)
+(defun do-init (simulated &key headless variance)
   (setf *simulated* simulated)
   (cond (*simulated*
          (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed")
@@ -39,7 +38,7 @@
            (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
   (roslisp-utilities:startup-ros)
-  (prepare-settings :simulated simulated :headless headless)
+  (prepare-settings :simulated simulated :headless headless :variance variance)
   (roslisp:ros-info (ltfnp) "Putting the PR2 into defined start state")
   (move-arms-up)
   (move-torso))
@@ -49,31 +48,33 @@
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
-  (unless skip-init
-    (do-init simulated :headless headless :variance variance))
-  (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
-  (beliefstate:enable-logging logged)
-  (prog1
-      (longterm-fetch-and-place)
-    (when logged
-      (beliefstate:extract-files))
-    (roslisp:ros-info (ltfnp) "Done with LTFnP")))
+  (let ((variance (yason:parse variance)))
+    (unless skip-init
+      (do-init simulated :headless headless :variance variance))
+    (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
+    (roslisp:ros-info (ltfnp) "Using variance: ~a" variance)
+    (beliefstate:enable-logging logged)
+    (prog1
+        (longterm-fetch-and-place :variance variance)
+      (when logged
+        (beliefstate:extract-files))
+      (roslisp:ros-info (ltfnp) "Done with LTFnP"))))
 
 
 ;;;
 ;;; Top-Level Plans
 ;;;
 
-(def-top-level-cram-function longterm-fetch-and-place ()
+(def-top-level-cram-function longterm-fetch-and-place (&key variance)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   (cond (*simulated*
          (roslisp:ros-info (ltfnp) "Environment: Simulated")
          (with-process-modules-simulated
-           (fetch-and-place-instance)))
+           (fetch-and-place-instance :variance variance)))
         (t
          (roslisp:ros-info (ltfnp) "Environment: Real-World")
          (with-process-modules
-           (fetch-and-place-instance)))))
+           (fetch-and-place-instance :variance variance)))))
 
 (defun make-object-location-goal (name &rest objects+locations)
   (make-instance
@@ -106,7 +107,9 @@
      :name merged-name
      :preconditions preconditions)))
 
-(def-cram-function fetch-and-place-instance ()
+(def-cram-function fetch-and-place-instance (&key variance)
+  ;; TODO(winkler): Use the variance here to parameterize the
+  ;; scenario.
   (let* ((target-table "iai_kitchen_meal_table_counter_top")
          (goal
            (merge-goals

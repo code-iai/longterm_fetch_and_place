@@ -206,7 +206,7 @@
   (at-location (origin-loc)
     )))
 
-(defun prepare-settings (&key (simulated t) headless)
+(defun prepare-settings (&key (simulated t) headless variance)
   (beliefstate:enable-logging t)
   (when simulated
     (setf beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw"))
