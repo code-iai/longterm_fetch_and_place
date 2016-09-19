@@ -29,7 +29,8 @@
 ;;; Entry Point
 ;;;
 
-(defun do-init (simulated &key headless)
+(defun do-init (simulated &key headless (variance "{}"))
+  (format t "Got variance: ~a~%" variance)
   (setf *simulated* simulated)
   (cond (*simulated*
          (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed")
@@ -44,12 +45,12 @@
   (move-torso))
 
 
-(defun start-scenario (&key (simulated t) (logged nil) skip-init headless)
+(defun start-scenario (&key (simulated t) (logged nil) skip-init headless (variance "{}"))
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
   (unless skip-init
-    (do-init simulated :headless headless))
+    (do-init simulated :headless headless :variance variance))
   (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
   (beliefstate:enable-logging logged)
   (prog1
