@@ -46,6 +46,7 @@
 
 
 (setf *arguments* (read-from-string (second sb-ext:*posix-argv*)))
+(setf *variance* (third sb-ext:*posix-argv*))
 
 (defun get-argument (arg-name)
   (cadr (assoc arg-name *arguments*)))
@@ -61,4 +62,6 @@
 
 ;; Start the scenario
 (roslisp:ros-info (ltfnp-aux) "Let's go!")
-(start-scenario :logged t :headless (common-lisp-user::get-argument :headless))
+(start-scenario :logged t
+                :headless (common-lisp-user::get-argument :headless)
+                :variance common-lisp-user::*variance*)
