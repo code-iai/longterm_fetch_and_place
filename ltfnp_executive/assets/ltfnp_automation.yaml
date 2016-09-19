@@ -3,6 +3,13 @@ meta-information:
   email: winkler@cs.uni-bremen.de
   website:
   version: 0.2.0
+changelog:
+  - author: "Jan Winkler"
+    email: winkler@cs.uni-bremen.de
+    date: 2016-11-19
+    changeset:
+      - Moved to new YAML format for experiment description
+      - Added meta information and task variances
 task-variances:
   - name: meal-seat-amount
     label: "Amount of meal seats to set"
