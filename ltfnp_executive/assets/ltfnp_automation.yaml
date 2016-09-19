@@ -105,6 +105,7 @@ workers:
     timeout: 10
   - command: rosrun
     parameters: [ltfnp_executive, start.sh, "((:headless t))"]
+    append-variance: true
     checklist:
     - item:
       name: connect_ros
