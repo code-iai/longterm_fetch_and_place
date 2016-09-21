@@ -35,7 +35,7 @@ workers:
     checklist:
     - name: moveit
       matchmode: contains
-      template: "Context monitors started."
+      template: "Context monitors started"
       message: "MoveIt! launched successfully"
     - name: attache
       matchmode: contains
@@ -45,7 +45,7 @@ workers:
       matchmode: contains
       template: "ltfnp_reasoning/prolog/init.pl compiled"
       message: "Reasoning started successfully"
-    timeout: 180
+    timeout: 360
   - command: rosrun
     parameters: [semrec, semrec, "-q", "-s"]
     checklist:
