@@ -30,7 +30,7 @@
 :- register_ros_package(comp_temporal).
 
 :- register_ros_package(ltfnp_reasoning).
-:- register_ros_package(rs_kbreasoning).
+%:- register_ros_package(rs_kbreasoning).
 :- register_ros_package(knowrob_robohow).
 :- register_ros_package(knowrob_cram).
 :- register_ros_package(knowrob_map_tools).
