@@ -34,8 +34,8 @@ workers:
     parameters: [ltfnp_executive, ltfnp_simulation.launch, "HEADLESS:=false"]
     checklist:
     - name: moveit
-      matchmode: match
-      template: "All is well! Everyone is happy! You can start planning now!"
+      matchmode: contains
+      template: "Context monitors started."
       message: "MoveIt! launched successfully"
     - name: attache
       matchmode: contains
