@@ -31,8 +31,12 @@ task-variances:
     default: [left, right]
 workers:
   - command: roslaunch
-    parameters: [ltfnp_executive, ltfnp_simulation.launch, "HEADLESS:=false"]
+    parameters: [ltfnp_executive, ltfnp_simulation.launch, "HEADLESS:=true"]
     checklist:
+    - name: moveit
+      matchmode: match
+      template: "All is well! Everyone is happy! You can start planning now!"
+      message: "MoveIt! started successfully"
     - name: attache
       matchmode: contains
       template: "Attache plugin loaded"
