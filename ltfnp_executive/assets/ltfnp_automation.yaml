@@ -33,10 +33,6 @@ workers:
   - command: roslaunch
     parameters: [ltfnp_executive, ltfnp_simulation.launch, "HEADLESS:=false"]
     checklist:
-    - name: moveit
-      matchmode: contains
-      template: "Context monitors started"
-      message: "MoveIt! launched successfully"
     - name: attache
       matchmode: contains
       template: "Attache plugin loaded"
