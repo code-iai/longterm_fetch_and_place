@@ -49,6 +49,22 @@
         robosherlock-process-module:robosherlock-process-module)
      ,@body))
 
+(defmacro with-variance (variables variance &body body)
+  `(let ((var-values
+           (mapcar (lambda (variable)
+                     (destructuring-bind (name var &rest rest) variable
+                       (let ((entry (gethash var ,variance))
+                             (default-value
+                               (when (> (length rest) 0) (first rest))))
+                         (cond (entry
+                                `(,var ,entry))
+                               (default-value
+                                `(,var ,default-value))))))
+                   ,variables)))
+     (when (= (length var-values) (length ,variables))
+       (let ,var-values
+         ,@body))))
+
 (defun go-to-pose (position orientation &key (frame "base_link"))
   (let* ((pose (tf:make-pose-stamped frame 0.0 position orientation))
          (pose-map (tf:transform-pose-stamped *transformer* :pose pose :target-frame "map")))
@@ -220,7 +236,10 @@
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen")
   (init-3d-world :debug-window (not headless))
-  (semantic-map-collision-environment:publish-semantic-map-collision-objects))
+  (semantic-map-collision-environment:publish-semantic-map-collision-objects)
+  (let ((arms (mapcar (lambda (x) (intern (string-upcase x) :keyword))
+                      (gethash "allowed_arms" variance))))
+    (when arms (setf pr2-manip-pm::*allowed-arms* arms))))
 
 (defun lift-up (pose distance)
   (let* ((origin (cl-transforms:origin pose))
