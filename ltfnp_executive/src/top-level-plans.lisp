@@ -33,7 +33,11 @@
   (setf *simulated* simulated)
   (cond (*simulated*
          (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed")
-         (setf pr2-manip-pm::*grasp-offset* pr2-manip-pm::*pregrasp-offset*))
+         (setf pr2-manip-pm::*grasp-offset*
+               (cl-transforms:make-pose
+                (cl-transforms:make-3d-vector
+                 -0.14 0.0 0.0)
+                (cl-transforms:euler->quaternion :ax (/ pi -2)))))
         (t (setf cram-moveit::*needs-ft-fix* t)
            (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
