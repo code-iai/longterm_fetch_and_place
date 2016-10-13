@@ -27,9 +27,9 @@
 
 (defun make-ltfnp-area-restriction-cost-function ()
   (let ((area-boxes ;; x y w h
-          `((-0.45 -0.2 1.5 1.0) ;; Main center area
-            (-0.45 0.2 0.75 1.5) ;; In front of kitchen island, kitchen side
-            (-0.45 -1.2 0.75 1.5) ;; Side of meal table
+          `((-0.35 -0.2 1.5 1.0) ;; Main center area
+            (-0.35 0.2 0.75 1.5) ;; In front of kitchen island, kitchen side
+            (-0.35 -1.2 0.75 1.5) ;; Side of meal table
             (-1.8 -0.75 1.5 0.75) ;; In front of meal table
             (1.35 0.1 0.3 0.8) ;; On sink area
             (-1.0 0.6 0.3 1.2) ;; On island area
