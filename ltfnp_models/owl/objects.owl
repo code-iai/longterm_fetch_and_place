@@ -339,12 +339,12 @@
       </owl:Restriction>
     </rdfs:subClassOf>
     
-    <!-- <rdfs:subClassOf> -->
-    <!--   <owl:Restriction> -->
-    <!-- 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/> -->
-    <!-- 	<owl:hasValue rdf:resource="&knowrob;RedMetalPlate_Handle_diuxn543"/> -->
-    <!--   </owl:Restriction> -->
-    <!-- </rdfs:subClassOf> -->
+    <rdfs:subClassOf>
+      <owl:Restriction>
+    	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+    	<owl:hasValue rdf:resource="&knowrob;RedMetalPlate_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   
   
@@ -502,16 +502,16 @@
     <knowrob:translation rdf:datatype="&xsd;string">0.0 -0.17 0.09</knowrob:translation>
   </owl:NamedIndividual>
   
-  <!-- <owl:NamedIndividual rdf:about="&knowrob;RedMetalPlate_Handle_diuxn543"> -->
-  <!--   <rdf:type rdf:resource="&knowrob;SemanticHandle"/> -->
-  <!--   <knowrob:handlePose rdf:resource="&knowrob;RedMetalPlate_Handle_diuxn543_pose"/> -->
-  <!--   <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType> -->
-  <!-- </owl:NamedIndividual> -->
+  <owl:NamedIndividual rdf:about="&knowrob;RedMetalPlate_Handle_diuxn543">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;RedMetalPlate_Handle_diuxn543_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
   
-  <!-- <owl:NamedIndividual rdf:about="&knowrob;RedMetalPlate_Handle_diuxn543_pose"> -->
-  <!--   <rdf:type rdf:resource="&knowrob;Transformation"/> -->
-  <!--   <knowrob:quaternion rdf:datatype="&xsd;string">0.93 0.0 -0.366 0.0</knowrob:quaternion> -->
-  <!--   <knowrob:translation rdf:datatype="&xsd;string">-0.20 0.0 0.1</knowrob:translation> -->
-  <!-- </owl:NamedIndividual> -->
+  <owl:NamedIndividual rdf:about="&knowrob;RedMetalPlate_Handle_diuxn543_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.93 0.0 -0.366 0.0</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">-0.17 0.0 0.09</knowrob:translation>
+  </owl:NamedIndividual>
     
 </rdf:RDF>
