@@ -252,7 +252,7 @@ ltfnp_class_semantic_handle(Class, SemanticHandle) :-
 ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY, QZ) :-
     owl_has(SemanticHandle, knowrob:'graspType', literal(type(_, GraspType))),
     owl_has(SemanticHandle, knowrob:'handlePose', Pose),
-    object_pose(Pose, [TX, TY, TZ], [QW, QX, QY, QZ]).
+    knowrob_objects:object_pose(Pose, _, pose([TX, TY, TZ], [QW, QX, QY, QZ])).
 
 
 ltfnp_drawer_semantic_map_object(Drawer, SemanticMapObject) :-
