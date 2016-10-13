@@ -26,23 +26,47 @@
 
 
 (defvar *action-client-torso* nil)
-(defvar *gazebo* nil)
+(defvar *simulated* nil)
+
 
 ;;;
 ;;; Add utility functions here
 ;;;
+
+(defmacro with-process-modules-simulated (&body body)
+  `(cpm:with-process-modules-running
+       (pr2-manipulation-process-module:pr2-manipulation-process-module
+        pr2-navigation-process-module:pr2-navigation-process-module
+        point-head-process-module:point-head-process-module
+        gazebo-perception-process-module:gazebo-perception-process-module)
+     ,@body))
 
 (defmacro with-process-modules (&body body)
   `(cpm:with-process-modules-running
        (pr2-manipulation-process-module:pr2-manipulation-process-module
         pr2-navigation-process-module:pr2-navigation-process-module
         point-head-process-module:point-head-process-module
-        ;robosherlock-process-module:robosherlock-process-module
-        gazebo-perception-process-module:gazebo-perception-process-module)
+        robosherlock-process-module:robosherlock-process-module)
      ,@body))
 
-(defun go-to-pose (position orientation)
-  (let* ((pose (tf:make-pose-stamped "base_link" 0.0 position orientation))
+(defmacro with-variance (variables variance &body body)
+  `(let ((var-values
+           (mapcar (lambda (variable)
+                     (destructuring-bind (name var &rest rest) variable
+                       (let ((entry (gethash var ,variance))
+                             (default-value
+                               (when (> (length rest) 0) (first rest))))
+                         (cond (entry
+                                `(,var ,entry))
+                               (default-value
+                                `(,var ,default-value))))))
+                   ,variables)))
+     (when (= (length var-values) (length ,variables))
+       (let ,var-values
+         ,@body))))
+
+(defun go-to-pose (position orientation &key (frame "base_link"))
+  (let* ((pose (tf:make-pose-stamped frame 0.0 position orientation))
          (pose-map (tf:transform-pose-stamped *transformer* :pose pose :target-frame "map")))
     (with-designators ((loc :location `((:pose ,pose-map))))
       (at-location (loc)))))
@@ -53,7 +77,9 @@
       (achieve `(cram-plan-library:looking-at ,reference)))))
 
 (defun move-arm-pose (arm pose)
-  (pr2-manip-pm::execute-move-arm-pose arm pose))
+  (let ((goal-spec (mot-man:make-goal-specification
+                    :moveit-goal-specification)))
+    (pr2-manip-pm::execute-move-arm-poses arm `(,pose) goal-spec)))
 
 (defun test-move-arm-pose ()
   (move-arm-pose :left (tf:make-pose-stamped
@@ -81,7 +107,7 @@
           (tf:make-identity-rotation))
    :target-frame "/map"))
 
-(defun init-3d-world (&key (robot t))
+(defun init-3d-world (&key (robot t) (debug-window t))
   (let* ((urdf-robot
            (and robot
                 (cl-urdf:parse-urdf
@@ -106,8 +132,10 @@
             (btr:assert (btr:object
                          ?w :semantic-map kitchen-area
                          (,kitchen-trans ,kitchen-rot)
-                         :urdf ,urdf-kitchen))
-            (btr:debug-window ?w))))
+                         :urdf ,urdf-kitchen)))))
+    (when debug-window
+      (cram-prolog:prolog `(and (btr:bullet-world ?w)
+                                (btr:debug-window ?w))))
     (when robot
       (force-ll
        (cram-prolog:prolog
@@ -117,10 +145,10 @@
                            ?w :urdf ?robot ,(get-robot-pose)
                            :urdf ,urdf-robot))))))))
 
-(cram-language:def-top-level-cram-function test-perception ()
-  (with-process-modules
-    (with-designators ((obj :object `((:name "IAI_kitchen"))))
-      (cram-plan-library:perceive-object :currently-visible obj))))
+;; (cram-language:def-top-level-cram-function test-perception ()
+;;   (with-process-modules
+;;     (with-designators ((obj :object `((:name "IAI_kitchen"))))
+;;       (cram-plan-library:perceive-object :currently-visible obj))))
 
 (defun make-handles (distance-from-center
                      &key
@@ -166,6 +194,25 @@
                 clauses)
      ,@body))
 
+(defmacro catch-all (context &body body)
+  `(labels ((notif (message)
+              (roslisp:ros-warn
+               (ltfnp catch-all) "Catch-All (~a): ~a"
+               ,context message)))
+     (when-failure ((:object-not-found
+                     (notif "object-not-found")
+                     (cram-language:retry))
+                    (:manipulation-pose-unreachable
+                     (notif "manipulation-pose-unreachable")
+                     (cram-language:retry))
+                    (:location-not-reached-failure
+                     (notif "location-not-reached-failure")
+                     (cram-language:retry))
+                    (:manipulation-failed
+                     (notif "manipulation-failed")
+                     (cram-language:retry)))
+       ,@body)))
+
 (defun go-to-origin ()
   (let* ((origin-pose (cl-tf:make-pose-stamped
                        "map" 0.0
@@ -175,7 +222,7 @@
   (at-location (origin-loc)
     )))
 
-(defun prepare-settings (&key (simulated t))
+(defun prepare-settings (&key (simulated t) headless variance)
   (beliefstate:enable-logging t)
   (when simulated
     (setf beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw"))
@@ -188,8 +235,11 @@
   (gazebo-perception-pm::ignore-object "ground_plane")
   (gazebo-perception-pm::ignore-object "pr2")
   (gazebo-perception-pm::ignore-object "IAI_kitchen")
-  (init-3d-world)
-  (semantic-map-collision-environment:publish-semantic-map-collision-objects))
+  (init-3d-world :debug-window (not headless))
+  (semantic-map-collision-environment:publish-semantic-map-collision-objects)
+  (let ((arms (mapcar (lambda (x) (intern (string-upcase x) :keyword))
+                      (gethash "allowed_arms" variance))))
+    (when arms (setf pr2-manip-pm::*allowed-arms* arms))))
 
 (defun lift-up (pose distance)
   (let* ((origin (cl-transforms:origin pose))
@@ -264,25 +314,17 @@
       (spawn-class instance-name class pose)
       instance-name)))
 
-(defun move-arms-up (&key allowed-collision-objects side ignore-collisions)
+(defun move-arms-up (&key side)
   (when (or (eql side :left) (not side))
-    (pr2-manip-pm::execute-move-arm-pose
-     :left
-     (tf:make-pose-stamped
-      "torso_lift_link" (roslisp:ros-time)
-      (tf:make-3d-vector 0.1 0.45 0.3)
-      (tf:euler->quaternion :ay (/ pi -2)))
-     :ignore-collisions ignore-collisions
-     :allowed-collision-objects allowed-collision-objects))
+    (move-arm-pose :left (tf:make-pose-stamped
+                          "torso_lift_link" 0.0
+                          (tf:make-3d-vector 0.1 0.45 0.3)
+                          (tf:euler->quaternion :ay (/ pi -2)))))
   (when (or (eql side :right) (not side))
-    (pr2-manip-pm::execute-move-arm-pose
-     :right
-     (tf:make-pose-stamped
-      "torso_lift_link" (roslisp:ros-time)
-      (tf:make-3d-vector 0.1 -0.45 0.3)
-      (tf:euler->quaternion :ay (/ pi -2)))
-     :ignore-collisions ignore-collisions
-     :allowed-collision-objects allowed-collision-objects)))
+    (move-arm-pose :right (tf:make-pose-stamped
+                          "torso_lift_link" 0.0
+                          (tf:make-3d-vector 0.1 -0.45 0.3)
+                          (tf:euler->quaternion :ay (/ pi -2))))))
 
 (defun move-torso (&optional (position 0.3))
   ;; Hack
@@ -301,7 +343,7 @@
 
 (defmethod cram-language::on-grasp-object (object-name side)
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
-  (when *gazebo*
+  (when *simulated*
     (roslisp:call-service "/gazebo/attach"
                           'attache_msgs-srv:Attachment
                           :model1 "pr2"
@@ -313,7 +355,7 @@
 
 (defmethod cram-language::on-putdown-object (object-name side)
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
-  (when *gazebo*
+  (when *simulated*
     (roslisp:call-service "/gazebo/detach"
                           'attache_msgs-srv:Attachment
                           :model1 "pr2"
@@ -322,3 +364,180 @@
                                    (:right "r_wrist_roll_link"))
                           :model2 object-name
                           :link2 "link")))
+
+(defun enrich-description (description)
+  (let ((object-class (cadr (assoc :type description))))
+    (desig:update-designator-properties
+     description
+     (when object-class
+       (make-class-description object-class)))))
+
+(defun make-fixed-tabletop-goal (objects+poses source)
+  (let ((countertop (make-designator
+                     :location
+                     `((:on "CounterTop")
+                       (:name ,source)))))
+    (labels ((obj-desc (type)
+               (enrich-description
+                `((:type ,type) (:at ,countertop)))))
+      (make-tabletop-goal
+       "fixed-tabletop-goal"
+       (mapcar (lambda (object+pose)
+                 (destructuring-bind (object pose) object+pose
+                   `(,(make-designator :object (obj-desc object))
+                     ,(make-designator :location `((:pose ,pose))))))
+               objects+poses)))))
+
+(defun make-random-tabletop-goal (target-table &key objects source)
+  (let ((location (make-designator :location
+                                   `((:on "CounterTop")
+                                     (:name ,target-table)
+                                     (:theme :meal-table-setting))))
+        (countertop (make-designator :location
+                                     (append
+                                      `((:on "CounterTop"))
+                                      (when source
+                                        `((:name ,source)))))))
+    (let ((arrangements
+            `((("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.0 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -0.85 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalBowl" ,(tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -1.65 -0.9 0.76)
+                                 (tf:euler->quaternion :az (/ pi -2))))
+               ("Milk" ,(tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:make-3d-vector -1.4 -0.9 0.76)
+                         (tf:euler->quaternion :az (/ pi -2)))))
+              (("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.1 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -0.95 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))
+               ("Milk" ,(tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:make-3d-vector -1.3 -0.9 0.76)
+                         (tf:euler->quaternion :az (/ pi -2)))))
+              (("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.1 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -0.95 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.4 -0.9 0.76)
+                                  (tf:euler->quaternion :az (/ pi -2))))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.25 -1.0 0.76)
+                                (tf:euler->quaternion :az (/ pi -2))))))))
+      (labels ((obj-desc (type)
+                 (enrich-description
+                  `((:type ,type) (:at ,countertop))))
+               (make-random-arrangement-goal (name-prefix)
+                 (let ((random-index (random (length arrangements))))
+                   (make-tabletop-goal
+                    (concatenate 'string name-prefix (write-to-string random-index))
+                    (mapcar (lambda (object+pose)
+                              (destructuring-bind (object pose) object+pose
+                                `(,(make-designator :object (obj-desc object))
+                                  ,(make-designator :location `((:pose ,pose))))))
+                            (elt arrangements random-index)))))
+               (make-fixed-arrangement-goal (objects)
+                 (make-tabletop-goal
+                  "fixed-tabletop-goal"
+                  (mapcar (lambda (object)
+                            `(,(make-designator :object (obj-desc object))
+                              ,(make-designator :location
+                                                `((:on "CounterTop")
+                                                  (:name ,target-table)
+                                                  (:theme :meal-table-setting)))))
+                          objects))))
+        (make-random-arrangement-goal "tabletop-goal-")
+        (when (and objects)
+          (make-fixed-arrangement-goal objects))))))
+
+(defun spawn-goal-objects (goal table)
+  (when *simulated* ;; This is only necessary when simulating
+    (let ((objects
+            (loop for precondition in (slot-value goal 'preconditions)
+             as object = (destructuring-bind (type &rest rest)
+                             precondition
+                           (when (eql type :object-location)
+                             (first rest)))
+             when object
+               collect object))
+          (tables (remove-if
+                   (lambda (x) (string= x table))
+                   `("iai_kitchen_meal_table_counter_top"
+                     "iai_kitchen_sink_area_counter_top"
+                     "iai_kitchen_kitchen_island_counter_top"))))
+      (labels ((spawn (class &optional
+                       (translation (tf:make-identity-vector))
+                       (orientation (tf:make-identity-rotation)))
+                 (spawn-object-relative
+                  class (tf:make-pose translation orientation)
+                  (tf:pose->pose-stamped
+                   "map" 0.0 (tf:make-identity-pose)))))
+        (let ((spawn-poses nil))
+          (labels ((is-pose-close-to-spawned-object (pose)
+                     (let ((threshold-distance 0.2))
+                       (block check
+                         (dolist (spawn-pose spawn-poses)
+                           (when (<= (tf:v-dist (tf:origin spawn-pose)
+                                                (tf:origin pose))
+                                     threshold-distance)
+                             (return-from check t))))))
+                   (get-free-spawn-pose (location)
+                     (let ((pose (desig:reference location)))
+                       (loop while (and (is-pose-close-to-spawned-object pose)
+                                        location)
+                             do (setf location (desig:next-solution location))
+                                (when location
+                                  (setf pose (desig:reference location))))
+                       ;; If all else fails, use the last pose we
+                       ;; got. This is not optimal, but works for most
+                       ;; situations for now.
+                       (push pose spawn-poses)
+                       pose)))
+            (dolist (object objects)
+              (let* ((class (desig:desig-prop-value object :type))
+                     (random-table (elt tables (random (length tables))))
+                     (location (make-designator
+                                :location
+                                `((:on "CounterTop")
+                                  (:name ,random-table))))
+                     (pose (get-free-spawn-pose location)))
+                (spawn class (tf:origin pose) (tf:orientation pose))))))))))
+
+(defun extract-semantic-map-ground (filepath)
+  (let* ((map (sem-map-utils:get-semantic-map))
+         (parts (slot-value map 'cram-semantic-map-utils::parts))
+         (datasets
+           (loop for part-name being the hash-key of parts
+                 as part = (gethash part-name parts)
+                 when (eql (type-of part) 'CRAM-SEMANTIC-MAP-UTILS:SEMANTIC-MAP-GEOM)
+                   collect
+                   (let* ((pose (slot-value part 'cram-semantic-map-utils::pose))
+                          (dimensions (slot-value part 'cram-semantic-map-utils::dimensions))
+                          (width (coerce (tf:x dimensions) 'float))
+                          (height (coerce (tf:y dimensions) 'float))
+                          (x (coerce (tf:x (tf:origin pose)) 'float))
+                          (y (coerce (tf:y (tf:origin pose)) 'float))
+                          (theta (coerce 0 'float))) ;; Fix this
+                     (format nil "{\"name\": \"~a\", \"width\": ~a, \"height\": ~a, \"x\": ~a, \"y\": ~a, \"theta\": ~a}" part-name width height x y theta)))))
+    (with-open-file (stream filepath :direction :output)
+      (dolist (line datasets)
+        (format stream "~a~%" line)))))

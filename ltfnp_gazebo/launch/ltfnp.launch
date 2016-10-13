@@ -1,15 +1,20 @@
 <launch>
   
+  <arg name="GAZEBO_GUI" default="true"/>
+  
+  <arg     if="$(arg GAZEBO_GUI)" name="HEADLESS" value="false"/>
+  <arg unless="$(arg GAZEBO_GUI)" name="HEADLESS" value="true"/>
+  
   <env name="GAZEBO_MODEL_PATH" value="$(find ltfnp_models)/models" />
   <env name="GAZEBO_PLUGIN_PATH" value="$(find ltfnp_gazebo)/plugins" />
   <env name="LD_LIBRARY_PATH" value="$(find ltfnp_gazebo)/plugins:$(env LD_LIBRARY_PATH)" />
   
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include file="$(find ltfnp_gazebo)/launch/empty_world.launch">
     <arg name="world_name" value="$(find ltfnp_gazebo)/worlds/empty_world_with_plugins.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="true"/>
-    <arg name="headless" value="false"/>
+    <arg name="gui" value="$(arg GAZEBO_GUI)"/>
+    <arg name="headless" value="$(arg HEADLESS)"/>
     <arg name="debug" value="false"/>
   </include>
   

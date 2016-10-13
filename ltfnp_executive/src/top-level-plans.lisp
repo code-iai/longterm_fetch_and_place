@@ -29,90 +29,146 @@
 ;;; Entry Point
 ;;;
 
-(defun start-scenario (&key (simulated t) (logged nil))
+(defun do-init (simulated &key headless variance)
+  (setf *simulated* simulated)
+  (cond (*simulated*
+         (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed")
+         (setf pr2-manip-pm::*grasp-offset* pr2-manip-pm::*pregrasp-offset*))
+        (t (setf cram-moveit::*needs-ft-fix* t)
+           (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
+  (roslisp:ros-info (ltfnp) "Connecting to ROS")
+  (roslisp-utilities:startup-ros)
+  (prepare-settings :simulated simulated :headless headless :variance variance)
+  (roslisp:ros-info (ltfnp) "Putting the PR2 into defined start state")
+  (move-arms-up)
+  (move-torso))
+
+
+(defun start-scenario (&key (simulated t) (logged nil) skip-init headless (variance "{}"))
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
-  (when simulated
-    (setf *gazebo* t))
-  (roslisp-utilities:startup-ros)
-  (prepare-settings)
-  (roslisp:ros-info (ltfnp) "Connecting to ROS")
-  (spawn-scene)
-  (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
-  (move-arms-up)
-  (move-torso)
-  (prog1
-      (longterm-fetch-and-place)
-    (when logged
-      (beliefstate:extract-files))
-    (roslisp:ros-info (ltfnp) "Done with LTFnP")))
+  (let ((variance (yason:parse variance)))
+    (unless skip-init
+      (do-init simulated :headless headless :variance variance))
+    (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
+    (roslisp:ros-info (ltfnp) "Using variance: ~a" variance)
+    (beliefstate:enable-logging logged)
+    (prog1
+        (longterm-fetch-and-place :variance variance)
+      (when logged
+        (beliefstate:extract-files))
+      (roslisp:ros-info (ltfnp) "Done with LTFnP"))))
 
 
 ;;;
 ;;; Top-Level Plans
 ;;;
 
-(def-top-level-cram-function longterm-fetch-and-place ()
-  ;; Agenda:
-  ;;   1 Determine object to fetch and where to put it (both vaguely)
-  ;;   2 Resolve next location at which it could reside (lazily)
-  ;;   3 Approach location, and potentially articulate it (opening drawers/doors)
-  ;;   4 Detect objects at that location, verifying whether the one in
-  ;;     question is present; if not, articulate (close) and go to 2 until exhausted
-  ;;   5 Pick up object and articulate (close) container if applicable
-  ;;   6 Resolve next location that satisfies the target destination and approach it
-  ;;   7 If location could not be reached, go back to 6
-  ;;   8 Sample target location for places to put down object and try putting it down;
-  ;;     if either fails, go to 6
+(def-top-level-cram-function longterm-fetch-and-place (&key variance)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
-  (with-process-modules
-    (with-designators ((loc-on-sink
-                        :location `((:on "CounterTop")
-                                    ;;(:name "iai_kitchen_sink_area_counter_top")
-                                    )))
-      (let ((locations `(,loc-on-sink)))
-        (labels ((random-source-location ()
-                   (elt locations (random (length locations)))))
-          (with-designators ((cup :object `((:type "RedMetalCup")
-                                            (:at ,(random-source-location))))
-                             (bowl :object `((:type "RedMetalBowl")
-                                             (:at ,(random-source-location))))
-                             (plate :object `((:type "RedMetalPlate")
-                                             (:at ,(random-source-location))))
-                             (milk :object `((:type "Milk")
-                                             (:at ,(random-source-location)))))
-            (let ((objects `(,cup ,bowl ,plate ,milk)))
-              (labels ((random-object ()
-                         (elt objects (random (length objects))))
-                       (random-object-subset (size)
-                         (loop while (< (length set) size)
-                               as object = (random-object)
-                               when (not (find object set))
-                                 collect object into set
-                               finally (return set))))
-                (let* ((random-set (loop while (not set)
-                                         as set = (random-object-subset (+ (random (length objects)) 1))
-                                         finally (return set)))
-                       (random-set objects))
-                  (dolist (object random-set)
-                    (with-designators ((fetch-action :action `((:to :fetch)
-                                                               (:obj ,object))))
-                      (perform fetch-action)
-                      (format t "Got object: ~a~%" (desig:current-desig object))
-                      (with-designators ((loc-on-meal-table
-                                          :location
-                                          `((:on "CounterTop")
-                                            (:name "iai_kitchen_meal_table_counter_top")
-                                            (:theme :meal-table-setting)))
-                                         (loc-destination
-                                          :location
-                                          `((:pose ,(destination-pose
-                                                     (desig:desig-prop-value
-                                                      (desig:current-desig object) :name)
-                                                     (desig:reference loc-on-meal-table)))))
-                                         (place-action :action
-                                                       `((:to :place)
-                                                         (:obj ,object)
-                                                         (:at ,loc-on-meal-table))))
-                        (perform place-action)))))))))))))
+  (cond (*simulated*
+         (roslisp:ros-info (ltfnp) "Environment: Simulated")
+         (with-process-modules-simulated
+           (fetch-and-place-instance :variance variance)))
+        (t
+         (roslisp:ros-info (ltfnp) "Environment: Real-World")
+         (with-process-modules
+           (fetch-and-place-instance :variance variance)))))
+
+(defun make-object-location-goal (name &rest objects+locations)
+  (make-instance
+   'goal
+   :name name
+   :preconditions
+   (mapcar (lambda (object+location)
+             (destructuring-bind (object location) object+location
+               `(:object-location ,(make-designator
+                                    :object
+                                    (enrich-description object))
+                                  ,location)))
+           objects+locations)))
+
+(defun merge-goals (&rest rest)
+  (let* ((names (loop for goal in rest
+                      as name = (slot-value goal 'name)
+                      collect name))
+         (preconditions
+           (loop for goal in rest
+                 as precondition = (slot-value goal 'preconditions)
+                 append precondition))
+         (all-merged (reduce (lambda (s0 s1)
+                               (concatenate 'string s0 "," s1))
+                             names))
+         (merged-name
+           (concatenate 'string "merged(" all-merged ")")))
+    (make-instance
+     'goal
+     :name merged-name
+     :preconditions preconditions)))
+
+(def-cram-function fetch-and-place-instance (&key variance)
+  ;; TODO(winkler): Use the variance here to parameterize the
+  ;; scenario.
+  (let* ((target-table "iai_kitchen_meal_table_counter_top")
+         (goal
+           (merge-goals
+            ;; (make-object-location-goal
+            ;;  "fetch-fork"
+            ;;  `(((:name "Fork")
+            ;;     (:at ,(make-designator
+            ;;            :location
+            ;;            `((:in "Drawer")
+            ;;              (:name "iai_kitchen_sink_area_left_upper_drawer_main")
+            ;;              (:handle
+            ;;               ,(make-designator
+            ;;                 :object
+            ;;                 `((:name "drawer_sinkblock_upper_handle")))))))
+            ;;     (:location "drawer_sinkblock_upper"))
+            ;;    ,(make-designator
+            ;;      :location
+            ;;      `((:on "CounterTop")
+            ;;        (:name "iai_kitchen_meal_table_counter_top")))))
+            (make-fixed-tabletop-goal
+             `(("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -1.5 -1.00 0.75)
+                                  (tf:euler->quaternion)))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.7 -1.15 0.73)
+                                (tf:euler->quaternion))))
+             "iai_kitchen_sink_area_counter_top")
+            (make-fixed-tabletop-goal
+             `(("RedMetalPlate" ,(tf:make-pose-stamped
+                                  "map" 0.0
+                                  (tf:make-3d-vector -0.9 -1.00 0.75)
+                                  (tf:euler->quaternion)))
+               ("RedMetalCup" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.1 -1.15 0.73)
+                                (tf:euler->quaternion))))
+             "iai_kitchen_sink_area_counter_top")
+            ))
+         (the-plan (plan (make-empty-state) goal)))
+    (spawn-goal-objects goal target-table)
+    (roslisp:ros-info (ltfnp) "The plan has ~a step(s)"
+                      (length the-plan))
+    (dolist (action the-plan)
+      (destructuring-bind (type &rest rest) action
+        (ecase type
+          (:fetch
+           (catch-all "fetch"
+             (destructuring-bind (object) rest
+               (with-designators ((fetch-action :action
+                                                `((:to :fetch)
+                                                  (:obj ,object))))
+                 (perform fetch-action)))))
+          (:place
+           (catch-all "place"
+             (destructuring-bind (object location) rest
+               (with-designators ((place-action :action
+                                                `((:to :place)
+                                                  (:obj ,object)
+                                                  (:at ,location))))
+                 (perform place-action))))))))))

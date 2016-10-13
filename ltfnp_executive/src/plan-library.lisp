@@ -61,15 +61,109 @@
            :the object))))))
 
 (def-cram-function access-location (location)
-  ;; Makes a location accessible by either just approaching it, or by
-  ;; approaching it and opening a container (drawer, cabinet, dish
-  ;; washer, ...).
-  
-  ;; 1. Get semantic information (location type, possible articulation
-  ;;    requirements, maybe ideal approach direction)
-  ;; 2. Approach location
-  ;; 3. Possibly articulate it to open it
-  )
+  (let ((in-drawer (string= (desig:desig-prop-value location :in)
+                            "Drawer"))
+        (on-countertop (string= (desig:desig-prop-value location :on)
+                                "CounterTop")))
+    (cond (on-countertop) ;; Do nothing.
+          (in-drawer ;; Open the drawer
+           (let* ((name (desig:desig-prop-value location :name))
+                  (sem-map-objs
+                    (cram-semantic-map-designators:designator->semantic-map-objects
+                     (make-designator
+                      :object `((:name ,name)))))
+                  (drawer-pose (slot-value (first sem-map-objs) 'cram-semantic-map-utils:pose))
+                  (in-front-of-pose
+                    (tf:make-pose-stamped
+                     "map" 0.0
+                     ;; This lacks generality (orientation of the
+                     ;; "back-up" distance) and would need
+                     ;; transformation via the given orientation in
+                     ;; `drawer-pose'. Works for now as all drawers
+                     ;; face x+.
+                     (tf:v+ (tf:origin drawer-pose)
+                            (tf:make-3d-vector -1.0 0.0 0.0))
+                     (tf:orientation drawer-pose)))
+                  (look-at-pose
+                    (tf:make-pose-stamped
+                     "map" 0.0
+                     ;; This lacks generality (orientation of the
+                     ;; "back-up" distance) and would need
+                     ;; transformation via the given orientation in
+                     ;; `drawer-pose'. Works for now as all drawers
+                     ;; face x+.
+                     (tf:v+ (tf:origin drawer-pose)
+                            (tf:make-3d-vector 0.0 0.0 -0.3))
+                     (tf:orientation drawer-pose))))
+             (go-to-pose (tf:origin in-front-of-pose)
+                         (tf:orientation in-front-of-pose)
+                         :frame "map")
+             (let* ((semantic-object (get-semantic-drawer name))
+                    (robosherlock-handle (get-robosherlock-drawer-handle
+                                          semantic-object))
+                    (drawer-pose-map
+                      (tf:pose->pose-stamped
+                       "map" 0.0
+                       drawer-pose)))
+               ;; look at semantic handle
+               (look-at (make-designator
+                         :location `((:pose ,look-at-pose))))
+               (sleep 3)
+               ;; perceive real handle
+               (let* ((perceived-handle
+                        (first
+                         (cram-uima::get-uima-result
+                          (make-designator
+                           :action
+                           `((:handle ,robosherlock-handle))))))
+                      (handle-pose-map
+                        (tf:transform-pose-stamped
+                         *transformer*
+                         :timeout 10.0
+                         :pose (desig:desig-prop-value
+                                perceived-handle :pose)
+                         :target-frame "map"))
+                      (handle-pose
+                        (tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:origin handle-pose-map)
+                         (tf:euler->quaternion)))
+                      (grasp-handle-pose
+                        (tf:copy-pose-stamped
+                         handle-pose
+                         :origin (tf:v+ (tf:origin handle-pose)
+                                        (tf:make-3d-vector
+                                         -0.3 0.0 0.0))
+                         :orientation (tf:euler->quaternion
+                                       :ax (/ pi 2))))
+                      (grasp-handle-pose-2
+                        (tf:copy-pose-stamped
+                         handle-pose
+                         :origin (tf:v+ (tf:origin handle-pose)
+                                        (tf:make-3d-vector
+                                         -0.2 0.0 0.0))
+                         :orientation (tf:euler->quaternion
+                                       :ax (/ pi 2))))
+                      (grasp-handle-pose-open
+                        (tf:copy-pose-stamped
+                         handle-pose
+                         :origin (tf:v+ (tf:origin handle-pose)
+                                        (tf:make-3d-vector
+                                         -0.4 0.0 0.0))
+                         :orientation (tf:euler->quaternion
+                                       :ax (/ pi 2)))))
+                 (pr2-manip-pm::publish-pose grasp-handle-pose "/ppp")
+                 ;; grasp handle: Use the left arm for now
+                 (move-arm-pose :left grasp-handle-pose)
+                 (pr2-manip-pm::open-gripper :left)
+                 (move-arm-pose :left grasp-handle-pose-2)
+                 (pr2-manip-pm::close-gripper :left)
+                 ;; pull open
+                 (move-arm-pose :left grasp-handle-pose-open)
+                 ;; take away hand
+                 (pr2-manip-pm::open-gripper :left)
+                 (move-arm-pose :left pr2-manip-pm::*park-pose-left-default*)
+                 )))))))
 
 (def-cram-function close-location (location)
   ;; If required, close this location after having opened it through
@@ -130,17 +224,25 @@
                   (cpl:retry))
                  (:manipulation-failure
                   (cpl:retry)))
-    (achieve `(cram-plan-library:object-placed-at ,object ,location))))
+    ;; NOTE(winkler): If this fails, we probably already put the
+    ;; object where it belongs. This is done to the reason that
+    ;; `park`ing after placing the object could fail (e.g. no IK
+    ;; solution found) and would trigger a `manipulation-failure`
+    ;; failure. In this case, we just go on.
+    (when (cram-prolog:prolog `(pr2-manip-pm::object-in-hand ?o))
+      (achieve `(cram-plan-library:object-placed-at ,object ,location)))))
 
 (def-cram-function place-object (object location)
   ;; Assumptions: Object in hand
-  (with-retry-counters ((pose-resampling 2)
-                        (manipulation-retry 2))
+  (with-retry-counters ((pose-resampling 4)
+                        (manipulation-retry 4))
     (when-failure ((:manipulation-pose-unreachable
                     (do-retry pose-resampling
+                      (setf location (desig:next-solution location))
                       (cpl:retry)))
                    (:manipulation-failed
                     (do-retry manipulation-retry
+                      (setf location (desig:next-solution location))
                       (cpl:retry))))
       (access-location location)))
   (with-retry-counters ((pose-resampling 2)

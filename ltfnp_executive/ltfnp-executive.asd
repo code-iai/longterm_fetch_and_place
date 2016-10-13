@@ -37,6 +37,7 @@
                cram-plan-occasions-events
                cram-occasions-events
                cram-pr2-designators
+               cram-moveit-manager
                pr2-manipulation-process-module
                pr2-reachability-costmap
                pr2-navigation-process-module
@@ -53,7 +54,9 @@
                cram-robot-pose-gaussian-costmap
                gazebo-perception-process-module
                attache_msgs-srv
-               pr2_controllers_msgs-msg)
+               pr2_controllers_msgs-msg
+               ;;cram-giskard-manager ;; Commented out as giskard is not used atm
+               )
   :components
   ((:module "src"
     :components
@@ -62,6 +65,7 @@
      (:file "reasoning" :depends-on ("package" "costmap-metadata"))
      (:file "utils" :depends-on ("package" "costmap-metadata" "reasoning"))
      (:file "sem-map-config" :depends-on ("package"))
+     (:file "planner" :depends-on ("package"))
      (:file "facts" :depends-on ("package"))
      (:file "plan-library" :depends-on ("package"
                                         "utils"
@@ -83,4 +87,5 @@
                                            "sem-map-config"
                                            "plan-library"
                                            "facts"
-                                           "plans-process-module"))))))
+                                           "plans-process-module"
+                                           "planner"))))))

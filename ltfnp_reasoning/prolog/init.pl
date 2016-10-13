@@ -30,6 +30,13 @@
 :- register_ros_package(comp_temporal).
 
 :- register_ros_package(ltfnp_reasoning).
+%:- register_ros_package(rs_kbreasoning).
+:- register_ros_package(knowrob_robohow).
+:- register_ros_package(knowrob_cram).
+:- register_ros_package(knowrob_map_tools).
+
+
+:- use_module(library('knowrob_objects')).
 :- use_module(library('ltfnp_reasoning')).
 
 :- register_ros_package(iai_semantic_maps).

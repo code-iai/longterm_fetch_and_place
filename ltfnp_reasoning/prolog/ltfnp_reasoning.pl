@@ -37,12 +37,16 @@
 	   ltfnp_set_object_pose/8,
 	   ltfnp_get_object_pose/8,
 	   ltfnp_get_class_urdf_path/2,
+           ltfnp_get_class_robosherlock_class/2,
 	   ltfnp_get_class_primitive_shape/2,
 	   ltfnp_assert_string/3,
 	   ltfnp_instance_of_class/2,
 	   ltfnp_class_semantic_handle/2,
 	   ltfnp_semantic_handle_details/9,
-	   ltfnp_get_class_dimensions/4
+	   ltfnp_get_class_dimensions/4,
+	   ltfnp_drawer_semantic_map_object/2,
+	   ltfnp_drawer_robosherlock_open/2,
+	   ltfnp_drawer_robosherlock_handle/2
 	  ]).
 
 
@@ -63,12 +67,16 @@
     ltfnp_set_object_pose(r, r, r, r, r, r, r, r),
     ltfnp_get_object_pose(r, r, r, r, r, r, r, r),
     ltfnp_get_class_urdf_path(r, r),
+    ltfnp_get_class_urdf_path(r, r),
     ltfnp_get_class_primitive_shape(r, r),
     ltfnp_assert_string(r, r, r),
     ltfnp_instance_of_class(r, r),
     ltfnp_class_semantic_handle(r, r),
     ltfnp_semantic_handle_details(r, r, r, r, r, r, r, r, r),
-    ltfnp_get_class_dimensions(r, r, r, r).
+    ltfnp_get_class_dimensions(r, r, r, r),
+    ltfnp_drawer_semantic_map_object(r, r),
+    ltfnp_drawer_robosherlock_open(r, r),
+    ltfnp_drawer_robosherlock_handle(r, r).
 
 
 :- rdf_db:rdf_register_ns(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
@@ -200,6 +208,17 @@ ltfnp_get_class_urdf_path(Class, URDFPath) :-
     ltfnp_reasoner_call('resolveRelativePath', [URDFRelativePath], URDFPath).
 
 
+%% ltfnp_get_class_robosherlock_class(?Class, ?RSClass) is nondet.
+%
+% ...
+% @param Class ...
+% @param RSClass ...
+%
+ltfnp_get_class_robosherlock_class(Class, RSClass) :-
+    ltfnp_object_class(Class),
+    class_properties(Class, knowrob:'roboSherlockClass', literal(type(_, RSClass))).
+
+
 %% ltfnp_get_class_primitive_shape(?Class, ?Shape) is nondet.
 %
 % ...
@@ -233,4 +252,14 @@ ltfnp_class_semantic_handle(Class, SemanticHandle) :-
 ltfnp_semantic_handle_details(SemanticHandle, GraspType, TX, TY, TZ, QW, QX, QY, QZ) :-
     owl_has(SemanticHandle, knowrob:'graspType', literal(type(_, GraspType))),
     owl_has(SemanticHandle, knowrob:'handlePose', Pose),
-    object_pose(Pose, [TX, TY, TZ], [QW, QX, QY, QZ]).
+    knowrob_objects:object_pose(Pose, _, pose([TX, TY, TZ], [QW, QX, QY, QZ])).
+
+
+ltfnp_drawer_semantic_map_object(Drawer, SemanticMapObject) :-
+    owl_has(Drawer, knowrob:'semanticMapObject', literal(type(_, SemanticMapObject))).
+
+ltfnp_drawer_robosherlock_open(Drawer, RoboSherlockOpen) :-
+    owl_has(Drawer, knowrob:'roboSherlockOpen', literal(type(_, RoboSherlockOpen))).
+
+ltfnp_drawer_robosherlock_handle(Drawer, RoboSherlockHandle) :-
+    owl_has(Drawer, knowrob:'roboSherlockHandle', literal(type(_, RoboSherlockHandle))).

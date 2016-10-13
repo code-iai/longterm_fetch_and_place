@@ -1,7 +1,15 @@
 <launch>
 
+  <arg name="HEADLESS" default="false"/>
+  
+  <arg unless="$(arg HEADLESS)" name="NOT_HEADLESS" value="true"/>
+  <arg     if="$(arg HEADLESS)" name="NOT_HEADLESS" value="false"/>
+  
   <include file="$(find ltfnp_executive)/launch/ltfnp.launch"/>
-  <include file="$(find ltfnp_gazebo)/launch/ltfnp.launch"/>
+  
+  <include file="$(find ltfnp_gazebo)/launch/ltfnp.launch">
+    <arg name="GAZEBO_GUI" value="$(arg NOT_HEADLESS)"/>
+  </include>
   
   <node name="static_world_frame" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 map odom_combined 100" />
   

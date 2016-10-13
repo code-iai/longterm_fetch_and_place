@@ -30,10 +30,10 @@
           `((-0.45 -0.2 1.5 1.0) ;; Main center area
             (-0.45 0.2 0.75 1.5) ;; In front of kitchen island, kitchen side
             (-0.45 -1.2 0.75 1.5) ;; Side of meal table
-            (-1.5 -0.75 1.2 0.75) ;; In front of meal table
-            (1.3 0.1 0.3 0.75) ;; On sink area
-            (-0.9 0.55 0.3 1.5) ;; On island area
-            (-1.5 -1.25 0.9 0.35) ;; On meal table
+            (-1.8 -0.75 1.5 0.75) ;; In front of meal table
+            (1.35 0.1 0.3 0.8) ;; On sink area
+            (-1.0 0.6 0.3 1.2) ;; On island area
+            (-1.5 -1.15 0.85 0.35) ;; On meal table
             )))
     (lambda (x y)
       (block validity-check
@@ -48,9 +48,9 @@
 
 (defun make-ltfnp-meal-table-restriction-cost-function ()
   (let ((x-margin 0.6)
-        (y-margin 0.1)
+        (y-margin 0.2)
         (base-x -1.40)
-        (base-y -0.95))
+        (base-y -1.0))
     (lambda (x y)
       (if (and (>= x (- base-x x-margin))
                (<= x (+ base-x x-margin))
@@ -113,7 +113,7 @@
   ;; simulating. This is handled by the PR2 manipulation process
   ;; module though, so we just silently fail here.
   (<- (close-radius ?object ?radius)
-    (symbol-value *gazebo* ?simulated)
+    (symbol-value *simulated* ?simulated)
     (cram-prolog:bound ?simulated)
     (equal ?simulated t)
     (equal ?radius 0.08)))
