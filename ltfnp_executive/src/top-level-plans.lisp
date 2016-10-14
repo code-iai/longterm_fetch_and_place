@@ -175,4 +175,5 @@
                                                 `((:to :place)
                                                   (:obj ,object)
                                                   (:at ,location))))
+                 (go-to-origin :keep-orientation t)
                  (perform place-action))))))))))

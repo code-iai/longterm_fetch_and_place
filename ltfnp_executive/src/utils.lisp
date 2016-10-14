@@ -213,11 +213,15 @@
                      (cram-language:retry)))
        ,@body)))
 
-(defun go-to-origin ()
-  (let* ((origin-pose (cl-tf:make-pose-stamped
+(defun go-to-origin (&key keep-orientation)
+  (let* ((orientation (or (when keep-orientation
+                            (let ((robot-pose (get-robot-pose)))
+                              (tf:orientation robot-pose)))
+                          (tf:euler->quaternion :az (* PI 1.5))))
+         (origin-pose (cl-tf:make-pose-stamped
                        "map" 0.0
                        (tf:make-identity-vector)
-                       (tf:euler->quaternion :az (* PI 1.5))))
+                       orientation))
          (origin-loc (make-designator :location `((:pose ,origin-pose)))))
   (at-location (origin-loc)
     )))
