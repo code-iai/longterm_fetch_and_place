@@ -31,7 +31,7 @@ if [ -d "current-experiment/scene_camera" ]; then
     
     # Cleanup
     cd -
-    rm -Rf current-experiment/scene_camera
+    rm -Rf "${LOGS_PATH}/current-experiment/scene_camera"
     
     # Stitch together videos
     cd current-experiment
