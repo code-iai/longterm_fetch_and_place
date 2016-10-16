@@ -227,7 +227,6 @@
     )))
 
 (defun prepare-settings (&key (simulated t) headless variance)
-  (beliefstate:enable-logging t)
   (when simulated
     (setf beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw"))
   (setf cram-tf::*tf-default-timeout* 100)
@@ -486,8 +485,8 @@
           (tables (remove-if
                    (lambda (x) (string= x table))
                    `("iai_kitchen_meal_table_counter_top"
-                     "iai_kitchen_sink_area_counter_top"
-                     "iai_kitchen_kitchen_island_counter_top"))))
+                     "iai_kitchen_sink_area_counter_top"))))
+                     ;;"iai_kitchen_kitchen_island_counter_top"))))
       (labels ((spawn (class &optional
                        (translation (tf:make-identity-vector))
                        (orientation (tf:make-identity-rotation)))
