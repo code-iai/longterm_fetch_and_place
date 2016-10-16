@@ -223,8 +223,13 @@
                        (tf:make-identity-vector)
                        orientation))
          (origin-loc (make-designator :location `((:pose ,origin-pose)))))
-  (at-location (origin-loc)
-    )))
+;;    (catch-all "go-to-origin"
+;;      (at-location (origin-loc)
+;;        (sleep 10.0)))))
+    (with-designators ((act :action `((:type :navigation)
+				      (:goal ,origin-loc))))
+      (perform act)
+      (monitor-action act))))
 
 (defun prepare-settings (&key (simulated t) headless variance)
   (when simulated
