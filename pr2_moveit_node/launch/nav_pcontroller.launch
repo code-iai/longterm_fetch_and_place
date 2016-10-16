@@ -8,7 +8,7 @@
       
       slowdown_far: 0.20
       slowdown_near: 0.08
-      safety_dist: 0.06 <!-- 0.02 -->
+      safety_dist: 0.1 <!-- 0.02 -->
       repelling_dist: 0.10 <!-- 0.025This was 0.10, but seemed to interfer with the CRAM controllers. Lowering the safety here. -->
       repelling_gain: 0.5
       repelling_gain_max: 0.015
