@@ -53,6 +53,7 @@
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
   (let ((variance (yason:parse variance)))
+    (beliefstate:enable-logging nil)
     (unless skip-init
       (do-init simulated :headless headless :variance variance))
     (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
@@ -136,21 +137,21 @@
             (make-fixed-tabletop-goal
              `(("RedMetalPlate" ,(tf:make-pose-stamped
                                   "map" 0.0
-                                  (tf:make-3d-vector -1.5 -1.00 0.75)
+                                  (tf:make-3d-vector -1.35 -1.00 0.75)
                                   (tf:euler->quaternion)))
                ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
-                                (tf:make-3d-vector -1.7 -1.15 0.73)
+                                (tf:make-3d-vector -1.55 -1.15 0.73)
                                 (tf:euler->quaternion))))
              "iai_kitchen_sink_area_counter_top")
             (make-fixed-tabletop-goal
              `(("RedMetalPlate" ,(tf:make-pose-stamped
                                   "map" 0.0
-                                  (tf:make-3d-vector -0.9 -1.00 0.75)
+                                  (tf:make-3d-vector -0.75 -1.00 0.75)
                                   (tf:euler->quaternion)))
                ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
-                                (tf:make-3d-vector -1.1 -1.15 0.73)
+                                (tf:make-3d-vector -0.95 -1.15 0.73)
                                 (tf:euler->quaternion))))
              "iai_kitchen_sink_area_counter_top")
             ))
