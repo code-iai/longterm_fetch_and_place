@@ -49,7 +49,7 @@ workers:
       matchmode: beginswith
       template: "[spawn_kitchen-"
       message: "Kitchen spawned"
-    timeout: 360
+    timeout: 3600
   - command: rosrun
     parameters: [semrec, semrec, "-q", "-s"]
     checklist:
