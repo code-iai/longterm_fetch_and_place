@@ -26,17 +26,16 @@
 
 
 ;;;
-;;; Entry Point
+;;; Auxiliary Functions
 ;;;
 
 (defun do-init (simulated &key headless variance)
   (setf *simulated* simulated)
   (cond (*simulated*
-         (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw/compressed")
+         (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw");;/compressed")
          (setf pr2-manip-pm::*grasp-offset*
                (cl-transforms:make-pose
-                (cl-transforms:make-3d-vector
-                 -0.14 0.0 0.0)
+                (cl-transforms:make-3d-vector -0.14 0.0 0.0)
                 (cl-transforms:euler->quaternion :ax (/ pi -2)))))
         (t (setf cram-moveit::*needs-ft-fix* t)
            (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
@@ -47,6 +46,10 @@
   (move-arms-up)
   (move-torso))
 
+
+;;;
+;;; Entry Point
+;;;
 
 (defun start-scenario (&key (simulated t) (logged nil) skip-init headless (variance "{}"))
   ;; This function is mainly meant as an entry point for external
@@ -59,6 +62,7 @@
     (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
     (roslisp:ros-info (ltfnp) "Using variance: ~a" variance)
     (beliefstate:enable-logging logged)
+    (setf beliefstate::*enable-prolog-logging* logged)
     (prog1
         (longterm-fetch-and-place :variance variance)
       (when logged
@@ -134,24 +138,25 @@
             ;;      :location
             ;;      `((:on "CounterTop")
             ;;        (:name "iai_kitchen_meal_table_counter_top")))))
+            
+            ;; (make-fixed-tabletop-goal
+            ;;  `(("RedMetalPlate" ,(tf:make-pose-stamped
+            ;;                       "map" 0.0
+            ;;                       (tf:make-3d-vector -1.35 -0.90 0.75)
+            ;;                       (tf:euler->quaternion)))
+            ;;    ("RedMetalCup" ,(tf:make-pose-stamped
+            ;;                     "map" 0.0
+            ;;                     (tf:make-3d-vector -1.55 -1.05 0.73)
+            ;;                     (tf:euler->quaternion))))
+            ;;  "iai_kitchen_sink_area_counter_top")
             (make-fixed-tabletop-goal
              `(("RedMetalPlate" ,(tf:make-pose-stamped
                                   "map" 0.0
-                                  (tf:make-3d-vector -1.35 -1.00 0.75)
+                                  (tf:make-3d-vector -0.75 -0.90 0.75)
                                   (tf:euler->quaternion)))
                ("RedMetalCup" ,(tf:make-pose-stamped
                                 "map" 0.0
-                                (tf:make-3d-vector -1.55 -1.15 0.73)
-                                (tf:euler->quaternion))))
-             "iai_kitchen_sink_area_counter_top")
-            (make-fixed-tabletop-goal
-             `(("RedMetalPlate" ,(tf:make-pose-stamped
-                                  "map" 0.0
-                                  (tf:make-3d-vector -0.75 -1.00 0.75)
-                                  (tf:euler->quaternion)))
-               ("RedMetalCup" ,(tf:make-pose-stamped
-                                "map" 0.0
-                                (tf:make-3d-vector -0.95 -1.15 0.73)
+                                (tf:make-3d-vector -0.95 -1.05 0.73)
                                 (tf:euler->quaternion))))
              "iai_kitchen_sink_area_counter_top")
             ))

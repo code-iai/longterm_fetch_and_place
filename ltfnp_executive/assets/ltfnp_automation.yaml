@@ -115,7 +115,7 @@ workers:
       matchmode: contains
       template: "unhandled condition in --disable-debugger mode, quitting"
       message: "Unhandled condition"
-    timeout: 2700
+    timeout: 4500
   - command: rosrun
     parameters: [ltfnp_executive, package_log.sh]
     checklist:
