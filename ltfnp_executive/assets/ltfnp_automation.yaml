@@ -45,6 +45,10 @@ workers:
       matchmode: contains
       template: "ltfnp_reasoning/prolog/init.pl compiled"
       message: "Reasoning started successfully"
+    - name: spawnkitchen
+      matchmode: beginswith
+      template: "[spawn_kitchen-"
+      message: "Kitchen spawned"
     timeout: 360
   - command: rosrun
     parameters: [semrec, semrec, "-q", "-s"]
