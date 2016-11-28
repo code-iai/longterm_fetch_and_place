@@ -1,0 +1,3 @@
+[submodule "external/gazebo_attache_plugin"]
+	path = external/gazebo_attache_plugin
+	url = https://github.com/fairlight1337/gazebo_attache_plugin.git
