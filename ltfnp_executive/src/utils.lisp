@@ -547,3 +547,237 @@
     (with-open-file (stream filepath :direction :output)
       (dolist (line datasets)
         (format stream "~a~%" line)))))
+
+(defun current-arm-pose (side &key (relative-to-frame "torso_lift_link"))
+  (let ((frame (ecase side
+                 (:left "l_wrist_roll_link")
+                 (:right "r_wrist_roll_link"))))
+    (when (tf:wait-for-transform
+           *transformer*
+           :timeout 0 :time 0
+           :source-frame frame
+           :target-frame relative-to-frame)
+      (tf:transform-pose
+       *transformer*
+       :pose (tf:pose->pose-stamped
+              frame 0.0
+              (tf:make-identity-pose))
+       :target-frame relative-to-frame))))
+
+(defvar *stored-poses* (make-hash-table :test 'equal))
+
+(defun store-current-arm-pose (side name)
+  (setf (gethash name *stored-poses*)
+        `(,side ,(current-arm-pose side))))
+
+(defun go-to-stored-pose (side name)
+  (let ((pose (gethash name *stored-poses*)))
+    (assert pose)
+    (move-arm-pose side (elt pose 1))))
+
+(defun the-awesome-mockup-plan ()
+  (move-arms-up :side :left)
+  (sleep 3)
+  (marker-sequence)
+  (go-to-stored-pose :left "pregrasp")
+  (go-to-stored-pose :left "grasp")
+  (pr2-manip-pm::close-gripper :left)
+  (go-to-stored-pose :left "lift")
+  (go-to-stored-pose :left "carry")
+  (sleep 2)
+  (go-to-stored-pose :left "lift")
+  (go-to-stored-pose :left "grasp")
+  (pr2-manip-pm::open-gripper :left)
+  (go-to-stored-pose :left "pregrasp"))
+
+(defun make-arrow-marker (pose index color)
+  (let* ((dist 0.3)
+         (angle-rad (+ (* (/ (* (/ index 8) 360.0) 180.0) 3.1415) 0.5))
+         (origin (tf:origin pose))
+         (pose (tf:make-pose
+                (tf:v+ origin
+                       (tf:make-3d-vector
+                        (* dist (cos angle-rad))
+                        (* dist (sin angle-rad))
+                        0.0))
+                (tf:euler->quaternion
+                 :az
+                 (+ 3.1415 angle-rad)))))
+    (roslisp:make-msg
+     "visualization_msgs/Marker"
+     (frame_id header) "map"
+     pose (tf:to-msg pose)
+     ns "arrows"
+     id index
+     type 0
+     action 0
+     (x scale) 0.2
+     (y scale) 0.04
+     (z scale) 0.04
+     (r color) (first color)
+     (g color) (second color)
+     (b color) (third color)
+     (a color) (fourth color))))
+
+(defun make-object-marker (pose &key remove)
+  (roslisp:make-msg
+   "visualization_msgs/Marker"
+   (frame_id header) "map"
+   pose (tf:to-msg pose)
+   ns "object"
+   id 0
+   type 3
+   action (if remove 2 0)
+   (x scale) 0.1
+   (y scale) 0.1
+   (z scale) 0.1
+   (r color) 1.0
+   (g color) 1.0
+   (b color) 0.0
+   (a color) 1.0))
+
+(defun make-object-text (pose text &key remove)
+  (roslisp:make-msg
+   "visualization_msgs/Marker"
+   (frame_id header) "map"
+   pose (tf:to-msg pose)
+   ns "text"
+   id 1
+   type 9
+   action (if remove 2 0)
+   (x scale) 0.1
+   (y scale) 0.1
+   (z scale) 0.1
+   (r color) 1.0
+   (g color) 1.0
+   (b color) 0.0
+   (a color) (if remove 0.0 1.0)
+   text text))
+
+(defun place-search-area-marker (&key remove)
+  (let* ((obj-pose
+           (tf:make-pose
+            (tf:make-3d-vector -1.15 -1.25 0.72)
+            (tf:euler->quaternion :az 0.0)))
+         (msgs
+           (roslisp:make-msg
+            "visualization_msgs/MarkerArray"
+            :markers
+            (vector
+             (roslisp:make-msg
+              "visualization_msgs/Marker"
+              (frame_id header) "map"
+              pose (tf:to-msg obj-pose)
+              ns "searcharea"
+              id 0
+              type 1
+              action (if remove 2 0)
+              (x scale) 1.0
+              (y scale) 1.0
+              (z scale) 0.1
+              (r color) 0.0
+              (g color) 1.0
+              (b color) 0.0
+              (a color) 0.5))))
+         (pub (roslisp:advertise
+               "/mockmarkers"
+               "visualization_msgs/MarkerArray")))
+    (roslisp:publish pub msgs)))
+
+(defun place-arrow-markers (light-up)
+  (let* ((obj-pose
+           (tf:make-pose
+            (tf:make-3d-vector -1.15 -1.19 0.80)
+            (tf:euler->quaternion :az 0.0)))
+         (marker-msgs
+          (roslisp:make-msg
+           "visualization_msgs/MarkerArray"
+           :markers
+           (map
+            'vector #'identity
+            (loop for i from 0 below 8
+                  as color = (case (elt light-up i)
+                               (0 `(0.8 0.8 0.8 1.0))
+                               (1 `(0.0 1.0 0.0 1.0))
+                               (2 `(1.0 0.0 0.0 0.25))
+                               (3 `(0.0 0.0 0.0 0.0)))
+                  collect
+                  (make-arrow-marker obj-pose i color)))))
+         (pub (roslisp:advertise
+               "/mockmarkers"
+               "visualization_msgs/MarkerArray")))
+    (roslisp:publish pub marker-msgs)))
+
+(defun place-cylinder-marker (&key text remove)
+  (let* ((obj-pose
+           (tf:make-pose
+            (tf:make-3d-vector -1.15 -1.19 0.80)
+            (tf:euler->quaternion :az 0.0)))
+         (obj-text-pose
+           (tf:make-pose
+            (tf:make-3d-vector -1.15 -1.25 1.0)
+            (tf:euler->quaternion :az 0.0)))
+         (arrows-poses)
+         (marker-msgs
+          (roslisp:make-msg
+           "visualization_msgs/MarkerArray"
+           :markers
+           (map 'vector #'identity
+                (append
+                 (when text
+                   `(,(make-object-text obj-text-pose text :remove remove)))
+                 `(,(make-object-marker obj-pose :remove remove))))))
+         (pub (roslisp:advertise
+               "/mockmarkers"
+               "visualization_msgs/MarkerArray")))
+    (roslisp:publish pub marker-msgs)))
+
+(defun marker-sequence ()
+  (place-search-area-marker)
+  (sleep 3)
+  (place-search-area-marker :remove t)
+  (place-cylinder-marker)
+  (sleep 1)
+  (place-cylinder-marker :text "obj0 (cylinder, cup)")
+  (sleep 2)
+  ;;(place-cylinder-marker :text " "))
+  ;; Show them
+  (place-arrow-markers `(3 3 3 3 3 3 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 3 3 3 3 3 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 3 3 3 3 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 3 3 3 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 3 3 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 0 3 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 0 0 3 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 0 0 0 3))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 0 0 0 0))
+  (sleep 1)
+  ;; Mark them
+  (place-arrow-markers `(0 0 0 0 2 0 0 0))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 2 2 0 0))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 2 2 2 0))
+  (sleep 0.1)
+  (place-arrow-markers `(0 0 0 0 2 2 2 2))
+  (sleep 0.1)
+  (place-arrow-markers `(1 0 0 0 2 2 2 2))
+  (sleep 0.1)
+  (place-arrow-markers `(1 2 0 0 2 2 2 2))
+  (sleep 0.1)
+  (place-arrow-markers `(1 2 2 0 2 2 2 2))
+  (sleep 0.1)
+  (place-arrow-markers `(1 2 2 2 2 2 2 2))
+  (sleep 1)
+  (place-arrow-markers `(1 3 3 3 3 3 3 3))
+  (sleep 3)
+  (place-arrow-markers `(3 3 3 3 3 3 3 3))
+  (place-cylinder-marker :remove t))
