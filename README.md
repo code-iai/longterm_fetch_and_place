@@ -8,11 +8,12 @@ To check out the submodules, run
 $ git submodules update --recursive --remote
 ```
 
-Before doing anything else, run the
+Before doing anything else, install these dependencies and runt he externals build script:
 ```bash
+$ sudo apt-get install gazebo2
 $ ./build_external.sh
 ```
-Script in the main directory. This will build the
+This will build the
 [`libattache.so`](https://github.com/fairlight1337/gazebo_attache_plugin.git)
 Gazebo plugin.
 
