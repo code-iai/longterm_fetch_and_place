@@ -3,6 +3,20 @@
 This package holds longterm fetch and place related code, models, and
 documentation.
 
+To check out the submodules, run
+```bash
+$ git submodules update --recursive --remote
+```
+
+Before doing anything else, install these dependencies and runt he externals build script:
+```bash
+$ sudo apt-get install gazebo2
+$ ./build_external.sh
+```
+This will build the
+[`libattache.so`](https://github.com/fairlight1337/gazebo_attache_plugin.git)
+Gazebo plugin.
+
 To run it (after the robot performing the tasks was started and
 localized), just do
 

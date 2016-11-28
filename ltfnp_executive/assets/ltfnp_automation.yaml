@@ -31,7 +31,7 @@ task-variances:
     default: [left, right]
 workers:
   - command: roslaunch
-    parameters: [ltfnp_executive, ltfnp_simulation.launch, ""]
+    parameters: [ltfnp_executive, ltfnp_simulation.launch]
     checklist:
     - name: moveit
       matchmode: match
@@ -45,7 +45,11 @@ workers:
       matchmode: contains
       template: "ltfnp_reasoning/prolog/init.pl compiled"
       message: "Reasoning started successfully"
-    timeout: 360
+    - name: spawnkitchen
+      matchmode: beginswith
+      template: "[spawn_kitchen-"
+      message: "Kitchen spawned"
+    timeout: 3600
   - command: rosrun
     parameters: [semrec, semrec, "-q", "-s"]
     checklist:
@@ -115,7 +119,7 @@ workers:
       matchmode: contains
       template: "unhandled condition in --disable-debugger mode, quitting"
       message: "Unhandled condition"
-    timeout: 4500
+    timeout: 2700
   - command: rosrun
     parameters: [ltfnp_executive, package_log.sh]
     checklist:

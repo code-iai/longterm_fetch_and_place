@@ -65,12 +65,6 @@
        (let ,var-values
          ,@body))))
 
-(defun go-to-pose (position orientation &key (frame "base_link"))
-  (let* ((pose (tf:make-pose-stamped frame 0.0 position orientation))
-         (pose-map (tf:transform-pose-stamped *transformer* :pose pose :target-frame "map")))
-    (with-designators ((loc :location `((:pose ,pose-map))))
-      (at-location (loc)))))
-
 (defun look-at (loc-desig)
   (let ((reference (cram-designators:reference loc-desig)))
     (when reference
@@ -105,7 +99,65 @@
           0.0
           (tf:make-identity-vector)
           (tf:make-identity-rotation))
-   :target-frame "/map"))
+   :target-frame "map"))
+
+(defun ensure-pose-stamped (pose &key (frame "map") (stamp 0.0) (transform t))
+  (let ((pose-stamped
+          (let ((type (type-of pose)))
+            (ecase type
+              (tf:pose-stamped pose)
+              (cl-transforms:pose (tf:pose->pose-stamped frame stamp pose))))))
+    (tf:copy-pose-stamped
+     (cond ((and transform (not (string= (tf:frame-id pose-stamped) frame)))
+            (tf:transform-pose-stamped
+             *transformer*
+             :pose pose-stamped
+             :target-frame frame))
+           (t pose-stamped))
+     :stamp stamp)))
+
+(defmacro at-definite-location (location &key (threshold-cartesian 0.01) (threshold-angular 0.1) body)
+  `(labels ((distance-2d (p-1 p-2)
+              (tf:v-dist (tf:make-3d-vector (tf:x (tf:origin p-1))
+                                            (tf:y (tf:origin p-1)) 0.0)
+                         (tf:make-3d-vector (tf:x (tf:origin p-2))
+                                            (tf:y (tf:origin p-2)) 0.0)))
+            (distance-angular-z (p-1 p-2)
+              (let ((qd (tf:q* (tf:q-inv (tf:orientation p-1))
+                               (tf:orientation p-2))))
+                (1- (tf:squared-norm qd)))))
+     (let* ((target-pose (desig:reference ,location))
+            (current-robot-pose (get-robot-pose))
+            (distance-cartesian (distance-2d current-robot-pose
+                                             target-pose))
+            (distance-angular (distance-angular-z current-robot-pose
+                                                  target-pose)))
+       (loop while (or (> distance-cartesian ,threshold-cartesian)
+                       (> distance-angular ,threshold-angular))
+             do (at-location (,location) ,@body)
+                (setf current-robot-pose (get-robot-pose))
+                (setf distance-cartesian (distance-2d current-robot-pose
+                                                      target-pose))
+                (setf distance-angular (distance-angular-z current-robot-pose
+                                                           target-pose))))))
+
+(defun move-to-relative-position (pose offset)
+  (let* ((pose-stamped (ensure-pose-stamped pose))
+         (transformed-pose-stamped
+           (tf:pose->pose-stamped
+            (tf:frame-id pose-stamped)
+            (tf:stamp pose-stamped)
+            (cl-transforms:transform-pose
+             (tf:pose->transform pose-stamped)
+             offset)))
+         (loc (make-designator :location `((:pose ,transformed-pose-stamped)))))
+    (at-definite-location loc)))
+
+(defun go-to-pose (position orientation &key (frame "base_link"))
+  (let* ((pose (tf:make-pose-stamped frame 0.0 position orientation))
+         (pose-map (tf:transform-pose-stamped *transformer* :pose pose :target-frame "map")))
+    (with-designators ((loc :location `((:pose ,pose-map))))
+      (at-definite-location loc))))
 
 (defun init-3d-world (&key (robot t) (debug-window t))
   (let* ((urdf-robot
@@ -223,13 +275,7 @@
                        (tf:make-identity-vector)
                        orientation))
          (origin-loc (make-designator :location `((:pose ,origin-pose)))))
-;;    (catch-all "go-to-origin"
-;;      (at-location (origin-loc)
-;;        (sleep 10.0)))))
-    (with-designators ((act :action `((:type :navigation)
-				      (:goal ,origin-loc))))
-      (perform act)
-      (monitor-action act))))
+    (at-definite-location origin-loc)))
 
 (defun prepare-settings (&key (simulated t) headless variance)
   (setf cram-tf::*tf-default-timeout* 100)
@@ -370,6 +416,52 @@
                                    (:right "r_wrist_roll_link"))
                           :model2 object-name
                           :link2 "link")))
+
+(defun attach-to-joint-object (source-model source-link joint-model joint-link joint lower-limit upper-limit)
+  (when *simulated*
+    (roslisp:ros-info (ltfnp utils) "Attaching '~a.~a' to joint model '~a.~a' (joint '~a'), using limits [~a, ~a]" source-model source-link joint-model joint-link joint lower-limit upper-limit)
+    (roslisp:call-service "/gazebo/attach"
+                          'attache_msgs-srv:Attachment
+                          :model1 source-model
+                          :link1 source-link
+                          :model2 joint-model
+                          :link2 joint-link)
+    (roslisp:call-service "/gazebo/joint_set_limits"
+                          'attache_msgs-srv:JointSetLimits
+                          :model joint-model
+                          :joint joint
+                          :lower lower-limit
+                          :upper upper-limit)))
+
+(defun get-joint-information (model joint)
+  (let ((result (roslisp:call-service "/gazebo/joint_information"
+                                      'attache_msgs-srv:JointInformation
+                                      :model model
+                                      :joint joint)))
+    (with-fields (success position min max) result
+      (when success
+        `(,position ,min ,max)))))
+
+(defun detach-from-joint-object (source-model source-link joint-model joint-link joint)
+  (when *simulated*
+    (roslisp:ros-info (ltfnp utils) "Detaching '~a.~a' from joint model '~a.~a' (joint '~a'), fixing limits to current state" source-model source-link joint-model joint-link joint)
+    (let ((info (get-joint-information joint-model joint)))
+      (cond (info
+             (destructuring-bind (position lower upper) info
+               (declare (ignore lower upper))
+               (roslisp:call-service "/gazebo/joint_set_limits"
+                                     'attache_msgs-srv:JointSetLimits
+                                     :model joint-model
+                                     :joint joint
+                                     :lower position
+                                     :upper position)
+               (roslisp:call-service "/gazebo/detach"
+                                     'attache_msgs-srv:Attachment
+                                     :model1 source-model
+                                     :link1 source-link
+                                     :model2 joint-model
+                                     :link2 joint-link)))
+            (t (roslisp:ros-warn (ltfnp info) "Failed: No such joint"))))))
 
 (defun enrich-description (description)
   (let ((object-class (cadr (assoc :type description))))

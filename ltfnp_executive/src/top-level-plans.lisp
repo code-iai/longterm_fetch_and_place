@@ -183,3 +183,32 @@
                                                   (:at ,location))))
                  (go-to-origin :keep-orientation t)
                  (perform place-action))))))))))
+
+(defun open-dishwasher ()
+  (let ((model "IAI_kitchen")
+        (link "sink_area_dish_washer_door_handle")
+        (joint "sink_area_dish_washer_door_joint"))
+    (move-to-relative-position
+     (tf:make-pose-stamped
+      "map" 0.0
+      (tf:make-3d-vector 0.5 0.0 0.0)
+      (tf:euler->quaternion))
+     (tf:make-identity-pose))
+    (pr2-manip-pm::execute-move-arm-poses
+     :left `(,(tf:make-pose-stamped
+               "torso_lift_link" 0.0
+               (tf:make-3d-vector 0.45 0.0 -0.05)
+               (tf:euler->quaternion :ax (/ pi 2))))
+     (mot-man:make-goal-specification
+      :moveit-goal-specification))
+    (pr2-manip-pm::open-gripper :left)
+    (pr2-manip-pm::execute-move-arm-poses
+     :left `(,(tf:make-pose-stamped
+               "torso_lift_link" 0.0
+               (tf:make-3d-vector 0.58 0.0 -0.05)
+               (tf:euler->quaternion :ax (/ pi 2))))
+     (mot-man:make-goal-specification
+      :moveit-goal-specification))
+    (pr2-manip-pm::close-gripper :left)
+    (attach-to-joint-object "PR2" "l_wrist_roll_link" model link joint 0.0 1.57)
+    ))
