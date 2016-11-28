@@ -105,7 +105,7 @@
           0.0
           (tf:make-identity-vector)
           (tf:make-identity-rotation))
-   :target-frame "/map"))
+   :target-frame "map"))
 
 (defun init-3d-world (&key (robot t) (debug-window t))
   (let* ((urdf-robot
