@@ -445,6 +445,13 @@
       (when success
         `(,position ,min ,max)))))
 
+(defun fixate-joint (model joint)
+  (let ((info (get-joint-information model joint)))
+    (when info
+      (destructuring-bind (position lower upper) info
+        (declare (ignore lower upper))
+        (set-joint-limits model joint position position)))))
+
 (defun detach-from-joint-object (source-model source-link joint-model joint-link joint)
   (when *simulated*
     (roslisp:ros-info (ltfnp utils) "Detaching '~a.~a' from joint model '~a.~a' (joint '~a'), fixing limits to current state" source-model source-link joint-model joint-link joint)
