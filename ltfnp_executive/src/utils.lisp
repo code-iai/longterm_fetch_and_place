@@ -150,7 +150,7 @@
             (cl-transforms:transform-pose
              (tf:pose->transform pose-stamped)
              offset)))
-         (loc (make-designator :location `((:pose ,transformed-cpose-stamped)))))
+         (loc (make-designator :location `((:pose ,transformed-pose-stamped)))))
     (at-definite-location loc)))
 
 (defun go-to-pose (position orientation &key (frame "base_link"))
@@ -416,6 +416,52 @@
                                    (:right "r_wrist_roll_link"))
                           :model2 object-name
                           :link2 "link")))
+
+(defun attach-to-joint-object (source-model source-link joint-model joint-link joint lower-limit upper-limit)
+  (when *simulated*
+    (roslisp:ros-info (ltfnp utils) "Attaching '~a.~a' to joint model '~a.~a' (joint '~a'), using limits [~a, ~a]" source-model source-link joint-model joint-link joint lower-limit upper-limit)
+    (roslisp:call-service "/gazebo/attach"
+                          'attache_msgs-srv:Attachment
+                          :model1 source-model
+                          :link1 source-link
+                          :model2 joint-model
+                          :link2 joint-link)
+    (roslisp:call-service "/gazebo/joint_set_limits"
+                          'attache_msgs-srv:JointSetLimits
+                          :model joint-model
+                          :joint joint
+                          :lower lower-limit
+                          :upper upper-limit)))
+
+(defun get-joint-information (model joint)
+  (let ((result (roslisp:call-service "/gazebo/joint_information"
+                                      'attache_msgs-srv:JointInformation
+                                      :model model
+                                      :joint joint)))
+    (with-fields (success position min max) result
+      (when success
+        `(,position ,min ,max)))))
+
+(defun detach-from-joint-object (source-model source-link joint-model joint-link joint)
+  (when *simulated*
+    (roslisp:ros-info (ltfnp utils) "Detaching '~a.~a' from joint model '~a.~a' (joint '~a'), fixing limits to current state" source-model source-link joint-model joint-link joint)
+    (let ((info (get-joint-information joint-model joint)))
+      (cond (info
+             (destructuring-bind (position lower upper) info
+               (declare (ignore lower upper))
+               (roslisp:call-service "/gazebo/joint_set_limits"
+                                     'attache_msgs-srv:JointSetLimits
+                                     :model joint-model
+                                     :joint joint
+                                     :lower position
+                                     :upper position)
+               (roslisp:call-service "/gazebo/detach"
+                                     'attache_msgs-srv:Attachment
+                                     :model1 source-model
+                                     :link1 source-link
+                                     :model2 joint-model
+                                     :link2 joint-link)))
+            (t (roslisp:ros-warn (ltfnp info) "Failed: No such joint"))))))
 
 (defun enrich-description (description)
   (let ((object-class (cadr (assoc :type description))))
