@@ -209,6 +209,27 @@
      (mot-man:make-goal-specification
       :moveit-goal-specification))
     (pr2-manip-pm::close-gripper :left)
+    (sleep 3)
     (set-joint-limits model joint 0 1.57)
-    ;;(attach-to-joint-object "PR2" "l_wrist_roll_link" model link joint 0.0 1.57)
+    ;;;(attach-to-joint-object "PR2" "l_wrist_roll_link" model link
+    ;;;joint 0.0 1.57)
+    
+    ;; The gripper should now be wrapped around the handle enough in
+    ;; order to pull it open. No need to fixate a joint between them,
+    ;; as that will make non-radial movement of the gripper
+    ;; impossible.
+    
+    ;;;---
+    ;; TODO: Here, a sequence of opening-motions should be executed,
+    ;; similar to how the fridge was opened. 3-4 segments should be
+    ;; enough.
+    ;;;---
+    
+    (fixate-joint model joint)
+    (pr2-manip-pm::open-gripper :left)
+    ;; NOTE/TODO: Actually, its probably better to stand besides the
+    ;; dish washer and just pull the door open and let it smash to the
+    ;; ground. Everything else is too much of a hassle, takes too
+    ;; long, and will probably break a fraction of the simulation
+    ;; attempts.
     ))
