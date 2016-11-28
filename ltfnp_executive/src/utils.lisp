@@ -417,6 +417,14 @@
                           :model2 object-name
                           :link2 "link")))
 
+(defun set-joint-limits (model joint lower upper)
+  (roslisp:call-service "/gazebo/joint_set_limits"
+                        'attache_msgs-srv:JointSetLimits
+                        :model model
+                        :joint joint
+                        :lower lower
+                        :upper upper))
+
 (defun attach-to-joint-object (source-model source-link joint-model joint-link joint lower-limit upper-limit)
   (when *simulated*
     (roslisp:ros-info (ltfnp utils) "Attaching '~a.~a' to joint model '~a.~a' (joint '~a'), using limits [~a, ~a]" source-model source-link joint-model joint-link joint lower-limit upper-limit)
@@ -426,12 +434,7 @@
                           :link1 source-link
                           :model2 joint-model
                           :link2 joint-link)
-    (roslisp:call-service "/gazebo/joint_set_limits"
-                          'attache_msgs-srv:JointSetLimits
-                          :model joint-model
-                          :joint joint
-                          :lower lower-limit
-                          :upper upper-limit)))
+    (set-joint-limits joint-model joint lower-limit upper-limit)))
 
 (defun get-joint-information (model joint)
   (let ((result (roslisp:call-service "/gazebo/joint_information"
@@ -449,12 +452,7 @@
       (cond (info
              (destructuring-bind (position lower upper) info
                (declare (ignore lower upper))
-               (roslisp:call-service "/gazebo/joint_set_limits"
-                                     'attache_msgs-srv:JointSetLimits
-                                     :model joint-model
-                                     :joint joint
-                                     :lower position
-                                     :upper position)
+               (set-joint-limits joint-model joint position position)
                (roslisp:call-service "/gazebo/detach"
                                      'attache_msgs-srv:Attachment
                                      :model1 source-model
