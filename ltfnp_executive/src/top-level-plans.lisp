@@ -274,8 +274,15 @@
             (tf:make-pose axis (tf:make-identity-rotation)))))
     (tf:origin transformed-axis-pose)))
 
-(defmethod handle-motion-function (handle (strategy (eql :linear-pull)) &key (limits `(0 0.4)))
+(defmethod handle-motion-function (handle (strategy (eql :linear-pull)) &key (limits `(0 0.4)) (offset (tf:make-identity-pose)))
   (let* ((base-handle-pose (get-handle-base-pose handle))
+         (transformed-handle-pose
+           (tf:pose->pose-stamped
+            (tf:frame-id base-handle-pose)
+            (tf:stamp base-handle-pose)
+            (cl-transforms:transform-pose
+             (tf:pose->transform base-handle-pose)
+             offset)))
          (axis (get-global-handle-axis handle))
          (motion-func
            (lambda (degree)
@@ -283,36 +290,36 @@
                (let ((normalized-degree
                        (+ lower (* degree (- upper lower)))))
                  (tf:pose->pose-stamped
-                  (tf:frame-id base-handle-pose)
-                  (tf:stamp base-handle-pose)
+                  (tf:frame-id transformed-handle-pose)
+                  (tf:stamp transformed-handle-pose)
                   (cl-transforms:transform-pose
                    (tf:make-transform
                     (tf:v* axis normalized-degree)
                     (tf:make-identity-rotation))
-                   base-handle-pose)))))))
+                   transformed-handle-pose)))))))
     motion-func))
 
-(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))))
+(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
   )
 
-(defun trace-handle-trajectory (handle trace-func &key (limits `(0 1) limitsp) (from-degree 0.0) (to-degree 1.0) (step 0.1))
+(defun trace-handle-trajectory (handle trace-func &key (limits `(0 1) limitsp) (from-degree 0.0) (to-degree 1.0) (step 0.1) (offset (tf:make-identity-pose)))
   (let* ((strategy (get-handle-strategy handle))
          (motion-function
            (cond (limitsp (handle-motion-function
-                           handle strategy :limits limits))
-                 (t (handle-motion-function handle strategy))))
+                           handle strategy :limits limits :offset offset))
+                 (t (handle-motion-function handle strategy :offset offset))))
          (steps (/ (- to-degree from-degree) step)))
     (loop for i from 0 to steps
           as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
           collect (funcall trace-func i current-pose))))
 
-(defun show-handle-trajectory (handle)
+(defun show-handle-trajectory (handle &key (offset (tf:make-identity-pose)))
   (let* ((trace-func
            (lambda (step pose-stamped)
              (declare (ignore step))
              pose-stamped))
-         (trace (trace-handle-trajectory handle trace-func))
+         (trace (trace-handle-trajectory handle trace-func :offset offset))
          (markers
            (roslisp:make-msg
             "visualization_msgs/MarkerArray"
