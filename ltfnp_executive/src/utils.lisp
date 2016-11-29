@@ -116,7 +116,7 @@
            (t pose-stamped))
      :stamp stamp)))
 
-(defmacro at-definite-location (location &key (threshold-cartesian 0.01) (threshold-angular 0.1) body)
+(defmacro at-definite-location (location &key (threshold-cartesian 0.01) (threshold-angular 0.05) body)
   `(labels ((distance-2d (p-1 p-2)
               (tf:v-dist (tf:make-3d-vector (tf:x (tf:origin p-1))
                                             (tf:y (tf:origin p-1)) 0.0)
@@ -134,7 +134,11 @@
                                                   target-pose)))
        (loop while (or (> distance-cartesian ,threshold-cartesian)
                        (> distance-angular ,threshold-angular))
-             do (at-location (,location) ,@body)
+             do (with-failure-handling
+                    ((cram-plan-failures:location-not-reached-failure (f)
+                       (declare (ignore f))
+                       (cpl:retry)))
+                  (at-location (,location) ,@body))
                 (setf current-robot-pose (get-robot-pose))
                 (setf distance-cartesian (distance-2d current-robot-pose
                                                       target-pose))
