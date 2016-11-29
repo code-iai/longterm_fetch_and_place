@@ -429,6 +429,14 @@
                         :lower lower
                         :upper upper))
 
+(defun set-joint-position (model joint position &key hold)
+  (roslisp:call-service "/gazebo/joint_control"
+                        'attache_msgs-srv:JointControl
+                        :model model
+                        :joint joint
+                        :position position
+                        :hold_position (not (not hold))))
+
 (defun attach-to-joint-object (source-model source-link joint-model joint-link joint lower-limit upper-limit)
   (when *simulated*
     (roslisp:ros-info (ltfnp utils) "Attaching '~a.~a' to joint model '~a.~a' (joint '~a'), using limits [~a, ~a]" source-model source-link joint-model joint-link joint lower-limit upper-limit)
