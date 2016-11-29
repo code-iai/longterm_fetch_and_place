@@ -312,12 +312,12 @@
     (loop for i from 0 to steps
           as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
-          collect (funcall trace-func i current-pose))))
+          collect (funcall trace-func i steps current-pose))))
 
 (defun show-handle-trajectory (handle &key (offset (tf:make-identity-pose)))
   (let* ((trace-func
-           (lambda (step pose-stamped)
-             (declare (ignore step))
+           (lambda (step steps pose-stamped)
+             (declare (ignore step steps))
              pose-stamped))
          (trace (trace-handle-trajectory handle trace-func :offset offset))
          (markers
@@ -382,11 +382,11 @@
 (defun execute-handle-trace (arm handle &key (from-degree 0.0) (to-degree 1.0) (step 0.1))
   (let* ((close-x 0.55)
          (trace-func
-           (lambda (step pose-stamped)
-             (declare (ignore step))
+           (lambda (step steps pose-stamped)
              (let ((in-tll (ensure-pose-stamped
                             pose-stamped
-                            :frame "torso_lift_link")))
+                            :frame "torso_lift_link"))
+                   (degree (/ step steps)))
                (cond ((>= (tf:x (tf:origin in-tll)) close-x)
                       (move-arm-pose arm in-tll))
                      (t (let ((current-hand-in-tll
@@ -414,7 +414,8 @@
                            (tf:make-pose
                             (tf:make-3d-vector
                              (- (tf:x (tf:origin in-tll)) close-x) 0 0)
-                            (tf:make-identity-rotation)))))))))
+                            (tf:make-identity-rotation))))))
+               (set-handle-degree handle degree))))
          (hand-diff (get-hand-handle-difference arm handle)))
     (trace-handle-trajectory
      handle trace-func
@@ -519,8 +520,18 @@
         ((string= handle "iai_kitchen_fridge_door_handle")
          "")))
 
+(defun degree->joint-position (handle degree)
+  (destructuring-bind (lower upper) (handle-limits handle)
+    (+ lower (* degree (- upper lower)))))
+
 (defun handle-model (handle)
   "IAI_kitchen")
+
+(defun set-handle-degree (handle degree &key hold)
+  (set-joint-position (handle-model handle)
+                      (handle-joint handle)
+                      (degree->joint-position handle degree)
+                      :hold hold))
 
 (defun initialize-handle-joint-controller ()
   (let ((handles `("iai_kitchen_sink_area_left_upper_drawer_handle"
