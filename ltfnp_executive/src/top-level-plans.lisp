@@ -234,6 +234,10 @@
     ;; attempts.
     ))
 
+(defun get-semantic-object (name)
+  (first (cram-semantic-map-designators:designator->semantic-map-objects
+          (make-designator :object `((:name ,name))))))
+
 (defun get-handle-strategy (handle)
   (cond ((or (string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
              (string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
@@ -244,12 +248,21 @@
          :revolute-pull)))
 
 (defun get-handle-base-pose (handle &key (frame "map"))
-  (ensure-pose-stamped
-   (tf:make-pose (tf:make-3d-vector 0 0 1)
-                 (tf:euler->quaternion :az 0))))
+  (let ((handle-object (get-semantic-object handle)))
+    (ensure-pose-stamped
+     (cram-semantic-map-utils:pose handle-object)
+     :frame frame)))
 
 (defun get-handle-axis (handle)
-  (tf:make-3d-vector 1 0 0))
+  (cond ((or (string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+             (string= handle "iai_kitchen_sink_area_left_middle_drawer_handle"))
+         (tf:make-3d-vector -1 0 0))
+        ((or (string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle"))
+         (tf:make-3d-vector 1 0 0))
+        ((or (string= handle "iai_kitchen_sink_area_dish_washer_door_handle"))
+         (tf:make-3d-vector 0 -1 0))
+        ((or (string= handle "iai_kitchen_fridge_door_handle"))
+         (tf:make-3d-vector 0 0 1))))
 
 (defun get-global-handle-axis (handle &key (frame "map"))
   (let* ((axis (get-handle-axis handle))
@@ -292,10 +305,37 @@
     (loop for i from 0 to steps
           as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
-          do (funcall trace-func i current-pose))))
+          collect (funcall trace-func i current-pose))))
 
 (defun show-handle-trajectory (handle)
-  (let ((trace-func
-          (lambda (step pose-stamped)
-            (format t "~a: ~a~%" step pose-stamped))))
-    (trace-handle-trajectory handle trace-func)))
+  (let* ((trace-func
+           (lambda (step pose-stamped)
+             (declare (ignore step))
+             pose-stamped))
+         (trace (trace-handle-trajectory handle trace-func))
+         (markers
+           (roslisp:make-msg
+            "visualization_msgs/MarkerArray"
+            markers
+            (map 'vector #'identity
+                 (loop for i from 0 below (length trace)
+                       as dot-msg = (roslisp:make-msg
+                                     "visualization_msgs/Marker"
+                                     (frame_id header) "map"
+                                     pose (tf:to-msg (tf:pose-stamped->pose
+                                                      (nth i trace)))
+                                     ns "trace"
+                                     id i
+                                     type 2
+                                     action 0
+                                     (x scale) 0.03
+                                     (y scale) 0.03
+                                     (z scale) 0.03
+                                     (r color) (- 1.0 (/ i (length trace)))
+                                     (g color) (/ i (length trace))
+                                     (b color) 0
+                                     (a color) 1)
+                       collect dot-msg)))))
+    (roslisp:publish
+     (roslisp:advertise "/handletrace" "visualization_msgs/MarkerArray")
+     markers)))
