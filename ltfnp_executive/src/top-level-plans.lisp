@@ -421,7 +421,8 @@
      :from-degree from-degree
      :to-degree to-degree
      :offset hand-diff
-     :step step)))
+     :step step
+     :limits (handle-limits handle))))
 
 (defun in-front-of-handle-pose (handle)
   (ensure-pose-stamped
@@ -440,6 +441,18 @@
          ((string= handle "iai_kitchen_fridge_door_handle")
           (tf:make-pose (tf:make-3d-vector 0.5 -0.8 0.0)
                         (tf:euler->quaternion :az 0))))))
+
+(defun handle-limits (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         `(0.0 0.4))
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         `(0.0 0.4))
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         `(0.0 0.4))
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         `(0.0 (/ pi 2)))
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         `(0.0 (/ pi 2)))))
 
 (defun handle-orientation-transformation (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
@@ -494,12 +507,45 @@
      offset)
     :frame "torso_lift_link")))
 
+(defun handle-joint (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         "")
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         "")
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         "")
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         "")
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         "")))
+
+(defun handle-model (handle)
+  "IAI_kitchen")
+
+(defun initialize-handle-joint-controller ()
+  (let ((handles `("iai_kitchen_sink_area_left_upper_drawer_handle"
+                   "iai_kitchen_sink_area_left_middle_drawer_handle"
+                   "iai_kitchen_kitchen_island_left_upper_drawer_handle"
+                   "iai_kitchen_sink_area_dish_washer_door_handle"
+                   "iai_kitchen_fridge_door_handle")))
+    (loop for handle in handles
+          as joint = (handle-joint handle)
+          as model = (handle-model handle)
+          as joint-limits = (handle-limits handle)
+          do (destructuring-bind (lower upper) joint-limits
+               (set-joint-limits model joint lower upper))
+             (set-joint-position model joint 0 :hold t))))
+
 (defun open-handle (arm handle)
   (top-level
     (with-process-modules-simulated
+      ;; Lights
       (semantic-map-collision-environment::publish-semantic-map-collision-objects)
+      (initialize-handle-joint-controller)
+      ;; Camera
       (move-arms-up)
       (move-torso 0.3)
+      ;; Action!
       (go-in-front-of-handle handle)
       (pr2-manip-pm::open-gripper arm)
       (grasp-handle arm handle)
@@ -509,4 +555,6 @@
       (move-arm-relative
        arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
                          (tf:make-identity-rotation)))
-      (move-arms-up))))
+      (move-arms-up)
+      ;; ..aaand cut!
+      )))
