@@ -699,7 +699,7 @@
                         0.0))
                 (tf:euler->quaternion
                  :az
-                 (+ 3.1415 angle-rad)))))
+                 (+ pi angle-rad)))))
     (roslisp:make-msg
      "visualization_msgs/Marker"
      (frame_id header) "map"
