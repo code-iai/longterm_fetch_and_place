@@ -398,7 +398,7 @@
                                   0.0
                                   (tf:make-identity-pose))
                                  :frame "torso_lift_link")))
-                          (when (>= (tf:x (tf:origin current-hand-in-tll)) close-x)
+                          (when (> (tf:x (tf:origin current-hand-in-tll)) close-x)
                             (move-arm-pose
                              arm
                              (tf:make-pose-stamped
@@ -422,3 +422,91 @@
      :to-degree to-degree
      :offset hand-diff
      :step step)))
+
+(defun in-front-of-handle-pose (handle)
+  (ensure-pose-stamped
+   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+          (tf:make-pose (tf:make-3d-vector 0.5 0.6 0.0)
+                        (tf:euler->quaternion :az 0)))
+         ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+          (tf:make-pose (tf:make-3d-vector 0.5 0.6 0.0)
+                        (tf:euler->quaternion :az 0)))
+         ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+          (tf:make-pose (tf:make-3d-vector -0.1 0.6 0.0)
+                        (tf:euler->quaternion :az pi)))
+         ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+          (tf:make-pose (tf:make-3d-vector 0.5 0.0 0.0)
+                        (tf:euler->quaternion :az 0)))
+         ((string= handle "iai_kitchen_fridge_door_handle")
+          (tf:make-pose (tf:make-3d-vector 0.5 -0.8 0.0)
+                        (tf:euler->quaternion :az 0))))))
+
+(defun handle-orientation-transformation (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         (tf:euler->quaternion :az 0 :ax (/ pi 2)))
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         (tf:euler->quaternion :az 0 :ax (/ pi 2)))
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         (tf:euler->quaternion :az pi :ax (/ pi 2)))
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         (tf:euler->quaternion :az 0 :ax (/ pi 2)))
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         (tf:euler->quaternion))))
+
+(defun go-in-front-of-handle (handle)
+  (let ((loc (make-designator
+              :location
+              `((:pose ,(in-front-of-handle-pose handle))))))
+    (at-definite-location loc)))
+
+(defun grasp-handle (arm handle)
+  (let* ((handle-base-pose (get-handle-base-pose handle))
+         (handle-axis (get-handle-axis handle))
+         (applied-rotation (cl-transforms:transform-pose
+                            (tf:make-transform
+                             (tf:make-identity-vector)
+                             (handle-orientation-transformation handle))
+                                               ;;(tf:euler->quaternion :ax (/ pi 2)))
+                            (tf:make-pose (tf:make-identity-vector)
+                                          (tf:orientation handle-base-pose))))
+         (grasp-pose (ensure-pose-stamped
+                      (tf:make-pose-stamped
+                       "map"
+                       0.0
+                       (tf:v+ (tf:origin handle-base-pose)
+                              (ecase (get-handle-strategy handle)
+                                (:linear-pull (tf:v* handle-axis 0.2))
+                                ;; This is pretty hacky
+                                (:revolute-pull (tf:v* (tf:make-3d-vector -1 0 0) 0.2))))
+                       (tf:orientation applied-rotation))
+                      :frame "torso_lift_link")))
+    (move-arm-pose arm grasp-pose)))
+
+(defun move-arm-relative (arm offset)
+  (move-arm-pose
+   arm
+   (ensure-pose-stamped
+    (tf:pose->pose-stamped
+     (ecase arm
+       (:left "l_wrist_roll_link")
+       (:right "r_wrist_roll_link"))
+     0.0
+     offset)
+    :frame "torso_lift_link")))
+
+(defun open-handle (arm handle)
+  (top-level
+    (with-process-modules-simulated
+      (semantic-map-collision-environment::publish-semantic-map-collision-objects)
+      (move-arms-up)
+      (move-torso 0.3)
+      (go-in-front-of-handle handle)
+      (pr2-manip-pm::open-gripper arm)
+      (grasp-handle arm handle)
+      (pr2-manip-pm::close-gripper arm)
+      (execute-handle-trace arm handle)
+      (pr2-manip-pm::open-gripper arm)
+      (move-arm-relative
+       arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                         (tf:make-identity-rotation)))
+      (move-arms-up))))
