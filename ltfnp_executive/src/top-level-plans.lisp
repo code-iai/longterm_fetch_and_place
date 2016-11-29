@@ -283,24 +283,41 @@
             (cl-transforms:transform-pose
              (tf:pose->transform base-handle-pose)
              offset)))
-         (axis (get-global-handle-axis handle))
-         (motion-func
+         (axis (get-global-handle-axis handle)))
+    (lambda (degree)
+      (destructuring-bind (lower upper) limits
+        (let ((normalized-degree
+                (+ lower (* degree (- upper lower)))))
+          (tf:pose->pose-stamped
+           (tf:frame-id transformed-handle-pose)
+           (tf:stamp transformed-handle-pose)
+           (cl-transforms:transform-pose
+            (tf:make-transform
+             (tf:v* axis normalized-degree)
+             (tf:make-identity-rotation))
+            transformed-handle-pose)))))))
+
+(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
+  ;; This, again, is pretty hacky
+  (cond ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         )
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         (let ((base-position (tf:make-3d-vector 0 0 0)) ;; Fix me
+               (offset-angle (/ pi 2)) ;; Fix me
+               (radius 1.0)) ;; Fix me
            (lambda (degree)
              (destructuring-bind (lower upper) limits
                (let ((normalized-degree
                        (+ lower (* degree (- upper lower)))))
-                 (tf:pose->pose-stamped
-                  (tf:frame-id transformed-handle-pose)
-                  (tf:stamp transformed-handle-pose)
-                  (cl-transforms:transform-pose
-                   (tf:make-transform
-                    (tf:v* axis normalized-degree)
-                    (tf:make-identity-rotation))
-                   transformed-handle-pose)))))))
-    motion-func))
-
-(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
-  )
+                 (tf:make-pose-stamped
+                  "map" 0.0
+                  (tf:v+ base-position
+                         (tf:make-3d-vector
+                          (* radius (cos (+ offset-angle normalized-degree)))
+                          (* radius (sin (+ offset-angle normalized-degree)))
+                          0.0))
+                  (tf:euler->quaternion :az normalized-degree)) ;; Fix me; rotate?
+                 )))))))
 
 (defun trace-handle-trajectory (handle trace-func &key (limits `(0 1) limitsp) (from-degree 0.0) (to-degree 1.0) (step 0.1) (offset (tf:make-identity-pose)))
   (let* ((strategy (get-handle-strategy handle))
