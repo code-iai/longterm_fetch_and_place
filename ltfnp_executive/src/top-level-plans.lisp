@@ -233,3 +233,69 @@
     ;; long, and will probably break a fraction of the simulation
     ;; attempts.
     ))
+
+(defun get-handle-strategy (handle)
+  (cond ((or (string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+             (string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+             (string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle"))
+         :linear-pull)
+        ((or (string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+             (string= handle "iai_kitchen_fridge_door_handle"))
+         :revolute-pull)))
+
+(defun get-handle-base-pose (handle &key (frame "map"))
+  (ensure-pose-stamped
+   (tf:make-pose (tf:make-3d-vector 0 0 1)
+                 (tf:euler->quaternion :az 0))))
+
+(defun get-handle-axis (handle)
+  (tf:make-3d-vector 1 0 0))
+
+(defun get-global-handle-axis (handle &key (frame "map"))
+  (let* ((axis (get-handle-axis handle))
+         (global-pose (get-handle-base-pose handle :frame frame))
+         (transformed-axis-pose
+           (cl-transforms:transform-pose
+            (tf:make-transform (tf:make-identity-vector)
+                               (tf:orientation global-pose))
+            (tf:make-pose axis (tf:make-identity-rotation)))))
+    (tf:origin transformed-axis-pose)))
+
+(defmethod handle-motion-function (handle (strategy (eql :linear-pull)) &key (limits `(0 0.4)))
+  (let* ((base-handle-pose (get-handle-base-pose handle))
+         (axis (get-global-handle-axis handle))
+         (motion-func
+           (lambda (degree)
+             (destructuring-bind (lower upper) limits
+               (let ((normalized-degree
+                       (+ lower (* degree (- upper lower)))))
+                 (tf:pose->pose-stamped
+                  (tf:frame-id base-handle-pose)
+                  (tf:stamp base-handle-pose)
+                  (cl-transforms:transform-pose
+                   (tf:make-transform
+                    (tf:v* axis normalized-degree)
+                    (tf:make-identity-rotation))
+                   base-handle-pose)))))))
+    motion-func))
+
+(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))))
+  )
+
+(defun trace-handle-trajectory (handle trace-func &key (limits `(0 1) limitsp) (from-degree 0.0) (to-degree 1.0) (step 0.1))
+  (let* ((strategy (get-handle-strategy handle))
+         (motion-function
+           (cond (limitsp (handle-motion-function
+                           handle strategy :limits limits))
+                 (t (handle-motion-function handle strategy))))
+         (steps (/ (- to-degree from-degree) step)))
+    (loop for i from 0 to steps
+          as current-degree = (+ from-degree (* i step))
+          as current-pose = (funcall motion-function current-degree)
+          do (funcall trace-func i current-pose))))
+
+(defun show-handle-trajectory (handle)
+  (let ((trace-func
+          (lambda (step pose-stamped)
+            (format t "~a: ~a~%" step pose-stamped))))
+    (trace-handle-trajectory handle trace-func)))
