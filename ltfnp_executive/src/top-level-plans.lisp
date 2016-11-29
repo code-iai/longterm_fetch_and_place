@@ -346,3 +346,79 @@
     (roslisp:publish
      (roslisp:advertise "/handletrace" "visualization_msgs/MarkerArray")
      markers)))
+
+(defun get-pose-difference (p-base p-ext &key (frame "map"))
+  (let ((p-base (ensure-pose-stamped p-base :frame frame))
+        (p-ext (ensure-pose-stamped p-ext :frame frame)))
+    (tf:make-pose
+     (tf:v- (tf:origin p-ext) (tf:origin p-base))
+     (tf:orientation p-ext))))
+
+(defun get-hand-handle-difference (arm handle)
+  (let* ((handle-pose (get-handle-base-pose handle))
+         (wrist-link (ecase arm
+                       (:left "l_wrist_roll_link")
+                       (:right "r_wrist_roll_link")))
+         (pose-diff (get-pose-difference
+                     handle-pose
+                     (tf:pose->pose-stamped
+                      wrist-link 0.0
+                      (tf:make-identity-pose)))))
+    pose-diff))
+
+(defun move-base-relative (pose)
+  (let* ((current-pose (ensure-pose-stamped (get-robot-pose)))
+         (transformed-pose
+           (tf:pose->pose-stamped
+            (tf:frame-id current-pose)
+            (tf:stamp current-pose)
+            (cl-transforms:transform-pose
+             (tf:pose->transform current-pose)
+             pose))))
+    (at-definite-location
+     (make-designator
+      :location `((:pose ,transformed-pose))))))
+
+(defun execute-handle-trace (arm handle &key (from-degree 0.0) (to-degree 1.0) (step 0.1))
+  (let* ((close-x 0.55)
+         (trace-func
+           (lambda (step pose-stamped)
+             (declare (ignore step))
+             (let ((in-tll (ensure-pose-stamped
+                            pose-stamped
+                            :frame "torso_lift_link")))
+               (cond ((>= (tf:x (tf:origin in-tll)) close-x)
+                      (move-arm-pose arm in-tll))
+                     (t (let ((current-hand-in-tll
+                                (ensure-pose-stamped
+                                 (tf:pose->pose-stamped
+                                  (ecase arm
+                                    (:left "l_wrist_roll_link")
+                                    (:right "r_wrist_roll_link"))
+                                  0.0
+                                  (tf:make-identity-pose))
+                                 :frame "torso_lift_link")))
+                          (when (>= (tf:x (tf:origin current-hand-in-tll)) close-x)
+                            (move-arm-pose
+                             arm
+                             (tf:make-pose-stamped
+                              (tf:frame-id in-tll)
+                              (tf:stamp in-tll)
+                              (tf:make-3d-vector
+                               (+ (tf:x (tf:origin in-tll))
+                                  (- (tf:x (tf:origin in-tll)) close-x))
+                               (tf:y (tf:origin in-tll))
+                               (tf:z (tf:origin in-tll)))
+                              (tf:orientation in-tll))))
+                          (move-base-relative
+                           (tf:make-pose
+                            (tf:make-3d-vector
+                             (- (tf:x (tf:origin in-tll)) close-x) 0 0)
+                            (tf:make-identity-rotation)))))))))
+         (hand-diff (get-hand-handle-difference arm handle)))
+    (trace-handle-trajectory
+     handle trace-func
+     :from-degree from-degree
+     :to-degree to-degree
+     :offset hand-diff
+     :step step)))
