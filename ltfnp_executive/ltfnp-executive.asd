@@ -67,6 +67,7 @@
      (:file "sem-map-config" :depends-on ("package"))
      (:file "planner" :depends-on ("package"))
      (:file "facts" :depends-on ("package"))
+     (:file "table-setting" :depends-on ("package" "costmap-metadata"))
      (:file "plan-library" :depends-on ("package"
                                         "utils"
                                         "costmap-metadata"
