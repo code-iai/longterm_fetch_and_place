@@ -35,19 +35,23 @@
 ;;;
 
 (defun generate-table-setting-problem ()
-  (let* ((pool-guests `(mary tim))
-         (pool-meal-times `(breakfast lunch dinner))
-         (pool-week-days
-           `(monday tuesday wednesday thursday friday saturday sunday))
-         (week-day (nth (random (length pool-week-days)) pool-week-days))
-         (meal-time (nth (random (length pool-meal-times)) pool-meal-times))
+  (let* ((pool-guests `(:mary :tim))
+         (pool-meal-times `(:breakfast :lunch :dinner))
+         (pool-week-days `(:monday :tuesday :wednesday :thursday
+                           :friday :saturday :sunday))
+         (week-day (nth (random (length pool-week-days))
+                        pool-week-days))
+         (meal-time (nth (random (length pool-meal-times))
+                         pool-meal-times))
          (guests (if (and (not (weekend-p week-day))
-                          (eql meal-time 'lunch))
-                     `(,(nth (random (length pool-guests)) pool-guests))
+                          (eql meal-time :lunch))
+                     `(,(nth (random (length pool-guests))
+                             pool-guests))
                      (let ((temp-guests
                              (loop for guest in pool-guests
                                    when (>= (random 10)
-                                            (if (weekend-p week-day) 2 5))
+                                            (if (weekend-p week-day)
+                                                2 5))
                                      collect guest)))
                        (if (= (length temp-guests) 0)
                            `(,(nth (random (length pool-guests)) pool-guests))
@@ -67,17 +71,17 @@
 (defun set-random-scene ()
   (destructuring-bind (guests meal-time week-day)
       (generate-table-setting-problem)
-    (set-scene-detail 'guests guests)
-    (set-scene-detail 'meal-time meal-time)
-    (set-scene-detail 'week-day week-day)))
+    (set-scene-detail :guests guests)
+    (set-scene-detail :meal-time meal-time)
+    (set-scene-detail :week-day week-day)))
 
 (defun scene-detail (detail)
   (gethash detail *scene-context*))
 
 (defun set-scene-1 ()
-  (set-scene-detail 'guests `(tim))
-  (set-scene-detail 'meal-time 'breakfast)
-  (set-scene-detail 'week-day 'saturday))
+  (set-scene-detail :guests `(:tim))
+  (set-scene-detail :meal-time :breakfast)
+  (set-scene-detail :week-day :saturday))
 
 (defun rectangular-costmap-generator (x-r y-r w h)
   (lambda (x y)
@@ -118,41 +122,41 @@
           (half-width (/ seat-width 2))
           (half-height (/ seat-height 2)))
       (case relation
-        (near (rectangular-costmap-generator
-               (- (first seat-center) half-height)
-               (- (second seat-center) half-width)
-               seat-width
-               seat-height))
-        (left-of (rectangular-costmap-generator
-                  (- (first seat-center) half-height)
-                  (- (second seat-center) half-width)
-                  (* seat-width 0.4)
-                  seat-height))
-        (right-of (rectangular-costmap-generator
-                  (- (first seat-center) half-height)
-                  (+ (* seat-width 0.6)
-                     (- (second seat-center) half-width))
-                  (* seat-width 0.4)
-                  seat-height))
-        (behind-of (rectangular-costmap-generator
+        (:near (rectangular-costmap-generator
+                (- (first seat-center) half-height)
+                (- (second seat-center) half-width)
+                seat-width
+                seat-height))
+        (:left-of (rectangular-costmap-generator
+                   (- (first seat-center) half-height)
+                   (- (second seat-center) half-width)
+                   (* seat-width 0.4)
+                   seat-height))
+        (:right-of (rectangular-costmap-generator
                     (- (first seat-center) half-height)
-                    (- (second seat-center) half-width)
-                    seat-width
-                    (* seat-height 0.4)))
-        (center-of (rectangular-costmap-generator
-                    (+ (* seat-width 0.4)
-                       (- (first seat-center) half-height))
-                    (+ (* seat-height 0.3)
+                    (+ (* seat-width 0.6)
                        (- (second seat-center) half-width))
                     (* seat-width 0.4)
-                    (* seat-height 0.6)))))))
+                    seat-height))
+        (:behind-of (rectangular-costmap-generator
+                     (- (first seat-center) half-height)
+                     (- (second seat-center) half-width)
+                     seat-width
+                     (* seat-height 0.4)))
+        (:center-of (rectangular-costmap-generator
+                     (+ (* seat-width 0.4)
+                        (- (first seat-center) half-height))
+                     (+ (* seat-height 0.3)
+                        (- (second seat-center) half-width))
+                     (* seat-width 0.4)
+                     (* seat-height 0.6)))))))
 
 (defun positions->seat-location (seat positions)
   (make-designator
    :location
-   (append `((seat ,seat)
-             (desig-props::on CounterTop)
-             (desig-props::name "meal_table"))
+   (append `((:seat ,seat)
+             (:on CounterTop)
+             (:name "meal_table"))
            (mapcar (lambda (position)
                      `(,position seat))
                    positions))))
@@ -160,20 +164,20 @@
 (defun object-type->object (object-type location guest meal)
   (make-designator
    :object
-   `((at ,location)
-     (type ,object-type)
-     (for-guest ,guest)
-     (for-meal ,meal))))
+   `((:at ,location)
+     (:type ,object-type)
+     (:for-guest ,guest)
+     (:for-meal ,meal))))
 
 (defun order-scene-objects (objects)
   (let* ((object-seat-placement-modifiers
            (mapcar
             (lambda (object)
-              (let* ((at (desig-prop-value object 'at))
+              (let* ((at (desig-prop-value object :at))
                      (seat-placements
                        (cpl:mapcar-clean
                         (lambda (property)
-                          (when (eql (cadr property) 'seat)
+                          (when (eql (cadr property) :seat)
                             (car property)))
                         (description at))))
                 (cons object seat-placements)))
@@ -212,6 +216,10 @@
 
 (defun weekend-p (day)
   (not (not (cram-prolog:prolog `(weekend? ,day)))))
+
+(defun object-list (scene-objects)
+  (loop for object in scene-objects
+        collect (desig:desig-prop-value object :type)))
 
 ;;;
 ;;; Plans
@@ -290,14 +298,14 @@
 
 (def-fact-group table-setting-costmap-facts (desig-costmap)
   
-  (<- (distribution-symbol left-of seat-distribution-relative-left))
-  (<- (distribution-symbol right-of seat-distribution-relative-right))
-  (<- (distribution-symbol behind-of seat-distribution-relative-behind))
-  (<- (distribution-symbol center-of seat-distribution-relative-center))
-  (<- (distribution-symbol near seat-distribution-relative-near))
+  (<- (distribution-symbol :left-of seat-distribution-relative-left))
+  (<- (distribution-symbol :right-of seat-distribution-relative-right))
+  (<- (distribution-symbol :behind-of seat-distribution-relative-behind))
+  (<- (distribution-symbol :center-of seat-distribution-relative-center))
+  (<- (distribution-symbol :near seat-distribution-relative-near))
   
   (<- (desig-costmap ?desig ?cm)
-    (desig-prop ?desig (seat ?seat))
+    (desig-prop ?desig (:seat ?seat))
     (desig-prop ?desig (?relation seat))
     (costmap ?cm)
     (distribution-symbol ?relation ?distrib)
@@ -327,84 +335,84 @@
     (cram-prolog:fail))
   
   (<- (guest ?guest)
-    (context-prop guests ?guests)
+    (context-prop :guests ?guests)
     (member ?guest ?guests))
   
-  (<- (seat-description ?seat (seat ?seat)))
+  (<- (seat-description ?seat (:seat ?seat)))
   
-  (<- (weekend? saturday))
-  (<- (weekend? sunday))
+  (<- (weekend? :saturday))
+  (<- (weekend? :sunday))
   (<- (workday? ?day)
     (not (weekend? ?day)))
   
   ;; Who likes which meals during what time of the day
-  (<- (preference tim dish muesli)
-    (context-prop meal-time breakfast))
+  (<- (preference :tim :dish :muesli)
+    (context-prop :meal-time :breakfast))
   
-  (<- (preference tim dish soup)
-    (context-prop meal-time lunch))
+  (<- (preference :tim :dish :soup)
+    (context-prop :meal-time :lunch))
   
-  (<- (preference tim dish bread)
-    (context-prop meal-time dinner))
+  (<- (preference :tim :dish :bread)
+    (context-prop :meal-time :dinner))
 
-  (<- (preference mary dish soup)
-    (context-prop meal-time dinner))
+  (<- (preference :mary :dish :soup)
+    (context-prop :meal-time :dinner))
   
-  (<- (preference mary dish coffee)
-    (context-prop meal-time breakfast))
+  (<- (preference :mary :dish :coffee)
+    (context-prop :meal-time :breakfast))
   
-  (<- (preference mary dish bread))
+  (<- (preference :mary :dish :bread))
 
-  (<- (preference tim dish wine)
-    (context-prop meal-time dinner))
+  (<- (preference :tim :dish :wine)
+    (context-prop :meal-time :dinner))
   
-  (<- (preference mary dish wine)
-    (context-prop meal-time dinner))
+  (<- (preference :mary :dish :wine)
+    (context-prop :meal-time :dinner))
   
   ;; Who sits where
-  (<- (preference tim seat 2)
-    (context-prop-amount guests ?guest-count)
+  (<- (preference :tim :seat 2)
+    (context-prop-amount :guests ?guest-count)
     (> ?guest-count 1))
   
-  (<- (preference tim seat 1)
-    (context-prop-amount guests ?guest-count)
+  (<- (preference :tim :seat 1)
+    (context-prop-amount :guests ?guest-count)
     (cram-prolog:== ?guest-count 1))
   
-  (<- (preference mary seat 1))
+  (<- (preference :mary :seat 1))
   
   ;; Objects for meals
-  (<- (required-meal-object muesli bowl))
-  (<- (required-meal-object muesli muesli))
-  (<- (required-meal-object muesli milkbox))
-  (<- (required-meal-object muesli spoon))
+  (<- (required-meal-object :muesli :bowl))
+  (<- (required-meal-object :muesli :muesli))
+  (<- (required-meal-object :muesli :milkbox))
+  (<- (required-meal-object :muesli :spoon))
   
-  (<- (required-meal-object bread knife))
-  (<- (required-meal-object bread plate))
+  (<- (required-meal-object :bread :knife))
+  (<- (required-meal-object :bread :plate))
   
-  (<- (required-meal-object coffee cup))
+  (<- (required-meal-object :coffee :cup))
   
-  (<- (required-meal-object wine glass))
+  (<- (required-meal-object :wine :glass))
   
-  (<- (required-meal-object soup bowl))
-  (<- (required-meal-object soup spoon))
+  (<- (required-meal-object :soup :bowl))
+  (<- (required-meal-object :soup :spoon))
   
   ;; General rules for table setting object placement
-  (<- (center-relative-object-table-position bowl center-of))
-  (<- (center-relative-object-table-position plate center-of))
-  (<- (center-relative-object-table-position fork left-of))
-  (<- (center-relative-object-table-position knife right-of))
-  (<- (center-relative-object-table-position spoon left-of))
-  (<- (center-relative-object-table-position cup left-of))
-  (<- (center-relative-object-table-position cup behind-of))
+  (<- (center-relative-object-table-position :bowl :center-of))
+  (<- (center-relative-object-table-position :plate :center-of))
+  (<- (center-relative-object-table-position :fork :left-of))
+  (<- (center-relative-object-table-position :knife :right-of))
+  (<- (center-relative-object-table-position :spoon :left-of))
+  (<- (center-relative-object-table-position :cup :left-of))
+  (<- (center-relative-object-table-position :cup :behind-of))
   
-  (<- (center-relative-object-table-position ?_ near))
+  (<- (center-relative-object-table-position ?_ :near))
   
   ;; Ordering of costmap-based object placement
-  (<- (seat-place-ordering left-of ?_ :before))
-  (<- (seat-place-ordering right-of ?_ :before))
-  (<- (seat-place-ordering center-of ?_ :after))
-  (<- (seat-place-ordering behind-of ?_ :before))
-  (<- (seat-place-ordering near ?_ :after))
+  (<- (seat-place-ordering :left-of ?_ :before))
+  (<- (seat-place-ordering :right-of ?_ :before))
+  (<- (seat-place-ordering :center-of ?_ :after))
+  (<- (seat-place-ordering :behind-of ?_ :before))
+  (<- (seat-place-ordering :near ?_ :after))
   
   (<- (seat-place-ordering ?a ?b :before)
     (seat-place-ordering ?b ?a :after))
@@ -413,9 +421,9 @@
   ;; Overall collection predicates
   (<- (required-object ?object)
     (guest ?guest)
-    (preference ?guest seat ?seat)
+    (preference ?guest :seat ?seat)
     (seat-description ?seat ?seat-description)
-    (preference ?guest dish ?meal)
+    (preference ?guest :dish ?meal)
     (required-meal-object ?meal ?object-type)
     (cram-prolog:setof ?position (center-relative-object-table-position
                           ?object-type ?position)
