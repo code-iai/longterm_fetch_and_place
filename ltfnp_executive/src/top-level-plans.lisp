@@ -432,7 +432,7 @@
                             (tf:make-3d-vector
                              (- (tf:x (tf:origin in-tll)) close-x) 0 0)
                             (tf:make-identity-rotation))))))
-               (set-handle-degree handle degree))))
+               (set-handle-degree handle degree :hold t))))
          (hand-diff (get-hand-handle-difference arm handle)))
     (trace-handle-trajectory
      handle trace-func
@@ -468,9 +468,9 @@
         ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
          `(0.0 0.4))
         ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
-         `(0.0 (/ pi 2)))
+         `(0.0 ,(/ pi 2)))
         ((string= handle "iai_kitchen_fridge_door_handle")
-         `(0.0 (/ pi 2)))))
+         `(0.0 ,(/ pi 2)))))
 
 (defun handle-orientation-transformation (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
@@ -526,21 +526,23 @@
 
 (defun handle-joint (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
-         "")
+         "sink_area_left_upper_drawer_main_joint")
         ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
-         "")
+         "sink_area_left_middle_drawer_main_joint")
         ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
-         "")
+         "kitchen_island_left_upper_drawer_main_joint")
         ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
-         "")
+         "sink_area_dish_washer_door_joint")
         ((string= handle "iai_kitchen_fridge_door_handle")
-         "")))
+         "iai_fridge_door_joint")))
 
 (defun degree->joint-position (handle degree)
   (destructuring-bind (lower upper) (handle-limits handle)
     (+ lower (* degree (- upper lower)))))
 
 (defun handle-model (handle)
+  (declare (ignore handle))
+  ;; Its always the kitchen for this scenario.
   "IAI_kitchen")
 
 (defun set-handle-degree (handle degree &key hold)
@@ -585,3 +587,19 @@
       (move-arms-up)
       ;; ..aaand cut!
       )))
+
+(defun ideal-arm-for-handle (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         :left)
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         :left)
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         :right)
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         :left) ;; Needs fixing
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         :right)))
+
+(defun open-auto-handle (handle)
+  (let ((arm (ideal-arm-for-handle handle)))
+    (open-handle arm handle)))
