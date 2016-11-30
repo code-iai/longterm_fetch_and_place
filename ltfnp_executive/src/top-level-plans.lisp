@@ -319,22 +319,29 @@
                   (tf:euler->quaternion :az normalized-degree)) ;; Fix me; rotate?
                  )))))))
 
+(defmethod handle-motion-function (handle (strategy (eql nil)) &key (offset (tf:make-identity-pose)) limits)
+  (let ((strategy (get-handle-strategy handle))
+        (limits (handle-limits handle)))
+    (handle-motion-function handle strategy :offset offset :limits limits)))
+
 (defun trace-handle-trajectory (handle trace-func &key (limits `(0 1) limitsp) (from-degree 0.0) (to-degree 1.0) (step 0.1) (offset (tf:make-identity-pose)))
-  (let* ((strategy (get-handle-strategy handle))
-         (motion-function
-           (cond (limitsp (handle-motion-function
-                           handle strategy :limits limits :offset offset))
-                 (t (handle-motion-function handle strategy :offset offset))))
+  (let* ((motion-function
+           (cond ((and limits limitsp) (handle-motion-function
+                                        handle nil
+                                        :limits limits :offset offset))
+                 (t (handle-motion-function
+                     handle nil
+                     :offset offset))))
          (steps (/ (- to-degree from-degree) step)))
     (loop for i from 0 to steps
-          as current-degree = (+ from-degree (* i step))
+          as current-degree = (+ from-degree (* (1+ i) step))
           as current-pose = (funcall motion-function current-degree)
-          collect (funcall trace-func i steps current-pose))))
+          collect (funcall trace-func i steps current-degree current-pose))))
 
 (defun show-handle-trajectory (handle &key (offset (tf:make-identity-pose)))
   (let* ((trace-func
-           (lambda (step steps pose-stamped)
-             (declare (ignore step steps))
+           (lambda (step steps degree pose-stamped)
+             (declare (ignore step steps degree))
              pose-stamped))
          (trace (trace-handle-trajectory handle trace-func :offset offset))
          (markers
@@ -371,8 +378,12 @@
      (tf:v- (tf:origin p-ext) (tf:origin p-base))
      (tf:orientation p-ext))))
 
+(defun get-current-handle-pose (handle)
+  (let ((motion-func (handle-motion-function handle nil)))
+    (funcall motion-func (handle-degree handle))))
+
 (defun get-hand-handle-difference (arm handle)
-  (let* ((handle-pose (get-handle-base-pose handle))
+  (let* ((handle-pose (get-current-handle-pose handle));;(get-handle-base-pose handle))
          (wrist-link (ecase arm
                        (:left "l_wrist_roll_link")
                        (:right "r_wrist_roll_link")))
@@ -396,14 +407,31 @@
      (make-designator
       :location `((:pose ,transformed-pose))))))
 
+(defun handle-hand-offset-pose (handle &key (offset (tf:make-identity-pose)) (limits `(0 1) limitsp) (degree (handle-degree handle)))
+  (let* ((hand-offset (tf:make-pose
+                       (tf:make-3d-vector -0.0 0.0 0.0)
+                       (tf:euler->quaternion :ax (/ pi 2))))
+         ;(offset (cl-transforms:transform-pose (tf:pose->transform offset)
+         ;                                      hand-offset))
+         (motion-func (cond ((and limits limitsp)
+                             (handle-motion-function
+                              handle nil
+                              :offset offset
+                              :limits limits))
+                            (t (handle-motion-function
+                                handle nil :offset offset))))
+         (pose (funcall motion-func degree)))
+    pose))
+
 (defun execute-handle-trace (arm handle &key (from-degree 0.0) (to-degree 1.0) (step 0.1))
   (let* ((close-x 0.55)
          (trace-func
-           (lambda (step steps pose-stamped)
+           (lambda (step steps degree pose-stamped)
+             (declare (ignore step steps))
+             (set-handle-degree handle degree :hold t)
              (let ((in-tll (ensure-pose-stamped
                             pose-stamped
-                            :frame "torso_lift_link"))
-                   (degree (/ step steps)))
+                            :frame "torso_lift_link")))
                (cond ((>= (tf:x (tf:origin in-tll)) close-x)
                       (move-arm-pose arm in-tll))
                      (t (let ((current-hand-in-tll
@@ -431,8 +459,7 @@
                            (tf:make-pose
                             (tf:make-3d-vector
                              (- (tf:x (tf:origin in-tll)) close-x) 0 0)
-                            (tf:make-identity-rotation))))))
-               (set-handle-degree handle degree :hold t))))
+                            (tf:make-identity-rotation)))))))))
          (hand-diff (get-hand-handle-difference arm handle)))
     (trace-handle-trajectory
      handle trace-func
@@ -491,7 +518,11 @@
     (at-definite-location loc)))
 
 (defun grasp-handle (arm handle)
-  (let* ((handle-base-pose (get-handle-base-pose handle))
+  (let* ((handle-base-pose
+           (handle-hand-offset-pose
+            handle
+            :limits (handle-limits handle)))
+           ;;(get-handle-base-pose handle))
          (handle-axis (get-handle-axis handle))
          (applied-rotation (cl-transforms:transform-pose
                             (tf:make-transform
@@ -571,6 +602,7 @@
       ;; Lights
       (semantic-map-collision-environment::publish-semantic-map-collision-objects)
       (initialize-handle-joint-controller)
+      (set-handle-degree "iai_kitchen_sink_area_left_upper_drawer_handle" 0.1)
       ;; Camera
       (move-arms-up)
       (move-torso 0.3)
@@ -579,7 +611,7 @@
       (pr2-manip-pm::open-gripper arm)
       (grasp-handle arm handle)
       (pr2-manip-pm::close-gripper arm)
-      (execute-handle-trace arm handle)
+      (execute-handle-trace arm handle :from-degree (handle-degree handle))
       (pr2-manip-pm::open-gripper arm)
       (move-arm-relative
        arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
