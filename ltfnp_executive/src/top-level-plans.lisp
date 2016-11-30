@@ -466,7 +466,6 @@
                             (tf:make-transform
                              (tf:make-identity-vector)
                              (handle-orientation-transformation handle))
-                                               ;;(tf:euler->quaternion :ax (/ pi 2)))
                             (tf:make-pose (tf:make-identity-vector)
                                           (tf:orientation handle-base-pose))))
          (grasp-pose (ensure-pose-stamped
