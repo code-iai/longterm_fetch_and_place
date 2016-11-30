@@ -333,8 +333,8 @@
                      handle nil
                      :offset offset))))
          (steps (/ (- to-degree from-degree) step)))
-    (loop for i from 0 to steps
-          as current-degree = (+ from-degree (* (1+ i) step))
+    (loop for i from 0 to (1+ steps)
+          as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
           collect (funcall trace-func i steps current-degree current-pose))))
 
@@ -425,15 +425,17 @@
 
 (defun execute-handle-trace (arm handle &key (from-degree 0.0) (to-degree 1.0) (step 0.1))
   (let* ((close-x 0.55)
+         (far-x 0.8)
          (trace-func
-           (lambda (step steps degree pose-stamped)
-             (declare (ignore step steps))
+           (lambda (inner-step steps degree pose-stamped)
+             (declare (ignore inner-step steps))
              (set-handle-degree handle degree :hold t)
              (let ((in-tll (ensure-pose-stamped
                             pose-stamped
                             :frame "torso_lift_link")))
-               (cond ((>= (tf:x (tf:origin in-tll)) close-x)
-                      (move-arm-pose arm in-tll))
+               (cond ((or (and (> step 0.0) (>= (tf:x (tf:origin in-tll)) close-x))
+                          (and (< step 0.0) (<= (tf:x (tf:origin in-tll)) close-x)))
+                      (move-arm-pose arm in-tll :ignore-collisions t))
                      (t (let ((current-hand-in-tll
                                 (ensure-pose-stamped
                                  (tf:pose->pose-stamped
@@ -443,23 +445,44 @@
                                   0.0
                                   (tf:make-identity-pose))
                                  :frame "torso_lift_link")))
-                          (when (> (tf:x (tf:origin current-hand-in-tll)) close-x)
-                            (move-arm-pose
-                             arm
-                             (tf:make-pose-stamped
-                              (tf:frame-id in-tll)
-                              (tf:stamp in-tll)
-                              (tf:make-3d-vector
-                               (+ (tf:x (tf:origin in-tll))
-                                  (- (tf:x (tf:origin in-tll)) close-x))
-                               (tf:y (tf:origin in-tll))
-                               (tf:z (tf:origin in-tll)))
-                              (tf:orientation in-tll))))
-                          (move-base-relative
-                           (tf:make-pose
-                            (tf:make-3d-vector
-                             (- (tf:x (tf:origin in-tll)) close-x) 0 0)
-                            (tf:make-identity-rotation)))))))))
+                          (cond ((> step 0.0)
+                                 (when (> (tf:x (tf:origin current-hand-in-tll)) close-x)
+                                   (move-arm-pose
+                                    arm
+                                    (tf:make-pose-stamped
+                                     (tf:frame-id in-tll)
+                                     (tf:stamp in-tll)
+                                     (tf:make-3d-vector
+                                      (+ (tf:x (tf:origin in-tll))
+                                         (- (tf:x (tf:origin in-tll)) close-x))
+                                      (tf:y (tf:origin in-tll))
+                                      (tf:z (tf:origin in-tll)))
+                                     (tf:orientation in-tll))
+                                    :ignore-collisions t))
+                                 (move-base-relative
+                                  (tf:make-pose
+                                   (tf:make-3d-vector
+                                    (- (tf:x (tf:origin in-tll)) close-x) 0 0)
+                                   (tf:make-identity-rotation))))
+                                ((< step 0.0)
+                                 (when (< (tf:x (tf:origin current-hand-in-tll)) far-x)
+                                   (move-arm-pose
+                                    arm
+                                    (tf:make-pose-stamped
+                                     (tf:frame-id in-tll)
+                                     (tf:stamp in-tll)
+                                     (tf:make-3d-vector
+                                      (+ (tf:x (tf:origin in-tll))
+                                         (- (tf:x (tf:origin in-tll)) far-x))
+                                      (tf:y (tf:origin in-tll))
+                                      (tf:z (tf:origin in-tll)))
+                                     (tf:orientation in-tll))
+                                    :ignore-collisions t))
+                                 (move-base-relative
+                                  (tf:make-pose
+                                   (tf:make-3d-vector
+                                    (- close-x (tf:x (tf:origin in-tll))) 0 0)
+                                   (tf:make-identity-rotation)))))))))))
          (hand-diff (get-hand-handle-difference arm handle)))
     (trace-handle-trajectory
      handle trace-func
@@ -517,7 +540,7 @@
               `((:pose ,(in-front-of-handle-pose handle))))))
     (at-definite-location loc)))
 
-(defun grasp-handle (arm handle)
+(defun grasp-handle (arm handle &key double)
   (let* ((handle-base-pose
            (handle-hand-offset-pose
             handle
@@ -529,19 +552,26 @@
                              (tf:make-identity-vector)
                              (handle-orientation-transformation handle))
                             (tf:make-pose (tf:make-identity-vector)
-                                          (tf:orientation handle-base-pose))))
-         (grasp-pose (ensure-pose-stamped
-                      (tf:make-pose-stamped
-                       "map"
-                       0.0
-                       (tf:v+ (tf:origin handle-base-pose)
-                              (ecase (get-handle-strategy handle)
-                                (:linear-pull (tf:v* handle-axis 0.2))
-                                ;; This is pretty hacky
-                                (:revolute-pull (tf:v* (tf:make-3d-vector -1 0 0) 0.2))))
-                       (tf:orientation applied-rotation))
-                      :frame "torso_lift_link")))
-    (move-arm-pose arm grasp-pose)))
+                                          (tf:orientation handle-base-pose)))))
+    (labels ((grasp-pose (distance-factor)
+               (ensure-pose-stamped
+                (tf:make-pose-stamped
+                 "map"
+                 0.0
+                 (tf:v+ (tf:origin handle-base-pose)
+                        (ecase (get-handle-strategy handle)
+                          (:linear-pull (tf:v* handle-axis distance-factor))
+                          ;; This is pretty hacky
+                          (:revolute-pull (tf:v* (tf:make-3d-vector -1 0 0) distance-factor))))
+                 (tf:orientation applied-rotation))
+                :frame "torso_lift_link")))
+      (when double
+        (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
+                         (tf:to-msg (grasp-pose 0.4)))
+        (move-arm-pose arm (grasp-pose 0.4) :ignore-collisions nil))
+      (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
+                       (tf:to-msg (grasp-pose 0.2)))
+      (move-arm-pose arm (grasp-pose 0.2) :ignore-collisions t))))
 
 (defun move-arm-relative (arm offset)
   (move-arm-pose
@@ -597,28 +627,42 @@
              (set-joint-position model joint 0 :hold t))))
 
 (defun open-handle (arm handle)
-  (top-level
-    (with-process-modules-simulated
-      ;; Lights
-      (semantic-map-collision-environment::publish-semantic-map-collision-objects)
-      (initialize-handle-joint-controller)
-      (set-handle-degree "iai_kitchen_sink_area_left_upper_drawer_handle" 0.1)
-      ;; Camera
-      (move-arms-up)
-      (move-torso 0.3)
-      ;; Action!
-      (go-in-front-of-handle handle)
-      (pr2-manip-pm::open-gripper arm)
-      (grasp-handle arm handle)
-      (pr2-manip-pm::close-gripper arm)
-      (execute-handle-trace arm handle :from-degree (handle-degree handle))
-      (pr2-manip-pm::open-gripper arm)
-      (move-arm-relative
-       arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
-                         (tf:make-identity-rotation)))
-      (move-arms-up)
-      ;; ..aaand cut!
-      )))
+  (roslisp:ros-info (open handle) "Go in front")
+  (go-in-front-of-handle handle)
+  (roslisp:ros-info (open handle) "Open gripper")
+  (pr2-manip-pm::open-gripper arm)
+  (roslisp:ros-info (open handle) "Grasp handle")
+  (grasp-handle arm handle :double t)
+  (roslisp:ros-info (open handle) "Close gripper")
+  (pr2-manip-pm::close-gripper arm)
+  (roslisp:ros-info (open handle) "Execute handle trace")
+  (execute-handle-trace
+   arm handle
+   :from-degree (handle-degree handle))
+  (roslisp:ros-info (open handle) "Open gripper")
+  (pr2-manip-pm::open-gripper arm)
+  (roslisp:ros-info (open handle) "Move arm relative")
+  (move-arm-relative
+   arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                     (tf:make-identity-rotation)))
+  (roslisp:ros-info (open handle) "And up")
+  (move-arms-up))
+
+(defun close-handle (arm handle)
+  (go-in-front-of-handle handle)
+  (pr2-manip-pm::open-gripper arm)
+  (grasp-handle arm handle)
+  (pr2-manip-pm::close-gripper arm)
+  (execute-handle-trace
+   arm handle
+   :from-degree (handle-degree handle)
+   :to-degree 0.1
+   :step -0.1)
+  (pr2-manip-pm::open-gripper arm)
+  (move-arm-relative
+   arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                     (tf:make-identity-rotation)))
+  (move-arms-up))
 
 (defun ideal-arm-for-handle (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
@@ -636,6 +680,10 @@
   (let ((arm (ideal-arm-for-handle handle)))
     (open-handle arm handle)))
 
+(defun close-auto-handle (handle)
+  (let ((arm (ideal-arm-for-handle handle)))
+    (close-handle arm handle)))
+
 (defun handle-degree (handle)
   (let* ((model (handle-model handle))
          (joint (handle-joint handle))
@@ -645,3 +693,19 @@
       (destructuring-bind (position min max) info
         (declare (ignore min max))
         (/ (- position lower) (- upper lower))))))
+
+(defun open-close (handle)
+  (top-level
+    (with-process-modules-simulated
+      ;; Lights
+      (semantic-map-collision-environment::publish-semantic-map-collision-objects)
+      (initialize-handle-joint-controller)
+      ;; Camera
+      (move-arms-up :ignore-collisions t)
+      (move-torso 0.3)
+      ;; Action!
+      (let ((arm (ideal-arm-for-handle handle)))
+        (open-handle arm handle)
+        ;(close-handle arm handle)
+        )
+      (move-arms-up :ignore-collisions t))))
