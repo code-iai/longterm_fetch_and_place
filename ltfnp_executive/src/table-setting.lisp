@@ -149,18 +149,17 @@
 
 (defun positions->seat-location (seat positions)
   (make-designator
-   'location
+   :location
    (append `((seat ,seat)
-             ;; TODO: Needs fixing for ltfnp
-             (desig-props::on Cupboard)
-             (desig-props::name "kitchen_island"))
+             (desig-props::on CounterTop)
+             (desig-props::name "meal_table"))
            (mapcar (lambda (position)
                      `(,position seat))
                    positions))))
 
 (defun object-type->object (object-type location guest meal)
   (make-designator
-   'object
+   :object
    `((at ,location)
      (type ,object-type)
      (for-guest ,guest)
@@ -229,7 +228,7 @@
 ;;         (with-designators ((object (object
 ;;                                     `((desig-props:at
 ;;                                        ,(make-designator
-;;                                          'location
+;;                                          :location
 ;;                                          `((desig-props::on Cupboard)
 ;;                                            (desig-props::name "kitchen_sink_block"))))
 ;;                                       ,@(remove 'at (desig:properties required-object)
