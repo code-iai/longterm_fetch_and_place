@@ -283,24 +283,41 @@
             (cl-transforms:transform-pose
              (tf:pose->transform base-handle-pose)
              offset)))
-         (axis (get-global-handle-axis handle))
-         (motion-func
+         (axis (get-global-handle-axis handle)))
+    (lambda (degree)
+      (destructuring-bind (lower upper) limits
+        (let ((normalized-degree
+                (+ lower (* degree (- upper lower)))))
+          (tf:pose->pose-stamped
+           (tf:frame-id transformed-handle-pose)
+           (tf:stamp transformed-handle-pose)
+           (cl-transforms:transform-pose
+            (tf:make-transform
+             (tf:v* axis normalized-degree)
+             (tf:make-identity-rotation))
+            transformed-handle-pose)))))))
+
+(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
+  ;; This, again, is pretty hacky
+  (cond ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         )
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         (let ((base-position (tf:make-3d-vector 0 0 0)) ;; Fix me
+               (offset-angle (/ pi 2)) ;; Fix me
+               (radius 1.0)) ;; Fix me
            (lambda (degree)
              (destructuring-bind (lower upper) limits
                (let ((normalized-degree
                        (+ lower (* degree (- upper lower)))))
-                 (tf:pose->pose-stamped
-                  (tf:frame-id transformed-handle-pose)
-                  (tf:stamp transformed-handle-pose)
-                  (cl-transforms:transform-pose
-                   (tf:make-transform
-                    (tf:v* axis normalized-degree)
-                    (tf:make-identity-rotation))
-                   transformed-handle-pose)))))))
-    motion-func))
-
-(defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
-  )
+                 (tf:make-pose-stamped
+                  "map" 0.0
+                  (tf:v+ base-position
+                         (tf:make-3d-vector
+                          (* radius (cos (+ offset-angle normalized-degree)))
+                          (* radius (sin (+ offset-angle normalized-degree)))
+                          0.0))
+                  (tf:euler->quaternion :az normalized-degree)) ;; Fix me; rotate?
+                 )))))))
 
 (defun trace-handle-trajectory (handle trace-func &key (limits `(0 1) limitsp) (from-degree 0.0) (to-degree 1.0) (step 0.1) (offset (tf:make-identity-pose)))
   (let* ((strategy (get-handle-strategy handle))
@@ -312,12 +329,12 @@
     (loop for i from 0 to steps
           as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
-          collect (funcall trace-func i current-pose))))
+          collect (funcall trace-func i steps current-pose))))
 
 (defun show-handle-trajectory (handle &key (offset (tf:make-identity-pose)))
   (let* ((trace-func
-           (lambda (step pose-stamped)
-             (declare (ignore step))
+           (lambda (step steps pose-stamped)
+             (declare (ignore step steps))
              pose-stamped))
          (trace (trace-handle-trajectory handle trace-func :offset offset))
          (markers
@@ -382,11 +399,11 @@
 (defun execute-handle-trace (arm handle &key (from-degree 0.0) (to-degree 1.0) (step 0.1))
   (let* ((close-x 0.55)
          (trace-func
-           (lambda (step pose-stamped)
-             (declare (ignore step))
+           (lambda (step steps pose-stamped)
              (let ((in-tll (ensure-pose-stamped
                             pose-stamped
-                            :frame "torso_lift_link")))
+                            :frame "torso_lift_link"))
+                   (degree (/ step steps)))
                (cond ((>= (tf:x (tf:origin in-tll)) close-x)
                       (move-arm-pose arm in-tll))
                      (t (let ((current-hand-in-tll
@@ -414,14 +431,16 @@
                            (tf:make-pose
                             (tf:make-3d-vector
                              (- (tf:x (tf:origin in-tll)) close-x) 0 0)
-                            (tf:make-identity-rotation)))))))))
+                            (tf:make-identity-rotation))))))
+               (set-handle-degree handle degree))))
          (hand-diff (get-hand-handle-difference arm handle)))
     (trace-handle-trajectory
      handle trace-func
      :from-degree from-degree
      :to-degree to-degree
      :offset hand-diff
-     :step step)))
+     :step step
+     :limits (handle-limits handle))))
 
 (defun in-front-of-handle-pose (handle)
   (ensure-pose-stamped
@@ -440,6 +459,18 @@
          ((string= handle "iai_kitchen_fridge_door_handle")
           (tf:make-pose (tf:make-3d-vector 0.5 -0.8 0.0)
                         (tf:euler->quaternion :az 0))))))
+
+(defun handle-limits (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         `(0.0 0.4))
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         `(0.0 0.4))
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         `(0.0 0.4))
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         `(0.0 (/ pi 2)))
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         `(0.0 (/ pi 2)))))
 
 (defun handle-orientation-transformation (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
@@ -493,12 +524,55 @@
      offset)
     :frame "torso_lift_link")))
 
+(defun handle-joint (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         "")
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         "")
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         "")
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         "")
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         "")))
+
+(defun degree->joint-position (handle degree)
+  (destructuring-bind (lower upper) (handle-limits handle)
+    (+ lower (* degree (- upper lower)))))
+
+(defun handle-model (handle)
+  "IAI_kitchen")
+
+(defun set-handle-degree (handle degree &key hold)
+  (set-joint-position (handle-model handle)
+                      (handle-joint handle)
+                      (degree->joint-position handle degree)
+                      :hold hold))
+
+(defun initialize-handle-joint-controller ()
+  (let ((handles `("iai_kitchen_sink_area_left_upper_drawer_handle"
+                   "iai_kitchen_sink_area_left_middle_drawer_handle"
+                   "iai_kitchen_kitchen_island_left_upper_drawer_handle"
+                   "iai_kitchen_sink_area_dish_washer_door_handle"
+                   "iai_kitchen_fridge_door_handle")))
+    (loop for handle in handles
+          as joint = (handle-joint handle)
+          as model = (handle-model handle)
+          as joint-limits = (handle-limits handle)
+          do (destructuring-bind (lower upper) joint-limits
+               (set-joint-limits model joint lower upper))
+             (set-joint-position model joint 0 :hold t))))
+
 (defun open-handle (arm handle)
   (top-level
     (with-process-modules-simulated
+      ;; Lights
       (semantic-map-collision-environment::publish-semantic-map-collision-objects)
+      (initialize-handle-joint-controller)
+      ;; Camera
       (move-arms-up)
       (move-torso 0.3)
+      ;; Action!
       (go-in-front-of-handle handle)
       (pr2-manip-pm::open-gripper arm)
       (grasp-handle arm handle)
@@ -508,4 +582,6 @@
       (move-arm-relative
        arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
                          (tf:make-identity-rotation)))
-      (move-arms-up))))
+      (move-arms-up)
+      ;; ..aaand cut!
+      )))
