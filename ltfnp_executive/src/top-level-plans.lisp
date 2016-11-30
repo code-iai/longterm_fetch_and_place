@@ -603,3 +603,13 @@
 (defun open-auto-handle (handle)
   (let ((arm (ideal-arm-for-handle handle)))
     (open-handle arm handle)))
+
+(defun handle-degree (handle)
+  (let* ((model (handle-model handle))
+         (joint (handle-joint handle))
+         (info (get-joint-information model joint))
+         (limits (handle-limits handle)))
+    (destructuring-bind (lower upper) limits
+      (destructuring-bind (position min max) info
+        (declare (ignore min max))
+        (/ (- position lower) (- upper lower))))))
