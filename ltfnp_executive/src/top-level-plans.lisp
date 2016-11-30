@@ -624,7 +624,28 @@
           as joint-limits = (handle-limits handle)
           do (destructuring-bind (lower upper) joint-limits
                (set-joint-limits model joint lower upper))
-             (set-joint-position model joint 0 :hold t))))
+             (set-joint-position model joint 0 :hold t)))
+  ;; This should secure all loose joints we're not using
+  (let ((inactive-joints `("fridge_area_lower_drawer_main_joint"
+                           "kitchen_island_left_lower_drawer_main_joint"
+                           "kitchen_island_middle_lower_drawer_main_joint"
+                           "kitchen_island_middle_upper_drawer_main_joint"
+                           "kitchen_island_right_lower_drawer_main_joint"
+                           "kitchen_island_right_upper_drawer_main_joint"
+                           "oven_area_area_left_drawer_main_joint"
+                           "oven_area_area_middle_lower_drawer_main_joint"
+                           "oven_area_area_middle_upper_drawer_main_joint"
+                           "oven_area_area_right_drawer_main_joint"
+                           "oven_area_oven_door_joint"
+                           "oven_area_oven_knob_oven_joint"
+                           "oven_area_oven_knob_stove_1_joint"
+                           "oven_area_oven_knob_stove_2_joint"
+                           "oven_area_oven_knob_stove_3_joint"
+                           "oven_area_oven_knob_stove_4_joint"
+                           "sink_area_left_bottom_drawer_main_joint"
+                           "sink_area_trash_drawer_main_joint")))
+    (loop for joint in inactive-joints
+          do (set-joint-limits "IAI_kitchen" joint 0.0 0.0))))
 
 (defun open-handle (arm handle)
   (roslisp:ros-info (open handle) "Go in front")
