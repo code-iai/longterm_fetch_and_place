@@ -502,12 +502,26 @@
         ((string= handle "iai_kitchen_fridge_door_handle")
          "iai_kitchen/iai_fridge_main")))
 
+(defun container-center-pose (handle)
+  (let* ((frame (container-frame-for-handle handle))
+         (axis (get-handle-axis handle))
+         (degree (handle-degree handle))
+         (amount-open
+           (destructuring-bind (lower upper) (handle-limits handle)
+             (+ lower (* degree (- upper lower)))))
+         (base-pose (ensure-pose-stamped
+                     (tf:transform->pose
+                      (tf:lookup-transform
+                       *transformer*
+                       "map" frame)))))
+    (ensure-pose-stamped
+     (tf:make-pose (tf:v+ (tf:v* axis amount-open)
+                          (tf:origin base-pose))
+                   (tf:orientation base-pose)))))
+
 (defun look-at-handle-container (handle)
   (let* ((container-frame (container-frame-for-handle handle))
-         (container-pose
-           (ensure-pose-stamped
-            (tf:transform->pose
-             (tf:lookup-transform *transformer* "map" container-frame)))))
+         (container-pose (container-center-pose handle)))
     (look-at (make-designator :location `((:pose ,container-pose))))))
 
 (defun open-handle (arm handle)
@@ -585,6 +599,41 @@
     (close-handle arm handle))
   (move-arms-up :ignore-collisions t))
 
+(defvar *container-stored-objects* (make-hash-table :test 'equal))
+
+(defun store-object-in-handled-container (object handle)
+  ;; Object: (id objclass relative-pose)
+  (push object (gethash handle *container-stored-objects*)))
+
+(defun remove-object-from-handled-container (id handle)
+  (setf (gethash handle *container-stored-objects*)
+        (remove id (gethash handle *container-stored-objects*)
+                :test (lambda (x pair)
+                        (string= x (car pair))))))
+
+(defun objects-stored-in-handled-container (handle)
+  (gethash handle *container-stored-objects*))
+
+(defun open-handled-storage-container (handle)
+  (open-auto-handle handle)
+  (dolist (object (objects-stored-in-handled-container handle))
+    (destructuring-bind (id objclass relative-pose) object
+      (let* ((container-pose (container-center-pose handle))
+             (object-pose (ensure-pose-stamped
+                           (cl-transforms:transform-pose
+                            (tf:pose->transform container-pose)
+                            relative-pose))))
+        (spawn-class id objclass object-pose)
+        (attach-object id "link" "ground_plane" "link")))))
+
+(defun close-handled-storage-container (handle)
+  (dolist (object (objects-stored-in-handled-container handle))
+    (destructuring-bind (id objclass relative-pose) object
+      (declare (ignore objclass relative-pose))
+      (detach-object id "link" "ground_plane" "link")
+      (cram-gazebo-utilities::delete-gazebo-model id)))
+  (close-auto-handle handle))
+
 (def-top-level-cram-function open-close-test ()
   (with-process-modules-simulated
     ;; Lights
@@ -596,4 +645,6 @@
     ;; Action!
     ;;(open-close "iai_kitchen_sink_area_left_upper_drawer_handle")
     ;;(open-close "iai_kitchen_sink_area_left_middle_drawer_handle")
-    (open-close "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
+    (close-handled-storage-container "iai_kitchen_sink_area_left_upper_drawer_handle")))
+    ;;(open-auto-handle "iai_kitchen_sink_area_left_upper_drawer_handle")))
+;;(open-close "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
