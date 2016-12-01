@@ -399,29 +399,41 @@
      :result-timeout 30.0
      :exec-timeout 30.0)))
 
+(defun attach-object (model-1 link-1 model-2 link-2)
+  (roslisp:call-service "/gazebo/attach"
+                        'attache_msgs-srv:Attachment
+                        :model1 model-1
+                        :link1 link-1
+                        :model2 model-2
+                        :link2 link-2))
+
+(defun detach-object (model-1 link-1 model-2 link-2)
+  (roslisp:call-service "/gazebo/detach"
+                        'attache_msgs-srv:Attachment
+                        :model1 model-1
+                        :link1 link-1
+                        :model2 model-2
+                        :link2 link-2))
+
 (defmethod cram-language::on-grasp-object (object-name side)
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
   (when *simulated*
-    (roslisp:call-service "/gazebo/attach"
-                          'attache_msgs-srv:Attachment
-                          :model1 "pr2"
-                          :link1 (case side
-                                   (:left "l_wrist_roll_link")
-                                   (:right "r_wrist_roll_link"))
-                          :model2 object-name
-                          :link2 "link")))
+    (attach-object "pr2"
+                   (case side
+                     (:left "l_wrist_roll_link")
+                     (:right "r_wrist_roll_link"))
+                   object-name
+                   "link")))
 
 (defmethod cram-language::on-putdown-object (object-name side)
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
-  (when *simulated*
-    (roslisp:call-service "/gazebo/detach"
-                          'attache_msgs-srv:Attachment
-                          :model1 "pr2"
-                          :link1 (case side
-                                   (:left "l_wrist_roll_link")
-                                   (:right "r_wrist_roll_link"))
-                          :model2 object-name
-                          :link2 "link")))
+  (when *simulated* 
+    (detach-object "pr2"
+                   (case side
+                     (:left "l_wrist_roll_link")
+                     (:right "r_wrist_roll_link"))
+                   object-name
+                   "link")))
 
 (defun set-joint-limits (model joint lower upper)
   (roslisp:call-service "/gazebo/joint_set_limits"
