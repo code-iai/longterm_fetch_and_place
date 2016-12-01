@@ -173,13 +173,13 @@
   (let* ((object-seat-placement-modifiers
            (mapcar
             (lambda (object)
-              (let* ((at (desig-prop-value object :at))
+              (let* ((at (desig:desig-prop-value object :at))
                      (seat-placements
                        (cpl:mapcar-clean
                         (lambda (property)
                           (when (eql (cadr property) :seat)
                             (car property)))
-                        (description at))))
+                        (desig:description at))))
                 (cons object seat-placements)))
             objects)))
     (mapcar
