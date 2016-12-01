@@ -430,6 +430,7 @@
            (lambda (inner-step steps degree pose-stamped)
              (declare (ignore inner-step steps))
              (set-handle-degree handle degree :hold t)
+             (look-at-handle-container handle)
              (let ((in-tll (ensure-pose-stamped
                             pose-stamped
                             :frame "torso_lift_link")))
@@ -573,7 +574,7 @@
                        (tf:to-msg (grasp-pose 0.2)))
       (move-arm-pose arm (grasp-pose 0.2) :ignore-collisions t))))
 
-(defun move-arm-relative (arm offset)
+(defun move-arm-relative (arm offset &key ignore-collisions)
   (move-arm-pose
    arm
    (ensure-pose-stamped
@@ -583,7 +584,8 @@
        (:right "r_wrist_roll_link"))
      0.0
      offset)
-    :frame "torso_lift_link")))
+    :frame "torso_lift_link")
+   :ignore-collisions ignore-collisions))
 
 (defun handle-joint (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
@@ -647,6 +649,26 @@
     (loop for joint in inactive-joints
           do (set-joint-limits "IAI_kitchen" joint 0.0 0.0))))
 
+(defun container-frame-for-handle (handle)
+  (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
+         "iai_kitchen/sink_area_left_upper_drawer_main")
+        ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
+         "iai_kitchen/sink_area_left_middle_drawer_main")
+        ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+         "iai_kitchen/kitchen_island_left_upper_drawer_main")
+        ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         "iai_kitchen/sink_area_dish_washer_main")
+        ((string= handle "iai_kitchen_fridge_door_handle")
+         "iai_kitchen/iai_fridge_main")))
+
+(defun look-at-handle-container (handle)
+  (let* ((container-frame (container-frame-for-handle handle))
+         (container-pose
+           (ensure-pose-stamped
+            (tf:transform->pose
+             (tf:lookup-transform *transformer* "map" container-frame)))))
+    (look-at (make-designator :location `((:pose ,container-pose))))))
+
 (defun open-handle (arm handle)
   (roslisp:ros-info (open handle) "Go in front")
   (go-in-front-of-handle handle)
@@ -665,7 +687,8 @@
   (roslisp:ros-info (open handle) "Move arm relative")
   (move-arm-relative
    arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
-                     (tf:make-identity-rotation)))
+                     (tf:make-identity-rotation))
+   :ignore-collisions t)
   (roslisp:ros-info (open handle) "And up")
   (move-arms-up))
 
@@ -716,17 +739,20 @@
         (/ (- position lower) (- upper lower))))))
 
 (defun open-close (handle)
-  (top-level
-    (with-process-modules-simulated
-      ;; Lights
-      (semantic-map-collision-environment::publish-semantic-map-collision-objects)
-      (initialize-handle-joint-controller)
-      ;; Camera
-      (move-arms-up :ignore-collisions t)
-      (move-torso 0.3)
-      ;; Action!
-      (let ((arm (ideal-arm-for-handle handle)))
-        (open-handle arm handle)
-        ;(close-handle arm handle)
-        )
-      (move-arms-up :ignore-collisions t))))
+  (let ((arm (ideal-arm-for-handle handle)))
+    (open-handle arm handle)
+    (close-handle arm handle))
+  (move-arms-up :ignore-collisions t))
+
+(def-top-level-cram-function open-close-test ()
+  (with-process-modules-simulated
+    ;; Lights
+    (semantic-map-collision-environment::publish-semantic-map-collision-objects)
+    (initialize-handle-joint-controller)
+    ;; Camera
+    (move-arms-up :ignore-collisions t)
+    (move-torso 0.3)
+    ;; Action!
+    ;;(open-close "iai_kitchen_sink_area_left_upper_drawer_handle")
+    ;;(open-close "iai_kitchen_sink_area_left_middle_drawer_handle")
+    (open-close "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
