@@ -68,12 +68,15 @@
      (:file "planner" :depends-on ("package"))
      (:file "facts" :depends-on ("package"))
      (:file "table-setting" :depends-on ("package" "costmap-metadata"))
+     (:file "handles" :depends-on ("package" "utils" "reasoning"))
      (:file "plan-library" :depends-on ("package"
                                         "utils"
                                         "costmap-metadata"
                                         "reasoning"
                                         "sem-map-config"
-                                        "facts"))
+                                        "facts"
+                                        "table-setting"
+                                        "handles"))
      (:file "plans-process-module" :depends-on ("package"
                                                 "utils"
                                                 "costmap-metadata"
@@ -89,4 +92,6 @@
                                            "plan-library"
                                            "facts"
                                            "plans-process-module"
-                                           "planner"))))))
+                                           "planner"
+                                           "table-setting"
+                                           "handles"))))))
