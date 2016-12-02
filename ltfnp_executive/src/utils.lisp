@@ -288,12 +288,13 @@
    'btr-desig::check-ik-solution)
   (cram-designators:disable-location-validation-function
    'btr-desig::validate-designator-solution)
-  (gazebo-perception-pm::ignore-object "ground_plane")
-  (gazebo-perception-pm::ignore-object "pr2")
-  (gazebo-perception-pm::ignore-object "IAI_kitchen")
+  (when simulated
+    (gazebo-perception-pm:set-tf-camera "" (/ pi 4) 2.5)
+    (gazebo-perception-pm::ignore-object "ground_plane")
+    (gazebo-perception-pm::ignore-object "pr2")
+    (gazebo-perception-pm::ignore-object "IAI_kitchen"))
   (init-3d-world :debug-window (not headless))
   (semantic-map-collision-environment:publish-semantic-map-collision-objects)
-  (gazebo-perception-pm:set-tf-camera "" (/ pi 4) 2.5)
   (let ((arms (mapcar (lambda (x) (intern (string-upcase x) :keyword))
                       (gethash "allowed_arms" variance))))
     (when arms (setf pr2-manip-pm::*allowed-arms* arms))))
