@@ -183,3 +183,55 @@
                                                   (:at ,location))))
                  (go-to-origin :keep-orientation t)
                  (perform place-action))))))))))
+
+(def-top-level-cram-function search-object-scenario ()
+  (with-process-modules-simulated
+    (beliefstate:enable-logging nil)
+    (do-init t :variance (make-hash-table :test 'equal))
+    ;; Initialize scenario
+    (store-object-in-handled-container `("milk0" "Milk" (tf:make-pose (tf:make-3d-vector 0 0 0.2)
+                                                                      (tf:euler->quaternion)))
+                                       "iai_kitchen_sink_area_left_upper_drawer_handle")
+    (search-object (make-designator :object `((:type "Milk"))))))
+
+(def-cram-function search-object (object)
+  (let ((searchable-locations `(;(:countertop "iai_kitchen_kitchen_island_counter_top")
+                                ;(:countertop "iai_kitchen_sink_area_counter_top")
+                                ;(:countertop "iai_kitchen_meal_table_counter_top")
+                                (:drawer "iai_kitchen_sink_area_left_upper_drawer_handle")
+                                (:drawer "iai_kitchen_sink_area_left_middle_drawer_handle")
+                                (:drawer "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+                                (:dishwasher "iai_kitchen_sink_area_dish_washer_door_handle")
+                                (:fridge "iai_kitchen_fridge_door_handle"))))
+    (let ((found nil))
+      (loop for location in searchable-locations until found
+            do (when (search-location location object)
+                 (setf found t))))))
+
+(def-cram-function search-location (location object)
+  (block failure-guard
+    (destructuring-bind (loctype locname) location
+      (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
+      (ecase loctype
+        (:countertop
+         (let ((aux-object
+                 (make-designator
+                  :object (append (remove :at (desig:description object)
+                                          :test (lambda (x pair) (eql x (car pair))))
+                                  `((:at ,(make-designator
+                                           :location `((:on "CounterTop")
+                                                       (:name ,locname)))))))))
+           (with-failure-handling
+               ((cram-plan-failures:location-not-reached-failure (f)
+                  (declare (ignore f))
+                  (cpl:retry))
+                (cram-plan-failures:object-not-found (f)
+                  (declare (ignore f))
+                  (return-from failure-guard)))
+             (find-object aux-object :num-retries 0))))
+        (:drawer
+         (open-auto-handle locname)
+         ;; TODO: Look inside
+         (close-auto-handle locname))
+        (:dishwasher )
+        (:fridge )))))

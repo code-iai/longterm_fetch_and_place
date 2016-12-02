@@ -173,7 +173,7 @@
   ;;    of location)
   )
 
-(def-cram-function find-object (object)
+(def-cram-function find-object (object &key (num-retries 100))
   ;; This should also cover articulating the environment while
   ;; searching for an object, ultimately leaving the container open
   ;; that contained the object looked for. Of course for table tops
@@ -186,13 +186,15 @@
                           `((:at ,place)))
                   object)))
     (when-failure ((:object-not-found
-                    (setf place (cram-designators::next-solution place))
-                    (cram-language:retry)))
-      (access-location place)
-      ;; Perceive objects "inside" (if applicable)
-      (perceive-object :a object)
-      ;; If object(s) found, return them; otherwise, close-location.
-      )))
+                    (when (> num-retries 0)
+                      (setf place (cram-designators::next-solution place))
+                      (decf num-retries)
+                      (cram-language:retry))))
+        (access-location place)
+        ;; Perceive objects "inside" (if applicable)
+        (perceive-object :a object)
+        ;; If object(s) found, return them; otherwise, close-location.
+        )))
 
 (def-cram-function pick-object (object)
   ;; Assumptions: Object accessible
