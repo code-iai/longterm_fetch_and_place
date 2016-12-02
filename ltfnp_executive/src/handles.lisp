@@ -337,10 +337,10 @@
 (defun in-front-of-handle-pose (handle)
   (ensure-pose-stamped
    (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
-          (tf:make-pose (tf:make-3d-vector 0.5 0.6 0.0)
+          (tf:make-pose (tf:make-3d-vector 0.4 0.6 0.0)
                         (tf:euler->quaternion :az 0)))
          ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
-          (tf:make-pose (tf:make-3d-vector 0.5 0.6 0.0)
+          (tf:make-pose (tf:make-3d-vector 0.4 0.6 0.0)
                         (tf:euler->quaternion :az 0)))
          ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
           (tf:make-pose (tf:make-3d-vector -0.1 0.6 0.0)
@@ -409,8 +409,8 @@
                 :frame "torso_lift_link")))
       (when double
         (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
-                         (tf:to-msg (grasp-pose 0.4)))
-        (move-arm-pose arm (grasp-pose 0.4) :ignore-collisions nil))
+                         (tf:to-msg (grasp-pose 0.3)))
+        (move-arm-pose arm (grasp-pose 0.3) :ignore-collisions nil))
       (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
                        (tf:to-msg (grasp-pose 0.2)))
       (move-arm-pose arm (grasp-pose 0.2) :ignore-collisions t))))
