@@ -289,7 +289,7 @@
   (cram-designators:disable-location-validation-function
    'btr-desig::validate-designator-solution)
   (when simulated
-    (gazebo-perception-pm:set-tf-camera "" (/ pi 4) 2.5)
+    (gazebo-perception-pm:set-tf-camera "head_mount_kinect_rgb_link" pi 2.5)
     (gazebo-perception-pm::ignore-object "ground_plane")
     (gazebo-perception-pm::ignore-object "pr2")
     (gazebo-perception-pm::ignore-object "IAI_kitchen"))
