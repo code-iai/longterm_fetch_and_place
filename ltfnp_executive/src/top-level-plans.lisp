@@ -55,19 +55,27 @@
   ;; This function is mainly meant as an entry point for external
   ;; runner scripts (for starting the scenario using launch files,
   ;; etc.)
-  (let ((variance (yason:parse variance)))
+  (let* ((variance (yason:parse variance))
+         (exp-mode-string (or (gethash "mode" variance)
+                              "tablesetting")))
+    (format t "VARIANCE MODE IS ~a~%" exp-mode-string)
     (beliefstate:enable-logging nil)
     (unless skip-init
       (do-init simulated :headless headless :variance variance))
     (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
     (roslisp:ros-info (ltfnp) "Using variance: ~a" variance)
-    (beliefstate:enable-logging logged)
-    (setf beliefstate::*enable-prolog-logging* logged)
-    (prog1
-        (longterm-fetch-and-place :variance variance)
-      (when logged
-        (beliefstate:extract-files))
-      (roslisp:ros-info (ltfnp) "Done with LTFnP"))))
+    (labels ((exp-mode (mode)
+               (string= mode exp-mode-string)))
+      (cond ((exp-mode "tablesetting")
+             (beliefstate:enable-logging logged)
+             (setf beliefstate::*enable-prolog-logging* logged)
+             (prog1
+                 (longterm-fetch-and-place :variance variance)
+               (when logged
+                 (beliefstate:extract-files))))
+            ((exp-mode "search")
+             (search-object-scenario))))
+    (roslisp:ros-info (ltfnp) "Done with LTFnP")))
 
 
 ;;;
@@ -195,6 +203,7 @@
     (search-object (make-designator :object `((:type "Milk"))))))
 
 (def-cram-function search-object (object)
+  (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   (let ((searchable-locations `(;(:countertop "iai_kitchen_kitchen_island_counter_top")
                                 ;(:countertop "iai_kitchen_sink_area_counter_top")
                                 ;(:countertop "iai_kitchen_meal_table_counter_top")
@@ -230,8 +239,20 @@
                   (return-from failure-guard)))
              (find-object aux-object :num-retries 0))))
         (:drawer
+         ;; Well-defined starting torso height
+         (move-torso)
+         ;; Open drawer
          (open-auto-handle locname)
-         ;; TODO: Look inside
-         (close-auto-handle locname))
+         ;; Inspect the contents
+         (inspect-container-contents-for-object location object)
+         ;; Close drawer
+         (close-auto-handle locname)
+         nil)
         (:dishwasher )
         (:fridge )))))
+
+(def-cram-function inspect-container-contents-for-object (location object)
+  ;; We assume that we're looking inside the container right now
+  (let ((objects (perceive-object :currently-visible object)))
+    (loop for obj in objects
+          do (format t "FOUND OBJECT: ~a~%" obj))))
