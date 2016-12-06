@@ -175,6 +175,7 @@
                      :offset offset))))
          (steps (/ (- to-degree from-degree) step)))
     (loop for i from 0 to steps
+          as ttt = (format t "!L!K!K!K!L!KE!LJEO!J    ~a / ~a" i steps)
           as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
           collect (funcall trace-func i steps current-degree current-pose))))
@@ -275,6 +276,7 @@
          (trace-func
            (lambda (inner-step steps degree pose-stamped)
              (declare (ignore inner-step steps))
+             (format t "!!!!!!!!!!!!!!!!!!!!!!!!          Degree = ~a" degree)
              (set-handle-degree handle degree :hold t)
              (look-at-handle-container handle)
              (let ((in-tll (ensure-pose-stamped
@@ -660,6 +662,7 @@
                            (cl-transforms:transform-pose
                             (tf:pose->transform container-pose)
                             relative-pose))))
+        (roslisp:ros-info (ltfnp) "Add gazebo object model '~a'" id)
         (spawn-class id objclass object-pose)
         (attach-object id "link" "ground_plane" "link")))))
 
@@ -668,7 +671,9 @@
     (destructuring-bind (id objclass relative-pose) object
       (declare (ignore objclass relative-pose))
       (detach-object id "link" "ground_plane" "link")
-      (cram-gazebo-utilities::delete-gazebo-model id)))
+      (sleep 1)
+      (roslisp:ros-info (ltfnp) "Remove gazebo object model '~a'" id)
+      (roslisp:ros-info (ltfnp) "Result: ~a" (cram-gazebo-utilities::delete-gazebo-model id))))
   (close-auto-handle handle))
 
 (def-top-level-cram-function open-close-test ()
