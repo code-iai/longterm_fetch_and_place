@@ -197,29 +197,31 @@
     (beliefstate:enable-logging nil)
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
-    (store-object-in-handled-container `("milk0" "Milk" (tf:make-pose (tf:make-3d-vector 0 0 0.2)
-                                                                      (tf:euler->quaternion)))
-                                       "iai_kitchen_sink_area_left_upper_drawer_handle")
+    (store-object-in-handled-container
+     `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0 0 0.2)
+                                     (tf:euler->quaternion)))
+     "iai_kitchen_sink_area_left_upper_drawer_handle")
     (search-object (make-designator :object `((:type "Milk"))))))
 
 (def-cram-function search-object (object)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
-  (let ((searchable-locations `(;(:countertop "iai_kitchen_kitchen_island_counter_top")
-                                ;(:countertop "iai_kitchen_sink_area_counter_top")
-                                ;(:countertop "iai_kitchen_meal_table_counter_top")
-                                (:drawer "iai_kitchen_sink_area_left_upper_drawer_handle")
-                                (:drawer "iai_kitchen_sink_area_left_middle_drawer_handle")
-                                (:drawer "iai_kitchen_kitchen_island_left_upper_drawer_handle")
-                                (:dishwasher "iai_kitchen_sink_area_dish_washer_door_handle")
-                                (:fridge "iai_kitchen_fridge_door_handle"))))
+  (let ((searchable-locations `(;"iai_kitchen_kitchen_island_counter_top"
+                                ;"iai_kitchen_sink_area_counter_top"
+                                ;"iai_kitchen_meal_table_counter_top"
+                                ;"iai_kitchen_sink_area_left_upper_drawer_handle"
+                                ;"iai_kitchen_sink_area_left_middle_drawer_handle"
+                                ;"iai_kitchen_kitchen_island_left_upper_drawer_handle"
+                                ;"iai_kitchen_sink_area_dish_washer_door_handle"
+                                "iai_kitchen_fridge_door_handle"
+                                )))
     (let ((found nil))
       (loop for location in searchable-locations until found
             do (when (search-location location object)
                  (setf found t))))))
 
-(def-cram-function search-location (location object)
+(def-cram-function search-location (locname object)
   (block failure-guard
-    (destructuring-bind (loctype locname) location
+    (let ((loctype (container-type locname)))
       (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
       (ecase loctype
         (:countertop
@@ -242,17 +244,22 @@
          ;; Well-defined starting torso height
          (move-torso)
          ;; Open drawer
-         (open-auto-handle locname)
+         (open-handled-storage-container locname)
          ;; Inspect the contents
-         (inspect-container-contents-for-object location object)
+         (inspect-container-contents-for-object locname object)
          ;; Close drawer
-         (close-auto-handle locname)
+         (close-handled-storage-container locname)
          nil)
         (:dishwasher )
-        (:fridge )))))
+        (:fridge
+         (move-torso)
+         (open-handled-storage-container locname)
+         (inspect-container-contents-for-object locname object)
+         (close-handled-storage-container locname))))))
 
 (def-cram-function inspect-container-contents-for-object (location object)
   ;; We assume that we're looking inside the container right now
+  (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
   (let ((objects (perceive-object :currently-visible object)))
     (loop for obj in objects
           do (format t "FOUND OBJECT: ~a~%" obj))))
