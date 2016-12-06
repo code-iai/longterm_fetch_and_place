@@ -141,24 +141,26 @@
 (defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
   ;; This, again, is pretty hacky
   (cond ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
+         ;; TODO: Write this!
          )
         ((string= handle "iai_kitchen_fridge_door_handle")
-         (let ((base-position (tf:make-3d-vector 0 0 0)) ;; Fix me
+         (let ((base-position (tf:make-3d-vector 1.03 -0.79 0.985))
                (offset-angle (/ pi 2)) ;; Fix me
                (radius 1.0)) ;; Fix me
            (lambda (degree)
-             (destructuring-bind (lower upper) limits
-               (let ((normalized-degree
-                       (+ lower (* degree (- upper lower)))))
-                 (tf:make-pose-stamped
-                  "map" 0.0
-                  (tf:v+ base-position
-                         (tf:make-3d-vector
-                          (* radius (cos (+ offset-angle normalized-degree)))
-                          (* radius (sin (+ offset-angle normalized-degree)))
-                          0.0))
-                  (tf:euler->quaternion :az normalized-degree)) ;; Fix me; rotate?
-                 )))))))
+             (tf:make-pose base-position (tf:euler->quaternion)))))))
+             ;; (destructuring-bind (lower upper) limits
+             ;;   (let ((normalized-degree
+             ;;           (+ lower (* degree (- upper lower)))))
+             ;;     (tf:make-pose-stamped
+             ;;      "map" 0.0
+             ;;      (tf:v+ base-position
+             ;;             (tf:make-3d-vector
+             ;;              (* radius (cos (+ offset-angle normalized-degree)))
+             ;;              (* radius (sin (+ offset-angle normalized-degree)))
+             ;;              0.0))
+             ;;      (tf:euler->quaternion :az normalized-degree)) ;; Fix me; rotate?
+             ;;     )))))))
 
 (defmethod handle-motion-function (handle (strategy (eql nil)) &key (offset (tf:make-identity-pose)) limits)
   (let ((strategy (get-handle-strategy handle))
@@ -440,15 +442,19 @@
                         (ecase (get-handle-strategy handle)
                           (:linear-pull (tf:v* handle-axis distance-factor))
                           ;; This is pretty hacky
-                          (:revolute-pull (tf:v* (tf:make-3d-vector -1 0 0) distance-factor))))
+                          (:revolute-pull
+                           (tf:make-3d-vector 0 0 0))))
+                           ;;(tf:v* (tf:make-3d-vector -1 0 0) distance-factor))))
                  (tf:orientation applied-rotation))
                 :frame "torso_lift_link")))
       (when double
         (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
                          (tf:to-msg (grasp-pose 0.4)))
-        (move-arm-pose arm (grasp-pose 0.4) :ignore-collisions nil))
+        (format t "Whack ~a~%" handle-base-pose)
+        (move-arm-pose arm (grasp-pose 0.4) :ignore-collisions t))
       (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
                        (tf:to-msg (grasp-pose 0.2)))
+      (format t "Darn~%")
       (move-arm-pose arm (grasp-pose 0.2) :ignore-collisions t))))
 
 (defun move-arm-relative (arm offset &key ignore-collisions)
@@ -581,6 +587,7 @@
 (defun open-handle (arm handle)
   (roslisp:ros-info (open handle) "Go in front")
   (go-in-front-of-handle handle)
+  (roslisp:ros-info (open handle) "Move torso")
   (move-torso (handle-torso-height handle))
   (roslisp:ros-info (open handle) "Open gripper")
   (pr2-manip-pm::open-gripper arm)
@@ -588,17 +595,30 @@
   (grasp-handle arm handle :double t)
   (roslisp:ros-info (open handle) "Close gripper")
   (pr2-manip-pm::close-gripper arm)
-  (roslisp:ros-info (open handle) "Execute handle trace")
-  (execute-handle-trace
-   arm handle
-   :from-degree (handle-degree handle))
-  (roslisp:ros-info (open handle) "Open gripper")
-  (pr2-manip-pm::open-gripper arm)
-  (roslisp:ros-info (open handle) "Move arm relative")
-  (move-arm-relative
-   arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
-                     (tf:make-identity-rotation))
-   :ignore-collisions t)
+  (ecase (container-type handle)
+    (:drawer ;; Drawers
+     (roslisp:ros-info (open handle) "Execute handle trace")
+     (execute-handle-trace
+      arm handle
+      :from-degree (handle-degree handle))
+     (roslisp:ros-info (open handle) "Open gripper")
+     (pr2-manip-pm::open-gripper arm)
+     (roslisp:ros-info (open handle) "Move arm relative")
+     (move-arm-relative
+      arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                        (tf:make-identity-rotation))
+      :ignore-collisions t))
+    (:fridge ;; Fridge
+     (roslisp:ros-info (open handle) "Open fridge (apply magic sauce)")
+     (set-handle-degree handle 1.0 :hold t)
+     (roslisp:ros-info (open handle) "Open gripper")
+     (pr2-manip-pm::open-gripper arm)
+     (roslisp:ros-info (open handle) "Move arm relative")
+     (move-arm-relative
+      arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                        (tf:make-identity-rotation))
+      :ignore-collisions t)
+     ))
   (roslisp:ros-info (open handle) "And up")
   (move-arms-up))
 
@@ -608,16 +628,29 @@
   (pr2-manip-pm::open-gripper arm)
   (grasp-handle arm handle)
   (pr2-manip-pm::close-gripper arm)
-  (execute-handle-trace
-   arm handle
-   :from-degree (handle-degree handle)
-   :to-degree 0.15
-   :step -0.1)
-  (pr2-manip-pm::open-gripper arm)
-  (move-arm-relative
-   arm (tf:make-pose (tf:make-3d-vector -0.2 0.0 0.0)
-                     (tf:make-identity-rotation))
-   :ignore-collisions t)
+  (ecase (container-type handle)
+    (:drawer ;; Drawers
+     (execute-handle-trace
+      arm handle
+      :from-degree (handle-degree handle)
+      :to-degree 0.15
+      :step -0.1)
+     (pr2-manip-pm::open-gripper arm)
+     (move-arm-relative
+      arm (tf:make-pose (tf:make-3d-vector -0.2 0.0 0.0)
+                        (tf:make-identity-rotation))
+      :ignore-collisions t))
+    (:fridge
+     (roslisp:ros-info (open handle) "Close fridge (apply magic sauce)")
+     (set-handle-degree handle 0.0 :hold t)
+     (roslisp:ros-info (open handle) "Open gripper")
+     (pr2-manip-pm::open-gripper arm)
+     (roslisp:ros-info (open handle) "Move arm relative")
+     (move-arm-relative
+      arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                        (tf:make-identity-rotation))
+      :ignore-collisions t)
+     ))
   (move-arms-up))
 
 (defun ideal-arm-for-handle (handle)
