@@ -208,58 +208,68 @@
   (let ((searchable-locations `(;"iai_kitchen_kitchen_island_counter_top"
                                 ;"iai_kitchen_sink_area_counter_top"
                                 ;"iai_kitchen_meal_table_counter_top"
-                                ;"iai_kitchen_sink_area_left_upper_drawer_handle"
+                                "iai_kitchen_sink_area_left_upper_drawer_handle"
                                 ;"iai_kitchen_sink_area_left_middle_drawer_handle"
                                 ;"iai_kitchen_kitchen_island_left_upper_drawer_handle"
                                 ;"iai_kitchen_sink_area_dish_washer_door_handle"
-                                "iai_kitchen_fridge_door_handle"
+                                ;"iai_kitchen_fridge_door_handle"
                                 )))
     (let ((found nil))
       (loop for location in searchable-locations until found
             do (when (search-location location object)
                  (setf found t))))))
 
-(def-cram-function search-location (locname object)
+(defun make-location-aux-object (object location)
+  (make-designator
+   :object (append (remove :at (desig:description object)
+                           :test (lambda (x pair) (eql x (car pair))))
+                   `((:at ,location)))))
+
+(defun find-location-aux-object (object location)
   (block failure-guard
-    (let ((loctype (container-type locname)))
-      (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
-      (ecase loctype
-        (:countertop
-         (let ((aux-object
-                 (make-designator
-                  :object (append (remove :at (desig:description object)
-                                          :test (lambda (x pair) (eql x (car pair))))
-                                  `((:at ,(make-designator
-                                           :location `((:on "CounterTop")
-                                                       (:name ,locname)))))))))
-           (with-failure-handling
-               ((cram-plan-failures:location-not-reached-failure (f)
-                  (declare (ignore f))
-                  (cpl:retry))
-                (cram-plan-failures:object-not-found (f)
-                  (declare (ignore f))
-                  (return-from failure-guard)))
-             (find-object aux-object :num-retries 0))))
-        (:drawer
-         ;; Well-defined starting torso height
-         (move-torso)
-         ;; Open drawer
-         (open-handled-storage-container locname)
-         ;; Inspect the contents
-         (inspect-container-contents-for-object locname object)
+    (let ((aux-object (make-location-aux-object object location)))
+      (with-failure-handling
+          ((cram-plan-failures:location-not-reached-failure (f)
+             (declare (ignore f))
+             (cpl:retry))
+           (cram-plan-failures:object-not-found (f)
+             (declare (ignore f))
+             (return-from failure-guard)))
+        (find-object aux-object :num-retries 0)))))
+
+(def-cram-function search-location (locname object)
+  (let ((loctype (container-type locname)))
+    (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
+    (ecase loctype
+      (:countertop (find-location-aux-object
+                    object (make-designator
+                            :location `((:on "CounterTop")
+                                        (:name ,locname)))))
+      (:drawer
+       ;; Well-defined starting torso height
+       (move-torso)
+       ;; Open drawer
+       (open-handled-storage-container locname)
+       ;; Inspect the contents
+       (unwind-protect
+            (inspect-container-contents-for-object locname object)
          ;; Close drawer
-         (close-handled-storage-container locname)
-         nil)
-        (:dishwasher )
-        (:fridge
-         (move-torso)
-         (open-handled-storage-container locname)
-         (inspect-container-contents-for-object locname object)
+         (close-handled-storage-container locname)))
+      (:dishwasher )
+      (:fridge
+       (move-torso)
+       (open-handled-storage-container locname)
+       (unwind-protect
+            (inspect-container-contents-for-object locname object)
          (close-handled-storage-container locname))))))
 
 (def-cram-function inspect-container-contents-for-object (location object)
   ;; We assume that we're looking inside the container right now
-  (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
-  (let ((objects (perceive-object :currently-visible object)))
-    (loop for obj in objects
-          do (format t "FOUND OBJECT: ~a~%" obj))))
+  (let ((aux-object (make-location-aux-object
+                     object
+                     (make-designator :location `((:inside :container)
+                                                  (:handle-name ,location))))))
+    (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
+    (let ((objects (perceive-object :currently-visible aux-object)))
+      (loop for obj in objects
+            do (format t "FOUND OBJECT: ~a~%" obj)))))
