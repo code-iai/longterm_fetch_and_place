@@ -566,6 +566,24 @@
          (container-pose (container-center-pose handle)))
     (look-at (make-designator :location `((:pose ,container-pose))))))
 
+(defun make-inside-container-radial-cost-function (center-pose radius)
+  (let* ((center-origin (tf:origin center-pose))
+         (center-flat-origin (tf:make-3d-vector (tf:x center-origin)
+                                                (tf:y center-origin)
+                                                0)))
+    (lambda (x y)
+      (if (<= (tf:v-dist center-flat-origin
+                         (tf:make-3d-vector x y 0))
+              radius)
+          1.0d0
+          0.0d0))))
+
+(defun make-inside-container-radial-height-function (center-pose)
+  (let ((z (tf:z (tf:origin center-pose))))
+    (lambda (x y)
+      (declare (ignore x y))
+      (list z))))
+
 (defun container-type (handle)
   (cond ((string= handle "iai_kitchen_kitchen_island_counter_top")
          :countertop)
@@ -714,17 +732,19 @@
                             (tf:pose->transform container-pose)
                             relative-pose))))
         (roslisp:ros-info (ltfnp) "Add gazebo object model '~a'" id)
-        (spawn-class id objclass object-pose)
-        (attach-object id "link" "ground_plane" "link")))))
+        (cram-gazebo-utilities::with-physics-paused
+          (spawn-class id objclass object-pose)
+          (attach-object id "link" "ground_plane" "link"))))))
 
 (defun close-handled-storage-container (handle)
-  (dolist (object (objects-stored-in-handled-container handle))
-    (destructuring-bind (id objclass relative-pose) object
-      (declare (ignore objclass relative-pose))
-      (detach-object id "link" "ground_plane" "link")
-      (sleep 1)
-      (roslisp:ros-info (ltfnp) "Remove gazebo object model '~a'" id)
-      (roslisp:ros-info (ltfnp) "Result: ~a" (cram-gazebo-utilities::delete-gazebo-model id))))
+  (cram-gazebo-utilities::with-physics-paused
+    (dolist (object (objects-stored-in-handled-container handle))
+      (destructuring-bind (id objclass relative-pose) object
+        (declare (ignore objclass relative-pose))
+        (detach-object id "link" "ground_plane" "link")
+        (sleep 0.1)
+        (roslisp:ros-info (ltfnp) "Remove gazebo object model '~a'" id)
+        (roslisp:ros-info (ltfnp) "Result: ~a" (cram-gazebo-utilities::delete-gazebo-model id)))))
   (close-auto-handle handle))
 
 (def-top-level-cram-function open-close-test ()
