@@ -72,6 +72,10 @@
     ((name (common-lisp:eql 'ltfnp-costmap-meal-table-restriction)))
   101)
 
+(defmethod costmap-generator-name->score
+    ((name (common-lisp:eql 'ltfnp-costmap-inside-container-radial)))
+  102)
+
 (defun test-restriction-costmap ()
   "Asserts the debug costmap according to the area restriction as defined in this file into bullet. This function is intended for testing purposes in case the restriction changed."
   (cram-prolog:prolog `(and (costmap ?cm)
@@ -104,6 +108,27 @@
      ?cm)
     (costmap-add-orientation-generator
      (make-ltfnp-meal-table-orientation-generator)
+     ?cm))
+  
+  (<- (desig-costmap ?desig ?cm)
+    (desig-prop ?desig (:inside :container))
+    (cram-prolog:once
+     (or (desig-prop ?desig (:center-pose ?center-pose))
+         (and (desig-prop ?desig (:handle-name ?handle-name))
+              (cram-prolog:lisp-fun container-center-pose
+                                    ?handle-name ?center-pose))))
+    (cram-prolog:once
+     (or (desig-prop ?desig (:radius ?radius))
+         (equal ?radius 0.2)))
+    (costmap ?cm)
+    (costmap-add-function
+     ltfnp-costmap-inside-container-radial
+     (make-inside-container-radial-cost-function
+      ?center-pose ?radius)
+     ?cm)
+    (costmap-add-height-generator
+     (make-inside-container-radial-height-function
+      ?center-pose)
      ?cm)))
 
 (def-fact-group ltfnp-intrusive-hooks (close-radius)
