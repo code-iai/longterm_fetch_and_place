@@ -289,7 +289,7 @@
   (cram-designators:disable-location-validation-function
    'btr-desig::validate-designator-solution)
   (when simulated
-    (gazebo-perception-pm:set-tf-camera "head_mount_kinect_rgb_link" pi 2.5)
+    (gazebo-perception-pm:set-tf-camera "head_mount_kinect_rgb_link" (* pi 1.5) 2.5)
     (gazebo-perception-pm::ignore-object "ground_plane")
     (gazebo-perception-pm::ignore-object "pr2")
     (gazebo-perception-pm::ignore-object "IAI_kitchen"))
@@ -425,7 +425,9 @@
                      (:left "l_wrist_roll_link")
                      (:right "r_wrist_roll_link"))
                    object-name
-                   "link")))
+                   "link")
+    (detach-object object-name "link"
+                   "ground_plane" "link")))
 
 (defmethod cram-language::on-putdown-object (object-name side)
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
@@ -435,7 +437,9 @@
                      (:left "l_wrist_roll_link")
                      (:right "r_wrist_roll_link"))
                    object-name
-                   "link")))
+                   "link")
+    (attach-object object-name "link"
+                   "ground_plane" "link")))
 
 (defun set-joint-limits (model joint lower upper)
   (roslisp:call-service "/gazebo/joint_set_limits"

@@ -64,18 +64,19 @@
       (do-init simulated :headless headless :variance variance))
     (roslisp:ros-info (ltfnp) "Running Longterm Fetch and Place")
     (roslisp:ros-info (ltfnp) "Using variance: ~a" variance)
-    (labels ((exp-mode (mode)
-               (string= mode exp-mode-string)))
-      (cond ((exp-mode "tablesetting")
-             (beliefstate:enable-logging logged)
-             (setf beliefstate::*enable-prolog-logging* logged)
-             (prog1
-                 (longterm-fetch-and-place :variance variance)
-               (when logged
-                 (beliefstate:extract-files))))
-            ((exp-mode "search")
-             (search-object-scenario))))
-    (roslisp:ros-info (ltfnp) "Done with LTFnP")))
+    (prog1
+        (labels ((exp-mode (mode)
+                   (string= mode exp-mode-string)))
+          (cond ((exp-mode "tablesetting")
+                 (beliefstate:enable-logging logged)
+                 (setf beliefstate::*enable-prolog-logging* logged)
+                 (prog1
+                     (longterm-fetch-and-place :variance variance)
+                   (when logged
+                     (beliefstate:extract-files))))
+                ((exp-mode "search")
+                 (search-object-scenario))))
+      (roslisp:ros-info (ltfnp) "Done with LTFnP"))))
 
 
 ;;;
@@ -198,12 +199,15 @@
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
     (store-object-in-handled-container
-     `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0 0 0.2)
-                                     (tf:euler->quaternion)))
+     `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0.1 0 0.1)
+                                     (tf:euler->quaternion :az pi)))
      "iai_kitchen_sink_area_left_upper_drawer_handle")
-    (search-object (make-designator :object `((:type "Milk"))))))
+    (search-object (make-designator :object `((:type "Milk")))
+                   :when-found :leave-accessible)))
 
-(def-cram-function search-object (object)
+(def-cram-function search-object (object &key (when-found :return))
+  (assert (or (eql when-found :return)
+              (eql when-found :leave-accessible)))
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   (let ((searchable-locations `(;"iai_kitchen_kitchen_island_counter_top"
                                 ;"iai_kitchen_sink_area_counter_top"
@@ -214,10 +218,20 @@
                                 ;"iai_kitchen_sink_area_dish_washer_door_handle"
                                 ;"iai_kitchen_fridge_door_handle"
                                 )))
-    (let ((found nil))
-      (loop for location in searchable-locations until found
-            do (when (search-location location object)
-                 (setf found t))))))
+    (let ((found-object nil))
+      (loop for location in searchable-locations until found-object
+            as found-objects = (search-location location object
+                                                :when-found when-found)
+            when found-objects
+              do (setf found-object `(,(first found-objects) ,location)))
+      (when found-object
+        (cond ((eql when-found :return)
+               found-object)
+              ((eql when-found :leave-accessible)
+               (destructuring-bind (obj loc) found-object
+                 (remove-object-from-handled-container
+                  (desig:desig-prop-value obj :name) loc)
+                 (achieve `(cram-plan-library:object-in-hand ,obj)))))))))
 
 (defun make-location-aux-object (object location)
   (make-designator
@@ -237,7 +251,7 @@
              (return-from failure-guard)))
         (find-object aux-object :num-retries 0)))))
 
-(def-cram-function search-location (locname object)
+(def-cram-function search-location (locname object &key (when-found :return))
   (let ((loctype (container-type locname)))
     (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
     (ecase loctype
@@ -254,14 +268,16 @@
        (unwind-protect
             (inspect-container-contents-for-object locname object)
          ;; Close drawer
-         (close-handled-storage-container locname)))
+         (unless (eql when-found :leave-accessible)
+           (close-handled-storage-container locname))))
       (:dishwasher )
       (:fridge
        (move-torso)
        (open-handled-storage-container locname)
        (unwind-protect
             (inspect-container-contents-for-object locname object)
-         (close-handled-storage-container locname))))))
+         (unless (eql when-found :leave-accessible)
+           (close-handled-storage-container locname)))))))
 
 (def-cram-function inspect-container-contents-for-object (location object)
   ;; We assume that we're looking inside the container right now
@@ -272,4 +288,5 @@
     (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
     (let ((objects (perceive-object :currently-visible aux-object)))
       (loop for obj in objects
-            do (format t "FOUND OBJECT: ~a~%" obj)))))
+            do (format t "FOUND OBJECT: ~a~%" obj))
+      objects)))
