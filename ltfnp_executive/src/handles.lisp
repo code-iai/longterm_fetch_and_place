@@ -177,7 +177,7 @@
                      :offset offset))))
          (steps (/ (- to-degree from-degree) step)))
     (loop for i from 0 to steps
-          as ttt = (format t "!L!K!K!K!L!KE!LJEO!J    ~a / ~a" i steps)
+          ;;as ttt = (format t "!L!K!K!K!L!KE!LJEO!J    ~a / ~a" i steps)
           as current-degree = (+ from-degree (* i step))
           as current-pose = (funcall motion-function current-degree)
           collect (funcall trace-func i steps current-degree current-pose))))
@@ -278,7 +278,6 @@
          (trace-func
            (lambda (inner-step steps degree pose-stamped)
              (declare (ignore inner-step steps))
-             (format t "!!!!!!!!!!!!!!!!!!!!!!!!          Degree = ~a" degree)
              (set-handle-degree handle degree :hold t)
              (look-at-handle-container handle)
              (let ((in-tll (ensure-pose-stamped
@@ -607,6 +606,8 @@
   (go-in-front-of-handle handle)
   (roslisp:ros-info (open handle) "Move torso")
   (move-torso (handle-torso-height handle))
+  (roslisp:ros-info (open handle) "Look at handled container")
+  (look-at-handle-container handle)
   (roslisp:ros-info (open handle) "Open gripper")
   (pr2-manip-pm::open-gripper arm)
   (roslisp:ros-info (open handle) "Grasp handle")
@@ -643,6 +644,8 @@
 (defun close-handle (arm handle)
   (go-in-front-of-handle handle)
   (move-torso (handle-torso-height handle))
+  (roslisp:ros-info (open handle) "Look at handled container")
+  (look-at-handle-container handle)
   (pr2-manip-pm::open-gripper arm)
   (grasp-handle arm handle)
   (pr2-manip-pm::close-gripper arm)
@@ -734,6 +737,7 @@
         (roslisp:ros-info (ltfnp) "Add gazebo object model '~a'" id)
         (cram-gazebo-utilities::with-physics-paused
           (spawn-class id objclass object-pose)
+          (sleep 0.1)
           (attach-object id "link" "ground_plane" "link"))))))
 
 (defun close-handled-storage-container (handle)
@@ -741,7 +745,7 @@
     (dolist (object (objects-stored-in-handled-container handle))
       (destructuring-bind (id objclass relative-pose) object
         (declare (ignore objclass relative-pose))
-        (detach-object id "link" "ground_plane" "link")
+        (detach-object "ground_plane" "link" id "link")
         (sleep 0.1)
         (roslisp:ros-info (ltfnp) "Remove gazebo object model '~a'" id)
         (roslisp:ros-info (ltfnp) "Result: ~a" (cram-gazebo-utilities::delete-gazebo-model id)))))
