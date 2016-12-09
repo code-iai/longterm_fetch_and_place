@@ -207,40 +207,47 @@
      `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0.2 0 0.1)
                                      (tf:euler->quaternion :az pi)))
      "iai_kitchen_sink_area_left_upper_drawer_handle")
-    (search-object (make-designator :object `((:type "Milk")))
-                   :when-found :leave-accessible)))
+    (search-object (make-designator :object `((:type "Milk"))))))
 
-(def-cram-function search-object (object &key (when-found :return))
-  (assert (or (eql when-found :return)
-              (eql when-found :leave-accessible)))
+(def-cram-function search-object (object)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
-  (let ((searchable-locations `(;"iai_kitchen_kitchen_island_counter_top"
-                                ;"iai_kitchen_sink_area_counter_top"
-                                ;"iai_kitchen_meal_table_counter_top"
-                                "iai_kitchen_sink_area_left_upper_drawer_handle"
-                                ;"iai_kitchen_sink_area_left_middle_drawer_handle"
-                                ;"iai_kitchen_kitchen_island_left_upper_drawer_handle"
-                                ;"iai_kitchen_sink_area_dish_washer_door_handle"
-                                ;"iai_kitchen_fridge_door_handle"
-                                )))
-    (let ((found-object nil))
-      (loop for location in searchable-locations until found-object
-            as found-objects = (search-location location object
-                                                :when-found when-found)
-            when found-objects
-              do (setf found-object `(,(first found-objects) ,location)))
-      (when found-object
-        (cond ((eql when-found :return)
-               found-object)
-              ((eql when-found :leave-accessible)
-               (destructuring-bind (obj loc) found-object
-                 (remove-object-from-handled-container
-                  (desig:desig-prop-value obj :name) loc)
-                 (with-failure-handling
-                     ((cram-plan-failures:location-not-reached-failure (f)
-                        (declare (ignore f))
-                        (cpl:retry)))
-                   (achieve `(cram-plan-library:object-in-hand ,obj))))))))))
+  ;; These locations could be sorted according to known residence
+  ;; probabilities for any given object. Right now, they are just in a
+  ;; static order, and will be searched in that order.
+  (let ((searchable-locations `("iai_kitchen_sink_area_left_upper_drawer_handle"
+                                "iai_kitchen_kitchen_island_counter_top"
+                                "iai_kitchen_sink_area_counter_top"
+                                "iai_kitchen_meal_table_counter_top"
+                                "iai_kitchen_sink_area_left_middle_drawer_handle"
+                                "iai_kitchen_kitchen_island_left_upper_drawer_handle"
+                                "iai_kitchen_sink_area_dish_washer_door_handle"
+                                "iai_kitchen_fridge_door_handle")))
+    (find-and-fetch-object object searchable-locations)))
+
+(def-cram-function find-and-fetch-object (object locations)
+  (let ((found-object nil))
+    (loop for location in locations until found-object
+          as found-objects = (search-location location object
+                                              :when-found :leave-accessible)
+          when found-objects
+            do (setf found-object `(,(first found-objects) ,location)))
+    (when found-object
+      (destructuring-bind (obj loc) found-object
+        (remove-object-from-handled-container
+         (desig:desig-prop-value obj :name) loc)
+        (with-failure-handling
+            ((cram-plan-failures:location-not-reached-failure (f)
+               (declare (ignore f))
+               (cpl:retry)))
+          (let ((allowed-old pr2-manip-pm::*allowed-arms*))
+            (unwind-protect
+                 (progn
+                   (setf pr2-manip-pm::*allowed-arms*
+                         (allowed-hands-for-location loc))
+                   (achieve `(cram-plan-library:object-in-hand ,obj)))
+              (setf pr2-manip-pm::*allowed-arms* allowed-old))))
+        (when (location-closeable loc)
+          (close-handled-storage-container loc))))))
 
 (defun make-location-aux-object (object location)
   (make-designator

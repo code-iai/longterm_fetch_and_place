@@ -765,3 +765,15 @@
     (open-handled-storage-container "iai_kitchen_sink_area_left_upper_drawer_handle")))
     ;;(open-auto-handle "iai_kitchen_sink_area_left_upper_drawer_handle")))
 ;;(open-close "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
+
+(defun other-hand (hand)
+  (if (eql hand :left) :right :left))
+
+(defun allowed-hands-for-location (locname)
+  (let ((loctype (container-type locname)))
+    (if (eql loctype :countertop)
+        `(:left :right)
+        `(,(other-hand (ideal-arm-for-handle locname))))))
+
+(defun location-closeable (handle)
+  (if (eql (container-type handle) :countertop) nil t))
