@@ -420,26 +420,28 @@
 (defmethod cram-language::on-grasp-object (object-name side)
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
   (when *simulated*
-    (attach-object "pr2"
-                   (case side
-                     (:left "l_wrist_roll_link")
-                     (:right "r_wrist_roll_link"))
-                   object-name
-                   "link")
-    (detach-object object-name "link"
-                   "ground_plane" "link")))
+    (cram-gazebo-utilities::with-physics-paused
+      (detach-object "ground_plane" "link" object-name "link")
+      (sleep 0.1)
+      (attach-object "pr2"
+                     (case side
+                       (:left "l_wrist_roll_link")
+                       (:right "r_wrist_roll_link"))
+                     object-name
+                     "link"))))
 
 (defmethod cram-language::on-putdown-object (object-name side)
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
-  (when *simulated* 
-    (detach-object "pr2"
-                   (case side
-                     (:left "l_wrist_roll_link")
-                     (:right "r_wrist_roll_link"))
-                   object-name
-                   "link")
-    (attach-object object-name "link"
-                   "ground_plane" "link")))
+  (when *simulated*
+    (cram-gazebo-utilities::with-physics-paused
+      (attach-object object-name "link" "ground_plane" "link")
+      (sleep 0.1)
+      (detach-object "pr2"
+                     (case side
+                       (:left "l_wrist_roll_link")
+                       (:right "r_wrist_roll_link"))
+                     object-name
+                     "link"))))
 
 (defun set-joint-limits (model joint lower upper)
   (roslisp:call-service "/gazebo/joint_set_limits"
