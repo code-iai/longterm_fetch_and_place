@@ -33,10 +33,15 @@
   (setf *simulated* simulated)
   (cond (*simulated*
          (setf cram-beliefstate::*kinect-topic-rgb* "/head_mount_kinect/rgb/image_raw");;/compressed")
+         (setf pr2-manip-pm::*pregrasp-offset*
+               (cl-transforms:make-pose
+                (cl-transforms:make-3d-vector
+                 -0.30 0.0 0.0)
+                (cl-transforms:euler->quaternion :ax (/ pi 2))))
          (setf pr2-manip-pm::*grasp-offset*
                (cl-transforms:make-pose
-                (cl-transforms:make-3d-vector -0.14 0.0 0.0)
-                (cl-transforms:euler->quaternion :ax (/ pi -2)))))
+                (cl-transforms:make-3d-vector -0.20 0.0 0.0)
+                (cl-transforms:euler->quaternion :ax (/ pi 2)))))
         (t (setf cram-moveit::*needs-ft-fix* t)
            (setf cram-beliefstate::*kinect-topic-rgb* "/kinect_head/rgb/image_color")))
   (roslisp:ros-info (ltfnp) "Connecting to ROS")
@@ -199,7 +204,7 @@
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
     (store-object-in-handled-container
-     `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0.1 0 0.1)
+     `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0.2 0 0.1)
                                      (tf:euler->quaternion :az pi)))
      "iai_kitchen_sink_area_left_upper_drawer_handle")
     (search-object (make-designator :object `((:type "Milk")))
@@ -231,7 +236,11 @@
                (destructuring-bind (obj loc) found-object
                  (remove-object-from-handled-container
                   (desig:desig-prop-value obj :name) loc)
-                 (achieve `(cram-plan-library:object-in-hand ,obj)))))))))
+                 (with-failure-handling
+                     ((cram-plan-failures:location-not-reached-failure (f)
+                        (declare (ignore f))
+                        (cpl:retry)))
+                   (achieve `(cram-plan-library:object-in-hand ,obj))))))))))
 
 (defun make-location-aux-object (object location)
   (make-designator
