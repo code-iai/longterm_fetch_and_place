@@ -152,7 +152,7 @@
                ,(asin (* 2 (- q0q2 q1q3)))
                ,(atan2 (* 2 (+ q0q3 q1q2)) (- 1 (* 2 (+ q2q2 q3q3)))))))))
 
-(defmacro at-definite-location (location &key (threshold-cartesian 0.01) (threshold-angular 0.05) body)
+(defmacro at-definite-location (location &key (threshold-cartesian 0.01) (threshold-angular 0.05) (retries 25) body)
   `(labels ((distance-2d (p-1 p-2)
               (tf:v-dist (tf:make-3d-vector (tf:x (tf:origin p-1))
                                             (tf:y (tf:origin p-1)) 0.0)
@@ -180,7 +180,11 @@
                     ((cram-plan-failures:location-not-reached-failure (f)
                        (declare (ignore f))
                        (cpl:retry)))
-                  (at-location (,location) ,@body))
+                  (format t "Distance Cartesian: ~a~%" distance-cartesian)
+                  (format t "Distance Angular: ~a~%" distance-angular)
+                  (when (or (> distance-cartesian ,threshold-cartesian)
+                            (> distance-angular ,threshold-angular))
+                    (at-location (,location) ,@body)))
                 (setf current-robot-pose (get-robot-pose))
                 (setf distance-cartesian (distance-2d current-robot-pose
                                                       target-pose))

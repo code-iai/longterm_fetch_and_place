@@ -287,14 +287,14 @@
 
 (defun go-to-container-grasping-pose (loc)
   (cond ((eql loc "iai_kitchen_fridge_door_handle")
-         (at-definite-location
-          (make-designator
-           :location
-           `((:pose ,(tf:make-pose-stamped
-                      "map" 0.0
-                      (tf:make-3d-vector 0.7 -1.2 0.0509)
-                      (tf:euler->quaternion :az (/ pi -4))))))
-          :threshold-angular 0.2))
+         (let ((loc-desig
+                 (make-designator
+                  :location
+                  `((:pose ,(tf:make-pose-stamped
+                             "map" 0.0
+                             (tf:make-3d-vector 0.7 -1.1 0.0509)
+                             (tf:euler->quaternion :az (/ pi -4))))))))
+           (at-definite-location loc-desig)))
         (t nil)))
 
 (defun make-location-aux-object (object location)
