@@ -218,6 +218,7 @@
     (store-object-in-handled-container `(,new-name ,objclass ,relpose) place)))
 
 (defun prepare-container-scene ()
+  (setf *container-stored-objects* (make-hash-table :test 'equal))
   (store "Milk" (tf:make-pose (tf:make-3d-vector 0.2 0 0.1) (tf:euler->quaternion :az pi))
          "iai_kitchen_sink_area_left_upper_drawer_handle")
   (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
@@ -278,10 +279,23 @@
                          (allowed-hands-for-location loc))
                    (roslisp:ros-info (ltfnp) "Allowed arms for grasping are: ~a~%"
                                      pr2-manip-pm::*allowed-arms*)
+                   (go-to-container-grasping-pose loc)
                    (achieve `(cram-plan-library:object-in-hand ,obj)))
               (setf pr2-manip-pm::*allowed-arms* allowed-old))))
         (when (location-closeable loc)
           (close-handled-storage-container loc))))))
+
+(defun go-to-container-grasping-pose (loc)
+  (cond ((eql loc "iai_kitchen_fridge_door_handle")
+         (at-definite-location
+          (make-designator
+           :location
+           `((:pose ,(tf:make-pose-stamped
+                      "map" 0.0
+                      (tf:make-3d-vector 0.7 -1.2 0.0509)
+                      (tf:euler->quaternion :az (/ pi -4))))))
+          :threshold-angular 0.2))
+        (t nil)))
 
 (defun make-location-aux-object (object location)
   (make-designator
