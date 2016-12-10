@@ -198,15 +198,47 @@
                  (go-to-origin :keep-orientation t)
                  (perform place-action))))))))))
 
+(defun find-first-free-index (objclass)
+  (let ((highest-idx nil))
+    (loop for h being the hash-keys of *container-stored-objects*
+          as obj-list = (gethash h *container-stored-objects*)
+          do (loop for obj in obj-list
+                   do (destructuring-bind (nam cls pos) obj
+                        (declare (ignore pos))
+                        (when (string= cls objclass)
+                          (let* ((num (parse-integer (subseq nam (length objclass)))))
+                            (when (or (not highest-idx)
+                                      (> num highest-idx))
+                              (setf highest-idx num)))))))
+    (or (when highest-idx (1+ (or highest-idx 0))) 0)))
+
+(defun store (objclass relpose place)
+  (let ((new-name (concatenate 'string (string-downcase objclass)
+                               (write-to-string (find-first-free-index objclass)))))
+    (store-object-in-handled-container `(,new-name ,objclass ,relpose) place)))
+
+(defun prepare-container-scene ()
+  (store "Milk" (tf:make-pose (tf:make-3d-vector 0.2 0 0.1) (tf:euler->quaternion :az pi))
+         "iai_kitchen_sink_area_left_upper_drawer_handle")
+  (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
+         "iai_kitchen_fridge_door_handle")
+  (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
+         "iai_kitchen_fridge_door_handle")
+  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 0.11 -1.67) (tf:euler->quaternion :az pi))
+         "iai_kitchen_fridge_door_handle")
+  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.05 0.025 -1.67) (tf:euler->quaternion :az pi))
+         "iai_kitchen_fridge_door_handle")
+  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector -0.05 -0.05 -1.67) (tf:euler->quaternion :az pi))
+         "iai_kitchen_fridge_door_handle")
+  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 -0.15 -1.67) (tf:euler->quaternion :az pi))
+         "iai_kitchen_fridge_door_handle"))
+
 (def-top-level-cram-function search-object-scenario ()
   (with-process-modules-simulated
     (beliefstate:enable-logging nil)
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
-    (store-object-in-handled-container
-     `("milk0" "Milk" ,(tf:make-pose (tf:make-3d-vector 0.2 0 0.1)
-                                     (tf:euler->quaternion :az pi)))
-     "iai_kitchen_sink_area_left_upper_drawer_handle")
+    (prepare-container-scene)
     (search-object (make-designator :object `((:type "Milk"))))))
 
 (def-cram-function search-object (object)
@@ -214,13 +246,13 @@
   ;; These locations could be sorted according to known residence
   ;; probabilities for any given object. Right now, they are just in a
   ;; static order, and will be searched in that order.
-  (let ((searchable-locations `("iai_kitchen_sink_area_left_upper_drawer_handle"
-                                "iai_kitchen_kitchen_island_counter_top"
-                                "iai_kitchen_sink_area_counter_top"
-                                "iai_kitchen_meal_table_counter_top"
-                                "iai_kitchen_sink_area_left_middle_drawer_handle"
-                                "iai_kitchen_kitchen_island_left_upper_drawer_handle"
-                                "iai_kitchen_sink_area_dish_washer_door_handle"
+  (let ((searchable-locations `(;"iai_kitchen_sink_area_left_upper_drawer_handle"
+                                ;"iai_kitchen_kitchen_island_counter_top"
+                                ;"iai_kitchen_sink_area_counter_top"
+                                ;"iai_kitchen_meal_table_counter_top"
+                                ;"iai_kitchen_sink_area_left_middle_drawer_handle"
+                                ;"iai_kitchen_kitchen_island_left_upper_drawer_handle"
+                                ;"iai_kitchen_sink_area_dish_washer_door_handle"
                                 "iai_kitchen_fridge_door_handle")))
     (find-and-fetch-object object searchable-locations)))
 
@@ -244,6 +276,8 @@
                  (progn
                    (setf pr2-manip-pm::*allowed-arms*
                          (allowed-hands-for-location loc))
+                   (roslisp:ros-info (ltfnp) "Allowed arms for grasping are: ~a~%"
+                                     pr2-manip-pm::*allowed-arms*)
                    (achieve `(cram-plan-library:object-in-hand ,obj)))
               (setf pr2-manip-pm::*allowed-arms* allowed-old))))
         (when (location-closeable loc)
@@ -306,3 +340,11 @@
       (loop for obj in objects
             do (format t "FOUND OBJECT: ~a~%" obj))
       objects)))
+
+
+;;;
+;;; Override the default motmat init function
+;;;
+
+(defun pr2-manip-pm::make-empty-goal-specification ()
+  (mot-man:make-goal-specification :moveit-goal-specification))
