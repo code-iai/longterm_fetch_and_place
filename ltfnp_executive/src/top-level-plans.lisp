@@ -276,19 +276,23 @@
     (prepare-container-scene)
     (search-object (make-designator :object `((:type "Milk"))))))
 
+(defun location-order-for-object (object)
+  (declare (ignore object))
+  `("iai_kitchen_sink_area_left_upper_drawer_handle"
+    "iai_kitchen_kitchen_island_counter_top"
+    "iai_kitchen_sink_area_counter_top"
+    "iai_kitchen_sink_area_left_middle_drawer_handle"
+    "iai_kitchen_kitchen_island_left_upper_drawer_handle"
+    "iai_kitchen_sink_area_dish_washer_door_handle"
+    "iai_kitchen_fridge_door_handle"
+    "iai_kitchen_meal_table_counter_top"))
+
 (def-cram-function search-object (object)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   ;; These locations could be sorted according to known residence
   ;; probabilities for any given object. Right now, they are just in a
   ;; static order, and will be searched in that order.
-  (let ((searchable-locations `("iai_kitchen_sink_area_left_upper_drawer_handle"
-                                "iai_kitchen_kitchen_island_counter_top"
-                                "iai_kitchen_sink_area_counter_top"
-                                "iai_kitchen_meal_table_counter_top"
-                                "iai_kitchen_sink_area_left_middle_drawer_handle"
-                                "iai_kitchen_kitchen_island_left_upper_drawer_handle"
-                                "iai_kitchen_sink_area_dish_washer_door_handle"
-                                "iai_kitchen_fridge_door_handle")))
+  (let ((searchable-locations (location-order-for-object object)))
     (find-and-fetch-object object searchable-locations)))
 
 (def-cram-function find-and-fetch-object (object locations)
