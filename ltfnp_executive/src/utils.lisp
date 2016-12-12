@@ -174,6 +174,7 @@
                 (abs (- z-robot z-target)))))
               ;; (distance-angular-z current-robot-pose
               ;;target-pose)))
+       (format t "Distances: ~a/~a~%" distance-cartesian distance-angular)
        (loop while (or (> distance-cartesian ,threshold-cartesian)
                        (> distance-angular ,threshold-angular))
              do (with-failure-handling
@@ -322,7 +323,9 @@
                           (tf:euler->quaternion :az (* PI 1.5))))
          (origin-pose (cl-tf:make-pose-stamped
                        "map" 0.0
-                       (tf:make-identity-vector)
+                       ;; Making sure we don't bump into the evil
+                       ;; island corner of stuckness.
+                       (tf:make-3d-vector -0.5 0.0 0.0)
                        orientation))
          (origin-loc (make-designator :location `((:pose ,origin-pose)))))
     (at-definite-location origin-loc)))
