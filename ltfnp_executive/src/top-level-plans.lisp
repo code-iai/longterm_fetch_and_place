@@ -80,7 +80,9 @@
                    (when logged
                      (beliefstate:extract-files))))
                 ((exp-mode "search")
-                 (search-object-scenario))))
+                 (search-object-scenario))
+                ((exp-mode "tablesetting2")
+                 (tablesetting-scenario))))
       (roslisp:ros-info (ltfnp) "Done with LTFnP"))))
 
 
@@ -217,10 +219,20 @@
                                (write-to-string (find-first-free-index objclass)))))
     (store-object-in-handled-container `(,new-name ,objclass ,relpose) place)))
 
+(defun countertop-center-pose (name)
+  (let ((semobj (first (cram-semantic-map-designators::designator->semantic-map-objects (make-designator :object `((:name ,name)))))))
+    (slot-value semobj 'cram-semantic-map-utils::pose)))
+
 (defun prepare-container-scene ()
   (setf *container-stored-objects* (make-hash-table :test 'equal))
-  (store "Milk" (tf:make-pose (tf:make-3d-vector 0.2 0 0.1) (tf:euler->quaternion :az pi))
-         "iai_kitchen_sink_area_left_upper_drawer_handle")
+  (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
+         "iai_kitchen_sink_area_counter_top")
+  (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
+         "iai_kitchen_kitchen_island_counter_top")
+  ;; (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 1.4 0.9 0.87) (tf:euler->quaternion :az 0))
+  ;;        "iai_kitchen_sink_area_counter_top")
+  ;;(store "Milk" (tf:make-pose (tf:make-3d-vector 0.2 0 0.1) (tf:euler->quaternion :az pi))
+  ;;        "iai_kitchen_sink_area_left_upper_drawer_handle")
   (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
   (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
@@ -232,7 +244,29 @@
   (store "Buttermilk" (tf:make-pose (tf:make-3d-vector -0.05 -0.05 -1.67) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
   (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 -0.15 -1.67) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle"))
+         "iai_kitchen_fridge_door_handle")
+  (loop for h being the hash-keys of *container-stored-objects*
+        when (eql (container-type h) :countertop)
+          do (dolist (item (gethash h *container-stored-objects*))
+               (destructuring-bind (nam cls pos) item
+                 (let* ((center-pose (countertop-center-pose h))
+                        (object-pose (ensure-pose-stamped
+                                      (cl-transforms:transform-pose
+                                       (tf:pose->transform center-pose) pos))))
+                   (roslisp:ros-info (ltfnp) "Add gazebo object model '~a'" nam)
+                   (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
+                                    (tf:to-msg object-pose))
+                   (spawn-class nam cls object-pose))))))
+
+(defun cleanup-container-scene ()
+  (loop for h being the hash-keys of *container-stored-objects*
+        do (dolist (obj (gethash h *container-stored-objects*))
+             (destructuring-bind (nam cls pos) obj
+               (declare (ignore cls pos))
+               (detach-object "ground_plane" "link" nam "link")
+               (sleep 0.1)
+               (cram-gazebo-utilities::delete-gazebo-model nam))))
+  (setf *container-stored-objects* (make-hash-table :test 'equal)))
 
 (def-top-level-cram-function search-object-scenario ()
   (with-process-modules-simulated
@@ -242,19 +276,23 @@
     (prepare-container-scene)
     (search-object (make-designator :object `((:type "Milk"))))))
 
+(defun location-order-for-object (object)
+  (declare (ignore object))
+  `("iai_kitchen_kitchen_island_counter_top"
+    "iai_kitchen_sink_area_counter_top"
+    "iai_kitchen_sink_area_left_upper_drawer_handle"
+    "iai_kitchen_fridge_door_handle"
+    "iai_kitchen_sink_area_left_middle_drawer_handle"
+    "iai_kitchen_kitchen_island_left_upper_drawer_handle"
+    "iai_kitchen_sink_area_dish_washer_door_handle"
+    "iai_kitchen_meal_table_counter_top"))
+
 (def-cram-function search-object (object)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   ;; These locations could be sorted according to known residence
   ;; probabilities for any given object. Right now, they are just in a
   ;; static order, and will be searched in that order.
-  (let ((searchable-locations `(;"iai_kitchen_sink_area_left_upper_drawer_handle"
-                                ;"iai_kitchen_kitchen_island_counter_top"
-                                ;"iai_kitchen_sink_area_counter_top"
-                                ;"iai_kitchen_meal_table_counter_top"
-                                ;"iai_kitchen_sink_area_left_middle_drawer_handle"
-                                ;"iai_kitchen_kitchen_island_left_upper_drawer_handle"
-                                ;"iai_kitchen_sink_area_dish_washer_door_handle"
-                                "iai_kitchen_fridge_door_handle")))
+  (let ((searchable-locations (location-order-for-object object)))
     (find-and-fetch-object object searchable-locations)))
 
 (def-cram-function find-and-fetch-object (object locations)
@@ -280,20 +318,34 @@
                    (roslisp:ros-info (ltfnp) "Allowed arms for grasping are: ~a~%"
                                      pr2-manip-pm::*allowed-arms*)
                    (go-to-container-grasping-pose loc)
-                   (achieve `(cram-plan-library:object-in-hand ,obj)))
+                   (let ((without-co
+                             (cond ((string= loc "iai_kitchen_fridge_door_handle")
+                                    `("HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_FRIDGE_AREA-1"
+                                      "HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_FRIDGE_MAIN-1"))
+                                   (t nil))))
+                     (cram-moveit::without-collision-objects without-co
+                       (setf found-object
+                             (cond ((string= loc "iai_kitchen_fridge_door_handle")
+                                    (achieve `(cram-plan-library:object-picked ,obj)))
+                                   (t (achieve
+                                       `(cram-plan-library:object-in-hand ,obj))))))))
               (setf pr2-manip-pm::*allowed-arms* allowed-old))))
-        (when (location-closeable loc)
-          (close-handled-storage-container loc))))))
+        (when (and (location-closeable loc)
+                   (not (string= loc "iai_kitchen_fridge_door_handle")))
+          (close-handled-storage-container loc))))
+    found-object))
 
 (defun go-to-container-grasping-pose (loc)
-  (cond ((eql loc "iai_kitchen_fridge_door_handle")
+  (cond ((string= loc "iai_kitchen_fridge_door_handle")
          (let ((loc-desig
                  (make-designator
                   :location
                   `((:pose ,(tf:make-pose-stamped
                              "map" 0.0
-                             (tf:make-3d-vector 0.7 -1.1 0.0509)
-                             (tf:euler->quaternion :az (/ pi -4))))))))
+                             (tf:make-3d-vector 0.65 -0.8 0.05)
+                             (tf:euler->quaternion :az 0)))))))
+                             ;; (tf:make-3d-vector 0.7 -1.1 0.0509)
+                             ;; (tf:euler->quaternion :az (/ pi -4))))))))
            (at-definite-location loc-desig)))
         (t nil)))
 
@@ -313,16 +365,18 @@
            (cram-plan-failures:object-not-found (f)
              (declare (ignore f))
              (return-from failure-guard)))
-        (find-object aux-object :num-retries 0)))))
+        (find-object aux-object :num-retries 2)))))
 
 (def-cram-function search-location (locname object &key (when-found :return))
   (let ((loctype (container-type locname)))
     (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
     (ecase loctype
-      (:countertop (find-location-aux-object
-                    object (make-designator
-                            :location `((:on "CounterTop")
-                                        (:name ,locname)))))
+      (:countertop
+       (let ((aux-found (find-location-aux-object
+                         object (make-designator
+                                 :location `((:on "CounterTop")
+                                             (:name ,locname))))))
+         (when aux-found `(,aux-found))))
       (:drawer
        ;; Well-defined starting torso height
        (move-torso)
@@ -355,6 +409,31 @@
             do (format t "FOUND OBJECT: ~a~%" obj))
       objects)))
 
+(def-top-level-cram-function tablesetting-scenario ()
+  (with-process-modules-simulated
+    (beliefstate:enable-logging nil)
+    (do-init t :variance (make-hash-table :test 'equal))
+    ;; Initialize scenario
+    (prepare-container-scene)
+    (let ((setting-mappings
+            `(("RedMetalPlate" ,(tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -1.0 -0.8 0.78)
+                                 (tf:euler->quaternion :az (/ pi -2))))
+              ("Milk" ,(tf:make-pose-stamped
+                        "map" 0.0
+                        (tf:make-3d-vector -1.4 -0.9 0.78)
+                        (tf:euler->quaternion :az (/ pi -2)))))))
+      (dolist (item setting-mappings)
+        (destructuring-bind (objcls destpos) item
+          (let ((object (search-object (make-designator :object `((:type ,objcls))))))
+            (with-designators ((location :location `((:pose ,destpos)))
+                               (place-action :action
+                                             `((:to :place)
+                                               (:obj ,object)
+                                               (:at ,location))))
+              (go-to-origin :keep-orientation t)
+              (perform place-action))))))))
 
 ;;;
 ;;; Override the default motmat init function

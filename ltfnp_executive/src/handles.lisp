@@ -771,9 +771,11 @@
 
 (defun allowed-hands-for-location (locname)
   (let ((loctype (container-type locname)))
-    (if (eql loctype :countertop)
-        `(:left :right)
-        `(,(other-hand (ideal-arm-for-handle locname))))))
+    (cond ((eql loctype :countertop)
+           `(:left :right))
+          ((eql loctype :fridge)
+           `(:right))
+          (t `(,(other-hand (ideal-arm-for-handle locname)))))))
 
 (defun location-closeable (handle)
   (if (eql (container-type handle) :countertop) nil t))
