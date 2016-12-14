@@ -958,3 +958,27 @@
   (sleep 3)
   (place-arrow-markers `(3 3 3 3 3 3 3 3))
   (place-cylinder-marker :remove t))
+
+(defvar *contextual-constraints* (make-hash-table))
+
+(defun get-contextual-constraints ()
+  *contextual-constraints*)
+
+(defun set-contextual-constraints (constraints)
+  (setf *contextual-constraints* constraints))
+
+(defun context-constraint (constraint)
+  (gethash constraint *contextual-constraints*))
+
+(defun context-constraints (constraints)
+  (mapcar (lambda (constraint)
+            `(,constraint ,(context-constraint constraint)))
+          constraints))
+
+(defmacro with-context (constraints &body code)
+  `(let ((old-constraints (get-contextual-constraints)))
+     (dolist (constraint ,constraints)
+      (destructuring-bind (name value) constraint
+        (setf (gethash name ,*contextual-constraints*) value)))
+     (unwind-protect (progn ,@code)
+       (set-contextual-constraints old-constraints))))
