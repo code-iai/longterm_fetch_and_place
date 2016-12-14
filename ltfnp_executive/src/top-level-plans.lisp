@@ -409,11 +409,60 @@
             do (format t "FOUND OBJECT: ~a~%" obj))
       objects)))
 
+(defun scene-object->object-class (so)
+  (ecase so
+    (:muesli "Muesli")
+    (:milkbox "Milk")
+    (:buttermilk "Buttermilk")
+    (:plate "RedMetalPlate")
+    (:cup "RedMetalCup")
+    (:bowl "RedMetalBowl")
+    (:spoon ;; Ignore for now
+     )))
+
+(defun common-residence-location (objcls)
+  (cond ((string= objcls "Muesli")
+         "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+        ((string= objcls "Milk")
+         "iai_kitchen_fridge_door_handle")
+        ((string= objcls "Buttermilk")
+         "iai_kitchen_fridge_door_handle")
+        ((string= objcls "RedMetalPlate")
+         "iai_kitchen_sink_area_left_middle_drawer_handle")
+        ((string= objcls "RedMetalCup")
+         "iai_kitchen_sink_area_left_middle_drawer_handle")
+        ((string= objcls "RedMetalBowl")
+         "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
+
+(defun random-residence-location ()
+  (let ((lofo (location-order-for-object nil)))
+    (nth (random (length lofo)) lofo)))
+
+(defun populate-scene (scene-objects)
+  (let ((objects (loop for scene-object in scene-objects
+                       collect (desig:desig-prop-value
+                                scene-object :type))))
+    (dolist (object objects)
+      (let ((objcls (scene-object->object-class object)))
+        (when objcls
+          (let ((loc (or (common-residence-location objcls)
+                         (random-residence-location))))
+            ;; Place the object there
+            (cond ((eql (container-type loc) :countertop)
+                   ;; Just spawn
+                   )
+                  (t ;; Handled storage container, store
+                   (let ((relpos nil))
+                     ;; TODO: relpos needs to be determined!
+                     (store objcls relpos loc))))))))))
+
 (def-top-level-cram-function tablesetting-scenario ()
   (with-process-modules-simulated
     (beliefstate:enable-logging nil)
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
+    ;; (let ((rso (required-scene-objects)))
+    ;;   (populate-scene rso)
     (prepare-container-scene)
     (let ((setting-mappings
             `(("RedMetalPlate" ,(tf:make-pose-stamped
