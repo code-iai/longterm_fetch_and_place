@@ -225,7 +225,7 @@
 
 (defun prepare-container-scene ()
   (setf *container-stored-objects* (make-hash-table :test 'equal))
-  (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az 0))
+  (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
          "iai_kitchen_sink_area_counter_top")
   (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
          "iai_kitchen_kitchen_island_counter_top")
@@ -278,13 +278,13 @@
 
 (defun location-order-for-object (object)
   (declare (ignore object))
-  `("iai_kitchen_sink_area_left_upper_drawer_handle"
-    "iai_kitchen_kitchen_island_counter_top"
+  `("iai_kitchen_kitchen_island_counter_top"
     "iai_kitchen_sink_area_counter_top"
+    "iai_kitchen_sink_area_left_upper_drawer_handle"
+    "iai_kitchen_fridge_door_handle"
     "iai_kitchen_sink_area_left_middle_drawer_handle"
     "iai_kitchen_kitchen_island_left_upper_drawer_handle"
     "iai_kitchen_sink_area_dish_washer_door_handle"
-    "iai_kitchen_fridge_door_handle"
     "iai_kitchen_meal_table_counter_top"))
 
 (def-cram-function search-object (object)
@@ -365,16 +365,18 @@
            (cram-plan-failures:object-not-found (f)
              (declare (ignore f))
              (return-from failure-guard)))
-        (find-object aux-object :num-retries 0)))))
+        (find-object aux-object :num-retries 2)))))
 
 (def-cram-function search-location (locname object &key (when-found :return))
   (let ((loctype (container-type locname)))
     (roslisp:ros-info (object search) "Looking for object at '~a'" locname)
     (ecase loctype
-      (:countertop (find-location-aux-object
-                    object (make-designator
-                            :location `((:on "CounterTop")
-                                        (:name ,locname)))))
+      (:countertop
+       (let ((aux-found (find-location-aux-object
+                         object (make-designator
+                                 :location `((:on "CounterTop")
+                                             (:name ,locname))))))
+         (when aux-found `(,aux-found))))
       (:drawer
        ;; Well-defined starting torso height
        (move-torso)
@@ -414,10 +416,10 @@
     ;; Initialize scenario
     (prepare-container-scene)
     (let ((setting-mappings
-            `(("Plate" ,(tf:make-pose-stamped
-                         "map" 0.0
-                         (tf:make-3d-vector -1.0 -0.8 0.78)
-                         (tf:euler->quaternion :az (/ pi -2))))
+            `(("RedMetalPlate" ,(tf:make-pose-stamped
+                                 "map" 0.0
+                                 (tf:make-3d-vector -1.0 -0.8 0.78)
+                                 (tf:euler->quaternion :az (/ pi -2))))
               ("Milk" ,(tf:make-pose-stamped
                         "map" 0.0
                         (tf:make-3d-vector -1.4 -0.9 0.78)
