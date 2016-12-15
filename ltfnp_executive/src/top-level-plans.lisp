@@ -200,36 +200,6 @@
                  (go-to-origin :keep-orientation t)
                  (perform place-action))))))))))
 
-(defun find-first-free-index (objclass)
-  (let ((highest-idx nil))
-    (loop for h being the hash-keys of *container-stored-objects*
-          as obj-list = (gethash h *container-stored-objects*)
-          do (loop for obj in obj-list
-                   do (destructuring-bind (nam cls pos) obj
-                        (declare (ignore pos))
-                        (when (string= cls objclass)
-                          (let* ((num (parse-integer (subseq nam (length objclass)))))
-                            (when (or (not highest-idx)
-                                      (> num highest-idx))
-                              (setf highest-idx num)))))))
-    (or (when highest-idx (1+ (or highest-idx 0))) 0)))
-
-(defun store (objclass relpose place)
-  (let ((new-name (concatenate 'string (string-downcase objclass)
-                               (write-to-string (find-first-free-index objclass)))))
-    (store-object-in-handled-container `(,new-name ,objclass ,relpose) place)))
-
-(defun maybe-store (objclass relpose place)
-  (let ((should-store (>= (random 100) 75)))
-    ;; Fixed right now: 75% probability that objects are *actually*
-    ;; stored in the environment
-    (when should-store
-      (store objclass relpose place))))
-
-(defun countertop-center-pose (name)
-  (let ((semobj (first (cram-semantic-map-designators::designator->semantic-map-objects (make-designator :object `((:name ,name)))))))
-    (slot-value semobj 'cram-semantic-map-utils::pose)))
-
 (defun prepare-container-scene ()
   (setf *container-stored-objects* (make-hash-table :test 'equal))
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
@@ -279,17 +249,6 @@
     (prepare-container-scene)
     (search-object (make-designator :object `((:type "Milk"))))))
 
-(defun location-order-for-object (object)
-  (declare (ignore object))
-  `("iai_kitchen_kitchen_island_counter_top"
-    "iai_kitchen_sink_area_counter_top"
-    "iai_kitchen_sink_area_left_upper_drawer_handle"
-    "iai_kitchen_fridge_door_handle"
-    "iai_kitchen_sink_area_left_middle_drawer_handle"
-    "iai_kitchen_kitchen_island_left_upper_drawer_handle"
-    "iai_kitchen_sink_area_dish_washer_door_handle"
-    "iai_kitchen_meal_table_counter_top"))
-
 (def-cram-function search-object (object)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   ;; These locations could be sorted according to known residence
@@ -337,20 +296,6 @@
                    (not (string= loc "iai_kitchen_fridge_door_handle")))
           (close-handled-storage-container loc))))
     found-object))
-
-(defun go-to-container-grasping-pose (loc)
-  (cond ((string= loc "iai_kitchen_fridge_door_handle")
-         (let ((loc-desig
-                 (make-designator
-                  :location
-                  `((:pose ,(tf:make-pose-stamped
-                             "map" 0.0
-                             (tf:make-3d-vector 0.65 -0.8 0.05)
-                             (tf:euler->quaternion :az 0)))))))
-                             ;; (tf:make-3d-vector 0.7 -1.1 0.0509)
-                             ;; (tf:euler->quaternion :az (/ pi -4))))))))
-           (at-definite-location loc-desig)))
-        (t nil)))
 
 (defun make-location-aux-object (object location)
   (make-designator
