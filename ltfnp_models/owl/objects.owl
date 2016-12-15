@@ -110,6 +110,330 @@
     </rdfs:subClassOf>
   </owl:Class>
   
+  <!-- Salt -->
+  <owl:Class rdf:about="&knowrob;Salt">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/salt/salt.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/salt/MarkenSalz.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Salt</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- Fork -->
+  <owl:Class rdf:about="&knowrob;Fork">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/fork/fork.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/fork/Fork.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Fork</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- Spoon -->
+  <owl:Class rdf:about="&knowrob;Spoon">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/spoon/spoon.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/spoon/Spoon.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Spoon</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- Knife -->
+  <owl:Class rdf:about="&knowrob;Knife">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/knife/knife.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/knife/KitchenKnife.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Knife</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- Muesli -->
+  <owl:Class rdf:about="&knowrob;Muesli">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/muesli/muesli.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/muesli/KellogsCornFlakes.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Muesli</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
+  <!-- Ketchup -->
+  <owl:Class rdf:about="&knowrob;Ketchup">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/ketchup/ketchup.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathtoCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/ketchup/HelaCurryKetchup.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Ketchup</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.09 0.07 0.19</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">box</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
   <!-- Buttermilk -->
   <owl:Class rdf:about="&knowrob;Buttermilk">
     <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>

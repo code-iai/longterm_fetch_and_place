@@ -1,11 +1,10 @@
-Create OWL entries for:
- - meersalz
+Correct collision models for:
+ - knife
+
+Create individual handles, correct dimensions in OWL (otherwise uses `Milk`'s data):
+ - salt
  - fork
  - spoon
  - knife
  - muesli
  - ketchup
- - salt
-
-Correct collision models for:
- - knife
