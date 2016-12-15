@@ -4,13 +4,13 @@
   <link name="link">
     <!--MAIN_BODY-->
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 1.57" xyz="0 0 0"/>
       <geometry>
         <mesh filename="package://ltfnp_models/models/knife/KitchenKnife.dae"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 1.57" xyz="0 0 0"/>
       <geometry>
         <!--mesh filename="package://ltfnp_models/models/knife/KitchenKnife.dae"/-->
 	<!-- Probably wrong, but serves the purpose for now -->

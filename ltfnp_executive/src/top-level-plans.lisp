@@ -202,6 +202,12 @@
 
 (defun prepare-container-scene ()
   (setf *container-stored-objects* (make-hash-table :test 'equal))
+  (maybe-store "Fork" (tf:make-pose (tf:make-3d-vector 0.05 -0.15 0.05) (tf:euler->quaternion :az pi))
+         "iai_kitchen_sink_area_left_upper_drawer_handle")
+  (maybe-store "Knife" (tf:make-pose (tf:make-3d-vector 0.05 0.0 0.05) (tf:euler->quaternion :az pi))
+         "iai_kitchen_sink_area_left_upper_drawer_handle")
+  (maybe-store "Spoon" (tf:make-pose (tf:make-3d-vector 0.05 0.15 0.05) (tf:euler->quaternion :az pi))
+         "iai_kitchen_sink_area_left_upper_drawer_handle")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
          "iai_kitchen_sink_area_counter_top")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))

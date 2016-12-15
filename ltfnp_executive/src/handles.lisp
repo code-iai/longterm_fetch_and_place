@@ -811,7 +811,7 @@
     (store-object-in-handled-container `(,new-name ,objclass ,relpose) place)))
 
 (defun maybe-store (objclass relpose place)
-  (let ((should-store (>= (random 100) 75)))
+  (let ((should-store (< (random 100) 100)))
     ;; Fixed right now: 75% probability that objects are *actually*
     ;; stored in the environment
     (when should-store
