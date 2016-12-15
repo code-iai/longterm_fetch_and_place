@@ -1,12 +1,3 @@
-Create URDFs for:
- - meersalz (MeerSalz.dae)
- - fork (Fork.dae)
- - spoon (Spoon.dae)
- - knife (KitchenKnife.dae)
- - muesli (KellogsCornFlakes.dae)
- - ketchup (HelaCurryKetchup.dae)
- - salt (MarkenSalz.dae)
-
 Create OWL entries for:
  - meersalz
  - fork
@@ -15,3 +6,6 @@ Create OWL entries for:
  - muesli
  - ketchup
  - salt
+
+Correct collision models for:
+ - knife
