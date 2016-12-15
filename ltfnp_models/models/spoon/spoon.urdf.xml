@@ -6,13 +6,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ltfnp_models/models/salt/Spoon.dae"/>
+        <mesh filename="package://ltfnp_models/models/spoon/Spoon.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ltfnp_models/models/salt/Spoon.dae"/>
+        <mesh filename="package://ltfnp_models/models/spoon/Spoon.dae"/>
         <!--cylinder radius="0.0375" length="0.173"/-->
       </geometry>
     </collision>
