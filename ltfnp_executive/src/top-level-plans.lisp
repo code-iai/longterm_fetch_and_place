@@ -294,7 +294,10 @@
                      (cram-moveit::without-collision-objects without-co
                        (setf found-object
                              (cond ((string= loc "iai_kitchen_fridge_door_handle")
-                                    (achieve `(cram-plan-library:object-picked ,obj)))
+                                    (cond ((object-is-in-handled-container obj loc)
+                                           (achieve `(cram-plan-library:object-picked ,obj)))
+                                          (t (achieve
+                                              `(cram-plan-library:object-in-hand ,obj)))))
                                    (t (achieve
                                        `(cram-plan-library:object-in-hand ,obj))))))))
               (setf pr2-manip-pm::*allowed-arms* allowed-old))))
@@ -302,6 +305,15 @@
                    (not (string= loc "iai_kitchen_fridge_door_handle")))
           (close-handled-storage-container loc))))
     found-object))
+
+(defun object-is-in-handled-container (obj loc)
+  (let ((objs (gethash loc *container-stored-objects*))
+        (id (desig:desig-prop-value obj :name)))
+    (when id
+      (not (not (find id objs :test (lambda (the-id stored-obj)
+                                      (destructuring-bind (nam cls relpos) stored-obj
+                                        (declare (ignore cls relpos))
+                                        (string= nam the-id)))))))))
 
 (defun make-location-aux-object (object location)
   (make-designator
@@ -319,7 +331,7 @@
            (cram-plan-failures:object-not-found (f)
              (declare (ignore f))
              (return-from failure-guard)))
-        (find-object aux-object :num-retries 2)))))
+        (find-object aux-object :num-retries 1)))))
 
 (def-cram-function search-location (locname object &key (when-found :return))
   (let ((loctype (container-type locname)))
@@ -429,7 +441,8 @@
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
     (prepare-container-scene)
-    (let ((setting-mappings
+    (let ((objects-not-found nil)
+          (setting-mappings
             `(("RedMetalPlate" ,(tf:make-pose-stamped
                                  "map" 0.0
                                  (tf:make-3d-vector -1.0 -0.8 0.78)
@@ -449,13 +462,16 @@
       (dolist (item setting-mappings)
         (destructuring-bind (objcls destpos) item
           (let ((object (search-object (make-designator :object `((:type ,objcls))))))
-            (with-designators ((location :location `((:pose ,destpos)))
-                               (place-action :action
-                                             `((:to :place)
-                                               (:obj ,object)
-                                               (:at ,location))))
-              (go-to-origin :keep-orientation t)
-              (perform place-action))))))))
+            (cond (object
+                   (with-designators ((location :location `((:pose ,destpos)))
+                                      (place-action :action
+                                                    `((:to :place)
+                                                      (:obj ,object)
+                                                      (:at ,location))))
+                     (go-to-origin :keep-orientation t)
+                     (perform place-action)))
+                  (t (push objcls objects-not-found))))))
+      objects-not-found)))
 
 ;;;
 ;;; Override the default motmat init function
