@@ -434,6 +434,14 @@
                                  "map" 0.0
                                  (tf:make-3d-vector -1.0 -0.8 0.78)
                                  (tf:euler->quaternion :az (/ pi -2))))
+              ("Fork" ,(tf:make-pose-stamped
+                        "map" 0.0
+                        (tf:make-3d-vector -0.9 -0.8 0.78)
+                        (tf:euler->quaternion :az pi)))
+              ("Knife" ,(tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:make-3d-vector -1.1 -0.8 0.78)
+                         (tf:euler->quaternion :az pi)))
               ("Milk" ,(tf:make-pose-stamped
                         "map" 0.0
                         (tf:make-3d-vector -1.4 -0.9 0.78)
