@@ -219,31 +219,34 @@
                                (write-to-string (find-first-free-index objclass)))))
     (store-object-in-handled-container `(,new-name ,objclass ,relpose) place)))
 
+(defun maybe-store (objclass relpose place)
+  (let ((should-store (>= (random 100) 75)))
+    ;; Fixed right now: 75% probability that objects are *actually*
+    ;; stored in the environment
+    (when should-store
+      (store objclass relpose place))))
+
 (defun countertop-center-pose (name)
   (let ((semobj (first (cram-semantic-map-designators::designator->semantic-map-objects (make-designator :object `((:name ,name)))))))
     (slot-value semobj 'cram-semantic-map-utils::pose)))
 
 (defun prepare-container-scene ()
   (setf *container-stored-objects* (make-hash-table :test 'equal))
-  (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
+  (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
          "iai_kitchen_sink_area_counter_top")
-  (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
+  (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
          "iai_kitchen_kitchen_island_counter_top")
-  ;; (store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 1.4 0.9 0.87) (tf:euler->quaternion :az 0))
-  ;;        "iai_kitchen_sink_area_counter_top")
-  ;;(store "Milk" (tf:make-pose (tf:make-3d-vector 0.2 0 0.1) (tf:euler->quaternion :az pi))
-  ;;        "iai_kitchen_sink_area_left_upper_drawer_handle")
-  (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
+  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
-  (store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
+  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
-  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 0.11 -1.67) (tf:euler->quaternion :az pi))
+  (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 0.11 -1.67) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
-  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.05 0.025 -1.67) (tf:euler->quaternion :az pi))
+  (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.05 0.025 -1.67) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
-  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector -0.05 -0.05 -1.67) (tf:euler->quaternion :az pi))
+  (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector -0.05 -0.05 -1.67) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
-  (store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 -0.15 -1.67) (tf:euler->quaternion :az pi))
+  (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 -0.15 -1.67) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
   (loop for h being the hash-keys of *container-stored-objects*
         when (eql (container-type h) :countertop)
@@ -420,49 +423,57 @@
     (:spoon ;; Ignore for now
      )))
 
-(defun common-residence-location (objcls)
-  (cond ((string= objcls "Muesli")
-         "iai_kitchen_kitchen_island_left_upper_drawer_handle")
-        ((string= objcls "Milk")
-         "iai_kitchen_fridge_door_handle")
-        ((string= objcls "Buttermilk")
-         "iai_kitchen_fridge_door_handle")
-        ((string= objcls "RedMetalPlate")
-         "iai_kitchen_sink_area_left_middle_drawer_handle")
-        ((string= objcls "RedMetalCup")
-         "iai_kitchen_sink_area_left_middle_drawer_handle")
-        ((string= objcls "RedMetalBowl")
-         "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
+;; (defun common-residence-location (objcls)
+;;   (cond ((string= objcls "Muesli")
+;;          "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+;;         ((string= objcls "Milk")
+;;          "iai_kitchen_fridge_door_handle")
+;;         ((string= objcls "Buttermilk")
+;;          "iai_kitchen_fridge_door_handle")
+;;         ((string= objcls "RedMetalPlate")
+;;          "iai_kitchen_sink_area_left_middle_drawer_handle")
+;;         ((string= objcls "RedMetalCup")
+;;          "iai_kitchen_sink_area_left_middle_drawer_handle")
+;;         ((string= objcls "RedMetalBowl")
+;;          "iai_kitchen_kitchen_island_left_upper_drawer_handle")))
 
-(defun random-residence-location ()
-  (let ((lofo (location-order-for-object nil)))
-    (nth (random (length lofo)) lofo)))
+;; (defun random-residence-location ()
+;;   (let ((lofo (location-order-for-object
+;;                (make-designator :object nil))))
+;;     (nth (random (length lofo)) lofo)))
 
-(defun populate-scene (scene-objects)
-  (let ((objects (loop for scene-object in scene-objects
-                       collect (desig:desig-prop-value
-                                scene-object :type))))
-    (dolist (object objects)
-      (let ((objcls (scene-object->object-class object)))
-        (when objcls
-          (let ((loc (or (common-residence-location objcls)
-                         (random-residence-location))))
-            ;; Place the object there
-            (cond ((eql (container-type loc) :countertop)
-                   ;; Just spawn
-                   )
-                  (t ;; Handled storage container, store
-                   (let ((relpos nil))
-                     ;; TODO: relpos needs to be determined!
-                     (store objcls relpos loc))))))))))
+;; (defun populate-scene (scene-objects)
+;;   (let ((objects (loop for scene-object in scene-objects
+;;                        collect (desig:desig-prop-value
+;;                                 scene-object :type)))
+;;         (occupied-rel-poses (make-hash-table :test 'equal))
+;;         (max-occ-dist 0.2)
+;;         (min-occ-dist 0.02))
+;;     (labels ((random-occ-dist ()
+;;                (+ (/ 1 (random (/ 1 (- max-occ-dist min-occ-dist))))
+;;                   min-occ-dist))
+;;              (gen-rel-pos (loc)
+;;                (let ((occupied-poses (gethash loc occupied-rel-poses)))
+;;                  )))
+;;       (dolist (object objects)
+;;         (let ((objcls (scene-object->object-class object)))
+;;           (when objcls
+;;             (let ((loc (or (common-residence-location objcls)
+;;                            (random-residence-location))))
+;;               ;; Place the object there
+;;               (cond ((eql (container-type loc) :countertop)
+;;                      ;; Just spawn
+;;                      )
+;;                     (t ;; Handled storage container, store
+;;                      (let ((relpos nil))
+;;                        ;; TODO: relpos needs to be determined!
+;;                        (store objcls relpos loc)))))))))))
 
 (def-top-level-cram-function tablesetting-scenario ()
   (with-process-modules-simulated
     (beliefstate:enable-logging nil)
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
-    ;; (let ((rso (required-scene-objects)))
-    ;;   (populate-scene rso)
     (prepare-container-scene)
     (let ((setting-mappings
             `(("RedMetalPlate" ,(tf:make-pose-stamped
