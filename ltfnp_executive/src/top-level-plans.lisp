@@ -420,8 +420,11 @@
     (:plate "RedMetalPlate")
     (:cup "RedMetalCup")
     (:bowl "RedMetalBowl")
-    (:spoon ;; Ignore for now
-     )))
+    (:spoon "Spoon")
+    (:knife "Knife")
+    (:fork "Fork")
+    (:ketchup "Ketchup")
+    (:salt "Salt")))
 
 ;; (defun common-residence-location (objcls)
 ;;   (cond ((string= objcls "Muesli")
