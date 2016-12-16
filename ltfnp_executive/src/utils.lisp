@@ -489,7 +489,8 @@
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
   (when *simulated*
     (cram-gazebo-utilities::with-physics-paused
-      (attach-object object-name "link" "ground_plane" "link")
+      (when (context-constraint :fix-to-ground-putdown)
+        (attach-object object-name "link" "ground_plane" "link"))
       (sleep 0.1)
       (detach-object "pr2"
                      (case side
