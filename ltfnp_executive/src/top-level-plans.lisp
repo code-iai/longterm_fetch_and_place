@@ -354,7 +354,9 @@
          ;; Close drawer
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname))))
-      (:dishwasher )
+      (:dishwasher
+       ;; TODO
+       )
       (:fridge
        (move-torso)
        (open-handled-storage-container locname)
@@ -363,17 +365,24 @@
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname)))))))
 
-(def-cram-function inspect-container-contents-for-object (location object)
+(def-cram-function inspect-container-contents-for-object (location object &key (num-retries 3))
   ;; We assume that we're looking inside the container right now
-  (let ((aux-object (make-location-aux-object
-                     object
-                     (make-designator :location `((:inside :container)
-                                                  (:handle-name ,location))))))
-    (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
-    (let ((objects (perceive-object :currently-visible aux-object)))
-      (loop for obj in objects
-            do (format t "FOUND OBJECT: ~a~%" obj))
-      objects)))
+  (block failure-guard
+    (let ((aux-object (make-location-aux-object
+                       object
+                       (make-designator :location `((:inside :container)
+                                                    (:handle-name ,location))))))
+      (with-failure-handling ((cram-plan-failures:object-not-found (f)
+                                (declare (ignore f))
+                                (when (> num-retries 0)
+                                  (decf num-retries)
+                                  (cpl:retry))
+                                (return-from failure-guard)))
+        (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
+        (let ((objects (perceive-object :currently-visible aux-object)))
+          (loop for obj in objects
+                do (format t "FOUND OBJECT: ~a~%" obj))
+          objects)))))
 
 (defun scene-object->object-class (so)
   (ecase so
