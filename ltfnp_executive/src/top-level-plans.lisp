@@ -212,10 +212,10 @@
          "iai_kitchen_sink_area_counter_top")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
          "iai_kitchen_kitchen_island_counter_top")
-  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
+  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.0 -1.33) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
-  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
+  ;;(maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
+         ;;"iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 0.11 -1.67) (tf:euler->quaternion :az pi))
          "iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.05 0.025 -1.67) (tf:euler->quaternion :az pi))
@@ -272,8 +272,6 @@
             do (setf found-object `(,(first found-objects) ,location)))
     (when found-object
       (destructuring-bind (obj loc) found-object
-        (remove-object-from-handled-container
-         (desig:desig-prop-value obj :name) loc)
         (with-failure-handling
             ((cram-plan-failures:location-not-reached-failure (f)
                (declare (ignore f))
@@ -295,11 +293,17 @@
                        (setf found-object
                              (cond ((string= loc "iai_kitchen_fridge_door_handle")
                                     (cond ((object-is-in-handled-container obj loc)
-                                           (achieve `(cram-plan-library:object-picked ,obj)))
-                                          (t (achieve
-                                              `(cram-plan-library:object-in-hand ,obj)))))
-                                   (t (achieve
-                                       `(cram-plan-library:object-in-hand ,obj))))))))
+                                           (prog1 (achieve `(cram-plan-library:object-picked ,obj))
+                                             (remove-object-from-handled-container
+                                              (desig:desig-prop-value obj :name) loc)))
+                                          (t (prog1 (achieve
+                                                     `(cram-plan-library:object-in-hand ,obj))
+                                               (remove-object-from-handled-container
+                                                (desig:desig-prop-value obj :name) loc)))))
+                                   (t (prog1 (achieve
+                                              `(cram-plan-library:object-in-hand ,obj))
+                                        (remove-object-from-handled-container
+                                         (desig:desig-prop-value obj :name) loc))))))))
               (setf pr2-manip-pm::*allowed-arms* allowed-old))))
         (when (and (location-closeable loc)
                    (not (string= loc "iai_kitchen_fridge_door_handle")))
@@ -313,6 +317,7 @@
       (not (not (find id objs :test (lambda (the-id stored-obj)
                                       (destructuring-bind (nam cls relpos) stored-obj
                                         (declare (ignore cls relpos))
+                                        (format t "~a ~a~%" nam the-id)
                                         (string= nam the-id)))))))))
 
 (defun make-location-aux-object (object location)
@@ -462,7 +467,7 @@
                                  (tf:euler->quaternion :az (/ pi -2))))
               ("Fork" ,(tf:make-pose-stamped
                         "map" 0.0
-                        (tf:make-3d-vector -0.75 -0.8 0.82)
+                        (tf:make-3d-vector -0.75 -0.8 0.78)
                         (tf:euler->quaternion :az pi)))
               ("Knife" ,(tf:make-pose-stamped
                          "map" 0.0
