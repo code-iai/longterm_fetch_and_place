@@ -795,15 +795,28 @@
         (t nil)))
 
 (defun location-order-for-object (object)
-  (declare (ignore object))
-  `("iai_kitchen_kitchen_island_counter_top"
-    "iai_kitchen_sink_area_counter_top"
-    "iai_kitchen_sink_area_left_upper_drawer_handle"
-    "iai_kitchen_fridge_door_handle"
-    "iai_kitchen_sink_area_left_middle_drawer_handle"
-    "iai_kitchen_kitchen_island_left_upper_drawer_handle"
-    "iai_kitchen_sink_area_dish_washer_door_handle"
-    "iai_kitchen_meal_table_counter_top"))
+  (let ((objcls (cond (object (desig:desig-prop-value object :type))
+                      (t "Object")))
+        (proto-locs `("iai_kitchen_kitchen_island_counter_top"
+                      "iai_kitchen_sink_area_counter_top"
+                      "iai_kitchen_sink_area_left_upper_drawer_handle"
+                      "iai_kitchen_fridge_door_handle"
+                      "iai_kitchen_sink_area_left_middle_drawer_handle"
+                      "iai_kitchen_kitchen_island_left_upper_drawer_handle"
+                      "iai_kitchen_sink_area_dish_washer_door_handle"
+                      "iai_kitchen_meal_table_counter_top")))
+    (labels ((leading (lead-locations)
+               (append lead-locations
+                       (loop for pl in proto-locs
+                             when (not (find pl lead-locations :test #'string=))
+                               collect pl))))
+      (cond ((string= objcls "Milk")
+             (leading `("iai_kitchen_fridge_door_handle")))
+            ((or (string= objcls "Fork") (string= objcls "Spoon") (string= objcls "Knife"))
+             (leading `("iai_kitchen_sink_area_left_upper_drawer_handle")))
+            ((or (string= objcls "RedMetalBowl"))
+             (leading `("iai_kitchen_kitchen_island_left_upper_drawer_handle")))
+            (t (leading nil))))))
 
 (defun store (objclass relpose place)
   (let ((new-name (concatenate 'string (string-downcase objclass)

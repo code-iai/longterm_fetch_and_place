@@ -162,7 +162,8 @@
               (let ((qd (tf:q* (tf:q-inv (tf:orientation p-1))
                                (tf:orientation p-2))))
                 (1- (tf:squared-norm qd)))))
-     (let* ((target-pose (desig:reference ,location))
+     (let* ((retries ,retries)
+            (target-pose (desig:reference ,location))
             (current-robot-pose (get-robot-pose))
             (distance-cartesian (distance-2d current-robot-pose
                                              target-pose))
@@ -175,23 +176,28 @@
               ;; (distance-angular-z current-robot-pose
               ;;target-pose)))
        (format t "Distances: ~a/~a~%" distance-cartesian distance-angular)
-       (loop while (or (> distance-cartesian ,threshold-cartesian)
-                       (> distance-angular ,threshold-angular))
-             do (with-failure-handling
-                    ((cram-plan-failures:location-not-reached-failure (f)
-                       (declare (ignore f))
-                       (cpl:retry)))
-                  (format t "Distance Cartesian: ~a~%" distance-cartesian)
-                  (format t "Distance Angular: ~a~%" distance-angular)
-                  (when (or (> distance-cartesian ,threshold-cartesian)
-                            (> distance-angular ,threshold-angular))
+       (block failure-guard
+         (loop while (and (or (> distance-cartesian ,threshold-cartesian)
+                              (> distance-angular ,threshold-angular))
+                          (>= retries 0))
+               do (with-failure-handling
+                      ((cram-plan-failures:location-not-reached-failure (f)
+                         (declare (ignore f))
+                         (when (> retries 0)
+                           (cpl:retry))
+                         (return-from failure-guard)))
+                    (format t "Distance Cartesian: ~a~%" distance-cartesian)
+                    (format t "Distance Angular: ~a~%" distance-angular)
+                    (when (or (> distance-cartesian ,threshold-cartesian)
+                              (> distance-angular ,threshold-angular))
+                      (decf retries)
                     (at-location (,location) ,@body)))
-                (setf current-robot-pose (get-robot-pose))
-                (setf distance-cartesian (distance-2d current-robot-pose
-                                                      target-pose))
-                (setf distance-angular (distance-angular-z current-robot-pose
-                                                           target-pose))))))
-
+                  (setf current-robot-pose (get-robot-pose))
+                  (setf distance-cartesian (distance-2d current-robot-pose
+                                                        target-pose))
+                  (setf distance-angular (distance-angular-z current-robot-pose
+                                                             target-pose)))))))
+  
 (defun move-to-relative-position (pose offset)
   (let* ((pose-stamped (ensure-pose-stamped pose))
          (transformed-pose-stamped
@@ -325,7 +331,7 @@
                        "map" 0.0
                        ;; Making sure we don't bump into the evil
                        ;; island corner of stuckness.
-                       (tf:make-3d-vector -0.5 0.0 0.0)
+                       (tf:make-3d-vector 0.0 0.0 0.0)
                        orientation))
          (origin-loc (make-designator :location `((:pose ,origin-pose)))))
     (at-definite-location origin-loc)))
@@ -483,7 +489,8 @@
   (roslisp:ros-info (shopping utils) "Put down object ~a with side ~a." object-name side)
   (when *simulated*
     (cram-gazebo-utilities::with-physics-paused
-      (attach-object object-name "link" "ground_plane" "link")
+      (when (context-constraint :fix-to-ground-putdown)
+        (attach-object object-name "link" "ground_plane" "link"))
       (sleep 0.1)
       (detach-object "pr2"
                      (case side

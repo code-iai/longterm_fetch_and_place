@@ -197,7 +197,7 @@
                                                 `((:to :place)
                                                   (:obj ,object)
                                                   (:at ,location))))
-                 (go-to-origin :keep-orientation t)
+                 (go-to-origin :keep-orientation nil)
                  (perform place-action))))))))))
 
 (defun prepare-container-scene ()
@@ -205,25 +205,27 @@
   (maybe-store "Fork" (tf:make-pose (tf:make-3d-vector 0.05 -0.15 0.05) (tf:euler->quaternion :az pi))
          "iai_kitchen_sink_area_left_upper_drawer_handle")
   (maybe-store "Knife" (tf:make-pose (tf:make-3d-vector 0.05 0.0 0.05) (tf:euler->quaternion :az pi))
-         "iai_kitchen_sink_area_left_upper_drawer_handle")
+               "iai_kitchen_sink_area_left_upper_drawer_handle")
   (maybe-store "Spoon" (tf:make-pose (tf:make-3d-vector 0.05 0.15 0.05) (tf:euler->quaternion :az pi))
-         "iai_kitchen_sink_area_left_upper_drawer_handle")
+               "iai_kitchen_sink_area_left_upper_drawer_handle")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
-         "iai_kitchen_sink_area_counter_top")
+               "iai_kitchen_sink_area_counter_top")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
-         "iai_kitchen_kitchen_island_counter_top")
-  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
-  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
+               "iai_kitchen_kitchen_island_counter_top")
+  (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.0 -1.33) (tf:euler->quaternion :az pi))
+               "iai_kitchen_fridge_door_handle")
+  ;;(maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 -0.1 -1.33) (tf:euler->quaternion :az pi))
+         ;;"iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 0.11 -1.67) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
+               "iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.05 0.025 -1.67) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
+               "iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector -0.05 -0.05 -1.67) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
+               "iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 -0.15 -1.67) (tf:euler->quaternion :az pi))
-         "iai_kitchen_fridge_door_handle")
+               "iai_kitchen_fridge_door_handle")
+  (maybe-store "RedMetalBowl" (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.05) (tf:euler->quaternion :az pi))
+               "iai_kitchen_kitchen_island_left_upper_drawer_handle")
   (loop for h being the hash-keys of *container-stored-objects*
         when (eql (container-type h) :countertop)
           do (dolist (item (gethash h *container-stored-objects*))
@@ -272,8 +274,6 @@
             do (setf found-object `(,(first found-objects) ,location)))
     (when found-object
       (destructuring-bind (obj loc) found-object
-        (remove-object-from-handled-container
-         (desig:desig-prop-value obj :name) loc)
         (with-failure-handling
             ((cram-plan-failures:location-not-reached-failure (f)
                (declare (ignore f))
@@ -295,11 +295,17 @@
                        (setf found-object
                              (cond ((string= loc "iai_kitchen_fridge_door_handle")
                                     (cond ((object-is-in-handled-container obj loc)
-                                           (achieve `(cram-plan-library:object-picked ,obj)))
-                                          (t (achieve
-                                              `(cram-plan-library:object-in-hand ,obj)))))
-                                   (t (achieve
-                                       `(cram-plan-library:object-in-hand ,obj))))))))
+                                           (prog1 (achieve `(cram-plan-library:object-picked ,obj))
+                                             (remove-object-from-handled-container
+                                              (desig:desig-prop-value obj :name) loc)))
+                                          (t (prog1 (achieve
+                                                     `(cram-plan-library:object-in-hand ,obj))
+                                               (remove-object-from-handled-container
+                                                (desig:desig-prop-value obj :name) loc)))))
+                                   (t (prog1 (achieve
+                                              `(cram-plan-library:object-in-hand ,obj))
+                                        (remove-object-from-handled-container
+                                         (desig:desig-prop-value obj :name) loc))))))))
               (setf pr2-manip-pm::*allowed-arms* allowed-old))))
         (when (and (location-closeable loc)
                    (not (string= loc "iai_kitchen_fridge_door_handle")))
@@ -313,6 +319,7 @@
       (not (not (find id objs :test (lambda (the-id stored-obj)
                                       (destructuring-bind (nam cls relpos) stored-obj
                                         (declare (ignore cls relpos))
+                                        (format t "~a ~a~%" nam the-id)
                                         (string= nam the-id)))))))))
 
 (defun make-location-aux-object (object location)
@@ -351,7 +358,7 @@
        ;; Inspect the contents
        (unwind-protect
             (inspect-container-contents-for-object
-             locname object :num-retries 1)
+             locname object :num-retries 3)
          ;; Close drawer
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname))))
@@ -363,7 +370,7 @@
        (open-handled-storage-container locname)
        (unwind-protect
             (inspect-container-contents-for-object
-             locname object :num-retries 1)
+             locname object :num-retries 3)
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname)))))))
 
@@ -383,7 +390,9 @@
         (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
         (let ((objects (perceive-object :currently-visible aux-object)))
           (loop for obj in objects
-                do (format t "FOUND OBJECT: ~a~%" obj))
+                do (format t "FOUND OBJECT: ~a~%" obj)
+                   ;; Last object wins
+                   (desig:equate object obj))
           objects)))))
 
 (defun scene-object->object-class (so)
@@ -454,17 +463,21 @@
     (prepare-container-scene)
     (let ((objects-not-found nil)
           (setting-mappings
+            ;; `(("RedMetalBowl" ,(tf:make-pose-stamped
+            ;;                     "map" 0.0
+            ;;                     (tf:make-3d-vector -1.0 -0.8 0.78)
+            ;;                     (tf:euler->quaternion :az (/ pi -2)))))))
             `(("RedMetalPlate" ,(tf:make-pose-stamped
                                  "map" 0.0
                                  (tf:make-3d-vector -1.0 -0.8 0.78)
                                  (tf:euler->quaternion :az (/ pi -2))))
               ("Fork" ,(tf:make-pose-stamped
                         "map" 0.0
-                        (tf:make-3d-vector -0.9 -0.8 0.78)
+                        (tf:make-3d-vector -0.75 -0.8 0.78)
                         (tf:euler->quaternion :az pi)))
               ("Knife" ,(tf:make-pose-stamped
                          "map" 0.0
-                         (tf:make-3d-vector -1.1 -0.8 0.78)
+                         (tf:make-3d-vector -1.25 -0.8 0.78)
                          (tf:euler->quaternion :az pi)))
               ("Milk" ,(tf:make-pose-stamped
                         "map" 0.0
@@ -472,6 +485,7 @@
                         (tf:euler->quaternion :az (/ pi -2)))))))
       (dolist (item setting-mappings)
         (destructuring-bind (objcls destpos) item
+          (go-to-origin)
           (let ((object (search-object (make-designator :object `((:type ,objcls))))))
             (cond (object
                    (with-designators ((location :location `((:pose ,destpos)))
