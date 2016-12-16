@@ -826,8 +826,8 @@
   
   <owl:NamedIndividual rdf:about="&knowrob;Fork_Handle_laok8b26_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
-    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 0.707</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.1</knowrob:translation>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.5 0.5 -0.5 0.5</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.06</knowrob:translation>
   </owl:NamedIndividual>
   
   <!-- Spoon Handle -->
@@ -839,8 +839,8 @@
   
   <owl:NamedIndividual rdf:about="&knowrob;Spoon_Handle_laok8b26_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
-    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 0.707</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.1</knowrob:translation>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.5 0.5 -0.5 0.5</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.06</knowrob:translation>
   </owl:NamedIndividual>
   
   <!-- Knife Handle -->
@@ -852,8 +852,8 @@
   
   <owl:NamedIndividual rdf:about="&knowrob;Knife_Handle_laok8b26_pose">
     <rdf:type rdf:resource="&knowrob;Transformation"/>
-    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 0.707</knowrob:quaternion>
-    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.1</knowrob:translation>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.5 0.5 -0.5 0.5</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.06</knowrob:translation>
   </owl:NamedIndividual>
   
 </rdf:RDF>
