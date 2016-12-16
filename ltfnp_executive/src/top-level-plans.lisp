@@ -197,7 +197,7 @@
                                                 `((:to :place)
                                                   (:obj ,object)
                                                   (:at ,location))))
-                 (go-to-origin :keep-orientation t)
+                 (go-to-origin :keep-orientation nil)
                  (perform place-action))))))))))
 
 (defun prepare-container-scene ()
@@ -351,7 +351,7 @@
        ;; Inspect the contents
        (unwind-protect
             (inspect-container-contents-for-object
-             locname object :num-retries 1)
+             locname object :num-retries 3)
          ;; Close drawer
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname))))
@@ -363,7 +363,7 @@
        (open-handled-storage-container locname)
        (unwind-protect
             (inspect-container-contents-for-object
-             locname object :num-retries 1)
+             locname object :num-retries 3)
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname)))))))
 
@@ -383,7 +383,9 @@
         (format t "LOOKING FOR OBJECTS AT '~a'~%" location)
         (let ((objects (perceive-object :currently-visible aux-object)))
           (loop for obj in objects
-                do (format t "FOUND OBJECT: ~a~%" obj))
+                do (format t "FOUND OBJECT: ~a~%" obj)
+                   ;; Last object wins
+                   (desig:equate object obj))
           objects)))))
 
 (defun scene-object->object-class (so)
@@ -460,11 +462,11 @@
                                  (tf:euler->quaternion :az (/ pi -2))))
               ("Fork" ,(tf:make-pose-stamped
                         "map" 0.0
-                        (tf:make-3d-vector -0.9 -0.8 0.78)
+                        (tf:make-3d-vector -0.75 -0.8 0.82)
                         (tf:euler->quaternion :az pi)))
               ("Knife" ,(tf:make-pose-stamped
                          "map" 0.0
-                         (tf:make-3d-vector -1.1 -0.8 0.78)
+                         (tf:make-3d-vector -1.25 -0.8 0.78)
                          (tf:euler->quaternion :az pi)))
               ("Milk" ,(tf:make-pose-stamped
                         "map" 0.0
@@ -472,6 +474,7 @@
                         (tf:euler->quaternion :az (/ pi -2)))))))
       (dolist (item setting-mappings)
         (destructuring-bind (objcls destpos) item
+          (go-to-origin)
           (let ((object (search-object (make-designator :object `((:type ,objcls))))))
             (cond (object
                    (with-designators ((location :location `((:pose ,destpos)))
