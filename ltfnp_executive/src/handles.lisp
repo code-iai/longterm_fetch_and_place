@@ -814,6 +814,8 @@
              (leading `("iai_kitchen_fridge_door_handle")))
             ((or (string= objcls "Fork") (string= objcls "Spoon") (string= objcls "Knife"))
              (leading `("iai_kitchen_sink_area_left_upper_drawer_handle")))
+            ((or (string= objcls "RedMetalBowl"))
+             (leading `("iai_kitchen_kitchen_island_left_upper_drawer_handle")))
             (t (leading nil))))))
 
 (defun store (objclass relpose place)
