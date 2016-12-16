@@ -979,9 +979,14 @@
           constraints))
 
 (defmacro with-context (constraints &body code)
-  `(let ((old-constraints (get-contextual-constraints)))
+  `(let* ((old-constraints (get-contextual-constraints))
+          (new-constraints (make-hash-table)))
+     (loop for h being the hash-keys in old-constraints
+           do (setf (gethash h new-constraints)
+                    (gethash h old-constraints)))
      (dolist (constraint ,constraints)
       (destructuring-bind (name value) constraint
-        (setf (gethash name ,*contextual-constraints*) value)))
+        (setf (gethash name new-constraints) value)))
+     (set-contextual-constraints new-constraints)
      (unwind-protect (progn ,@code)
        (set-contextual-constraints old-constraints))))
