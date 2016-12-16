@@ -331,7 +331,7 @@
            (cram-plan-failures:object-not-found (f)
              (declare (ignore f))
              (return-from failure-guard)))
-        (find-object aux-object :num-retries 1)))))
+        (find-object aux-object :num-retries 0)))))
 
 (def-cram-function search-location (locname object &key (when-found :return))
   (let ((loctype (container-type locname)))
@@ -350,7 +350,8 @@
        (open-handled-storage-container locname)
        ;; Inspect the contents
        (unwind-protect
-            (inspect-container-contents-for-object locname object)
+            (inspect-container-contents-for-object
+             locname object :num-retries 1)
          ;; Close drawer
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname))))
@@ -361,7 +362,8 @@
        (move-torso)
        (open-handled-storage-container locname)
        (unwind-protect
-            (inspect-container-contents-for-object locname object)
+            (inspect-container-contents-for-object
+             locname object :num-retries 1)
          (unless (eql when-found :leave-accessible)
            (close-handled-storage-container locname)))))))
 
