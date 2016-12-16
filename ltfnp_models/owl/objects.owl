@@ -206,14 +206,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    
-    <rdfs:subClassOf>
-      <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+	<owl:hasValue rdf:resource="&knowrob;Fork_Handle_laok8b26"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -260,14 +253,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    
-    <rdfs:subClassOf>
-      <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+	<owl:hasValue rdf:resource="&knowrob;Spoon_Handle_laok8b26"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -314,14 +300,7 @@
     <rdfs:subClassOf>
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    
-    <rdfs:subClassOf>
-      <owl:Restriction>
-	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+	<owl:hasValue rdf:resource="&knowrob;Knife_Handle_laok8b26"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -837,5 +816,44 @@
     <knowrob:quaternion rdf:datatype="&xsd;string">0.93 0.0 -0.366 0.0</knowrob:quaternion>
     <knowrob:translation rdf:datatype="&xsd;string">-0.17 0.0 0.09</knowrob:translation>
   </owl:NamedIndividual>
-    
+  
+  <!-- Fork Handle -->
+  <owl:NamedIndividual rdf:about="&knowrob;Fork_Handle_laok8b26">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Fork_Handle_laok8b26_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Fork_Handle_laok8b26_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 0.707</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.1</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <!-- Spoon Handle -->
+  <owl:NamedIndividual rdf:about="&knowrob;Spoon_Handle_laok8b26">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Spoon_Handle_laok8b26_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Spoon_Handle_laok8b26_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 0.707</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.1</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <!-- Knife Handle -->
+  <owl:NamedIndividual rdf:about="&knowrob;Knife_Handle_laok8b26">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Knife_Handle_laok8b26_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Knife_Handle_laok8b26_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 0.707</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.0 0.0 0.1</knowrob:translation>
+  </owl:NamedIndividual>
+  
 </rdf:RDF>
