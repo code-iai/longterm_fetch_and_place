@@ -294,6 +294,7 @@
                      (cram-moveit::without-collision-objects without-co
                        (setf found-object
                              (cond ((string= loc "iai_kitchen_fridge_door_handle")
+                                    (setf pr2-manip-pm::*allowed-arms* allowed-old)
                                     (cond ((object-is-in-handled-container obj loc)
                                            (prog1 (achieve `(cram-plan-library:object-picked ,obj))
                                              (remove-object-from-handled-container
@@ -473,11 +474,11 @@
                                  (tf:euler->quaternion :az (/ pi -2))))
               ("Fork" ,(tf:make-pose-stamped
                         "map" 0.0
-                        (tf:make-3d-vector -0.75 -0.8 0.78)
+                        (tf:make-3d-vector -0.7 -0.9 0.78)
                         (tf:euler->quaternion :az pi)))
               ("Knife" ,(tf:make-pose-stamped
                          "map" 0.0
-                         (tf:make-3d-vector -1.25 -0.8 0.78)
+                         (tf:make-3d-vector -1.30 -0.9 0.78)
                          (tf:euler->quaternion :az pi)))
               ("Milk" ,(tf:make-pose-stamped
                         "map" 0.0
