@@ -464,17 +464,13 @@
     (prepare-container-scene)
     (let ((objects-not-found nil)
           (setting-mappings
-            ;; `(("RedMetalBowl" ,(tf:make-pose-stamped
-            ;;                     "map" 0.0
-            ;;                     (tf:make-3d-vector -1.0 -0.8 0.78)
-            ;;                     (tf:euler->quaternion :az (/ pi -2)))))))
             `(("RedMetalPlate" ,(tf:make-pose-stamped
                                  "map" 0.0
                                  (tf:make-3d-vector -1.0 -0.8 0.78)
                                  (tf:euler->quaternion :az (/ pi -2))))
               ("Fork" ,(tf:make-pose-stamped
                         "map" 0.0
-                        (tf:make-3d-vector -0.7 -0.9 0.78)
+                        (tf:make-3d-vector -0.75 -0.9 0.78)
                         (tf:euler->quaternion :az pi)))
               ("Knife" ,(tf:make-pose-stamped
                          "map" 0.0
@@ -483,7 +479,15 @@
               ("Milk" ,(tf:make-pose-stamped
                         "map" 0.0
                         (tf:make-3d-vector -1.4 -0.9 0.78)
-                        (tf:euler->quaternion :az (/ pi -2)))))))
+                        (tf:euler->quaternion :az (/ pi -2))))
+              ("RedMetalBowl" ,(tf:make-pose-stamped
+                                "map" 0.0
+                                (tf:make-3d-vector -1.6 -0.8 0.78)
+                                (tf:euler->quaternion :az (/ pi -2))))
+              ("Spoon" ,(tf:make-pose-stamped
+                         "map" 0.0
+                         (tf:make-3d-vector -1.5 -0.9 0.78)
+                         (tf:euler->quaternion :az pi))))))
       (dolist (item setting-mappings)
         (destructuring-bind (objcls destpos) item
           (go-to-origin)
