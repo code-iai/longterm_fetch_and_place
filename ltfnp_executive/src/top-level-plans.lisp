@@ -462,46 +462,87 @@
     (do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
     (prepare-container-scene)
-    (let ((objects-not-found nil)
-          (setting-mappings
-            `(("RedMetalPlate" ,(tf:make-pose-stamped
-                                 "map" 0.0
-                                 (tf:make-3d-vector -1.0 -0.8 0.78)
-                                 (tf:euler->quaternion :az (/ pi -2))))
-              ("Fork" ,(tf:make-pose-stamped
-                        "map" 0.0
-                        (tf:make-3d-vector -0.75 -0.9 0.78)
-                        (tf:euler->quaternion :az pi)))
-              ("Knife" ,(tf:make-pose-stamped
-                         "map" 0.0
-                         (tf:make-3d-vector -1.30 -0.9 0.78)
-                         (tf:euler->quaternion :az pi)))
-              ("Milk" ,(tf:make-pose-stamped
-                        "map" 0.0
-                        (tf:make-3d-vector -1.4 -0.9 0.78)
-                        (tf:euler->quaternion :az (/ pi -2))))
-              ("RedMetalBowl" ,(tf:make-pose-stamped
-                                "map" 0.0
-                                (tf:make-3d-vector -1.6 -0.8 0.78)
-                                (tf:euler->quaternion :az (/ pi -2))))
-              ("Spoon" ,(tf:make-pose-stamped
-                         "map" 0.0
-                         (tf:make-3d-vector -1.5 -0.9 0.78)
-                         (tf:euler->quaternion :az pi))))))
-      (dolist (item setting-mappings)
-        (destructuring-bind (objcls destpos) item
-          (go-to-origin)
-          (let ((object (search-object (make-designator :object `((:type ,objcls))))))
-            (cond (object
-                   (with-designators ((location :location `((:pose ,destpos)))
-                                      (place-action :action
-                                                    `((:to :place)
-                                                      (:obj ,object)
-                                                      (:at ,location))))
-                     (go-to-origin :keep-orientation t)
-                     (perform place-action)))
-                  (t (push objcls objects-not-found))))))
-      objects-not-found)))
+    (labels ((make-location (type args)
+               (make-designator :location (append `((:type ,type)) args)))
+             (make-object (mode content)
+               (make-designator :object `((,mode ,content)))))
+      (let ((setting-mappings
+              `((,(make-object :type "RedMetalPlate")
+                 ,(make-location
+                   :countertop
+                   `((:pose ,(tf:make-pose-stamped
+                              "map" 0.0
+                              (tf:make-3d-vector -1.0 -0.8 0.78)
+                              (tf:euler->quaternion :az (/ pi -2)))))))
+                (,(make-object :type "Fork")
+                 ,(make-location
+                   :countertop
+                   `((:pose ,(tf:make-pose-stamped
+                              "map" 0.0
+                              (tf:make-3d-vector -0.75 -0.9 0.78)
+                              (tf:euler->quaternion :az pi))))))
+                (,(make-object :type "Knife")
+                 ,(make-location
+                   :countertop
+                   `((:pose ,(tf:make-pose-stamped
+                              "map" 0.0
+                              (tf:make-3d-vector -1.30 -0.9 0.78)
+                              (tf:euler->quaternion :az pi))))))
+                (,(make-object :type "Milk")
+                 ,(make-location
+                   :countertop
+                   `((:pose ,(tf:make-pose-stamped
+                              "map" 0.0
+                              (tf:make-3d-vector -1.4 -0.9 0.78)
+                              (tf:euler->quaternion :az (/ pi -2))))))))))
+                ;; ("RedMetalBowl" (make-location
+                ;;                  :countertop
+                ;;                  `((:pose ,(tf:make-pose-stamped
+                ;;                             "map" 0.0
+                ;;                             (tf:make-3d-vector -1.6 -0.8 0.78)
+                ;;                             (tf:euler->quaternion :az (/ pi -2)))))))
+                ;; ("Spoon" (make-location
+                ;;           :countertop
+                ;;           `((:pose ,(tf:make-pose-stamped
+                ;;                      "map" 0.0
+                ;;                      (tf:make-3d-vector -1.5 -0.9 0.78)
+                ;;                      (tf:euler->quaternion :az pi)))))))))
+        (process-fetch-and-place setting-mappings)))))
+
+(def-cram-function process-fetch-and-place (setting-mappings)
+  (let ((objects-not-found nil)
+        (acquired-objects nil))
+    (dolist (item setting-mappings)
+      (destructuring-bind (orig-object destination-location) item
+        (go-to-origin)
+        (let ((object (search-object orig-object)))
+          (cond (object
+                 (push object acquired-objects)
+                 (let* ((loc-type (desig:desig-prop-value
+                                   destination-location :type)))
+                   (ecase loc-type
+                     (:countertop
+                      (with-designators ((location
+                                          :location
+                                          `((:pose ,(desig:desig-prop-value
+                                                     destination-location :pose))))
+                                         (place-action
+                                          :action
+                                          `((:to :place)
+                                            (:obj ,object)
+                                            (:at ,location))))
+                        (go-to-origin :keep-orientation t)
+                        (perform place-action)))
+                     (:drawer
+                      )
+                     (:fridge
+                      )
+                     (:dishwasher
+                      ))))
+                (t (push orig-object objects-not-found))))))
+    `((:not-found ,objects-not-found)
+      (:acquired ,acquired-objects))))
+
 
 ;;;
 ;;; Override the default motmat init function
