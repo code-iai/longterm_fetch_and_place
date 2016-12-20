@@ -687,7 +687,8 @@
          :right)))
 
 (defun open-auto-handle (handle)
-  (let ((arm (ideal-arm-for-handle handle)))
+  (let ((arm (or (context-constraint :open-handle-with-arm)
+                 (ideal-arm-for-handle handle))))
     (open-handle arm handle)))
 
 (defun close-auto-handle (handle)

@@ -282,7 +282,9 @@
             (unwind-protect
                  (progn
                    (setf pr2-manip-pm::*allowed-arms*
-                         (allowed-hands-for-location loc))
+                         (or (when (context-constraint :open-handle-with-arm)
+                               `(,(context-constraint :open-handle-with-arm)))
+                             (allowed-hands-for-location loc)))
                    (roslisp:ros-info (ltfnp) "Allowed arms for grasping are: ~a~%"
                                      pr2-manip-pm::*allowed-arms*)
                    (go-to-container-grasping-pose loc)
@@ -469,32 +471,32 @@
       (let ((setting-mappings
               `((,(make-object :type "RedMetalPlate")
                  ,(make-location
-                   :countertop
+                   :absolute
                    `((:pose ,(tf:make-pose-stamped
                               "map" 0.0
                               (tf:make-3d-vector -1.0 -0.8 0.78)
                               (tf:euler->quaternion :az (/ pi -2)))))))
                 (,(make-object :type "Fork")
                  ,(make-location
-                   :countertop
+                   :absolute
                    `((:pose ,(tf:make-pose-stamped
                               "map" 0.0
                               (tf:make-3d-vector -0.75 -0.9 0.78)
                               (tf:euler->quaternion :az pi))))))
                 (,(make-object :type "Knife")
                  ,(make-location
-                   :countertop
+                   :absolute
                    `((:pose ,(tf:make-pose-stamped
                               "map" 0.0
                               (tf:make-3d-vector -1.30 -0.9 0.78)
                               (tf:euler->quaternion :az pi))))))
                 (,(make-object :type "Milk")
                  ,(make-location
-                   :countertop
+                   :absolute
                    `((:pose ,(tf:make-pose-stamped
                               "map" 0.0
                               (tf:make-3d-vector -1.4 -0.9 0.78)
-                              (tf:euler->quaternion :az (/ pi -2))))))))))
+                              (tf:euler->quaternion :az (/ pi -2)))))))
                 ;; ("RedMetalBowl" (make-location
                 ;;                  :countertop
                 ;;                  `((:pose ,(tf:make-pose-stamped
@@ -507,6 +509,13 @@
                 ;;                      "map" 0.0
                 ;;                      (tf:make-3d-vector -1.5 -0.9 0.78)
                 ;;                      (tf:euler->quaternion :az pi)))))))))
+                (,(make-object :type "Knife")
+                 ,(make-location
+                   :drawer
+                   `((:name "iai_kitchen_sink_area_left_upper_drawer_handle")
+                     (:pose ,(tf:make-pose
+                              (tf:make-3d-vector 0.05 0 0.05)
+                              (tf:euler->quaternion :az (/ pi -2))))))))))
         (process-fetch-and-place setting-mappings)))))
 
 (def-cram-function process-fetch-and-place (setting-mappings)
@@ -515,33 +524,71 @@
     (dolist (item setting-mappings)
       (destructuring-bind (orig-object destination-location) item
         (go-to-origin)
-        (let ((object (search-object orig-object)))
+        (let* ((loc-type (desig:desig-prop-value destination-location :type))
+               (loc-name (desig:desig-prop-value destination-location :name))
+               (arm-ok (unless (eql loc-type :absolute)
+                         (other-hand (ideal-arm-for-handle loc-name))))
+               (object
+                 (with-context (when arm-ok `((:open-handle-with-arm ,arm-ok)))
+                   (search-object orig-object))))
           (cond (object
                  (push object acquired-objects)
-                 (let* ((loc-type (desig:desig-prop-value
-                                   destination-location :type)))
-                   (ecase loc-type
-                     (:countertop
-                      (with-designators ((location
-                                          :location
-                                          `((:pose ,(desig:desig-prop-value
-                                                     destination-location :pose))))
-                                         (place-action
-                                          :action
-                                          `((:to :place)
-                                            (:obj ,object)
-                                            (:at ,location))))
-                        (go-to-origin :keep-orientation t)
-                        (perform place-action)))
-                     (:drawer
-                      )
-                     (:fridge
-                      )
-                     (:dishwasher
-                      ))))
+                 (ecase loc-type
+                   (:absolute
+                    (with-designators ((location
+                                        :location
+                                        `((:pose ,(desig:desig-prop-value
+                                                   destination-location :pose))))
+                                       (place-action
+                                        :action
+                                        `((:to :place)
+                                          (:obj ,object)
+                                          (:at ,location))))
+                      (go-to-origin :keep-orientation t)
+                      (perform place-action)))
+                   (:drawer
+                    ;; Well-defined starting torso height
+                    (move-torso)
+                    ;; Open drawer
+                    (open-handled-storage-container loc-name)
+                    ;; Put object inside
+                    (unwind-protect
+                         (place-object-into-location object destination-location)
+                      ;; Close drawer
+                      (close-handled-storage-container loc-name)))
+                   (:fridge
+                    )
+                   (:dishwasher
+                    )))
                 (t (push orig-object objects-not-found))))))
     `((:not-found ,objects-not-found)
       (:acquired ,acquired-objects))))
+
+(def-cram-function place-object-into-location (object location)
+  (let* ((locname (desig:desig-prop-value location :name))
+         (relpos (desig:desig-prop-value location :pose))
+         (loc-center-pose (container-center-pose locname))
+         (fin-pose (tf:make-pose-stamped
+                    "map" 0.0
+                    (tf:v+ (tf:origin loc-center-pose) (tf:origin relpos))
+                    (tf:orientation relpos))))
+    (with-designators ((location
+                        :location
+                        `((:pose ,fin-pose)))
+                       (place-action
+                        :action
+                        `((:to :place)
+                          (:obj ,object)
+                          (:at ,location))))
+      (perform place-action)
+      (sleep 0.1)
+      (let ((objname (desig:desig-prop-value object :name))
+            (objtype (desig:desig-prop-value object :type)))
+        (cram-gazebo-utilities::with-physics-paused
+          (cram-gazebo-utilities::delete-gazebo-model objname)
+          (sleep 0.1)
+          (store-object-in-handled-container `(,objname ,objtype ,relpos) locname)
+          (spawn-class objname objtype fin-pose))))))
 
 
 ;;;
