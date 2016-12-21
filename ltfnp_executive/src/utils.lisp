@@ -476,7 +476,7 @@
   (roslisp:ros-info (shopping utils) "Grasp object ~a with side ~a." object-name side)
   (when *simulated*
     (cram-gazebo-utilities::with-physics-paused
-      (detach-object "ground_plane" "link" object-name "link")
+      (detach-object object-name "link" "ground_plane" "link")
       (sleep 0.1)
       (attach-object "pr2"
                      (case side
