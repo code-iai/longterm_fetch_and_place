@@ -469,20 +469,20 @@
              (make-object (mode content)
                (make-designator :object `((,mode ,content)))))
       (let ((setting-mappings
-              `((,(make-object :type "RedMetalPlate")
-                 ,(make-location
-                   :absolute
-                   `((:pose ,(tf:make-pose-stamped
-                              "map" 0.0
-                              (tf:make-3d-vector -1.0 -0.8 0.78)
-                              (tf:euler->quaternion :az (/ pi -2)))))))
-                (,(make-object :type "Fork")
-                 ,(make-location
-                   :absolute
-                   `((:pose ,(tf:make-pose-stamped
-                              "map" 0.0
-                              (tf:make-3d-vector -0.75 -0.9 0.78)
-                              (tf:euler->quaternion :az pi))))))
+              `(;; (,(make-object :type "RedMetalPlate")
+                ;;  ,(make-location
+                ;;    :absolute
+                ;;    `((:pose ,(tf:make-pose-stamped
+                ;;               "map" 0.0
+                ;;               (tf:make-3d-vector -1.0 -0.8 0.78)
+                ;;               (tf:euler->quaternion :az (/ pi -2)))))))
+                ;; (,(make-object :type "Fork")
+                ;;  ,(make-location
+                ;;    :absolute
+                ;;    `((:pose ,(tf:make-pose-stamped
+                ;;               "map" 0.0
+                ;;               (tf:make-3d-vector -0.75 -0.9 0.78)
+                ;;               (tf:euler->quaternion :az pi))))))
                 (,(make-object :type "Knife")
                  ,(make-location
                    :absolute
@@ -490,13 +490,14 @@
                               "map" 0.0
                               (tf:make-3d-vector -1.30 -0.9 0.78)
                               (tf:euler->quaternion :az pi))))))
-                (,(make-object :type "Milk")
-                 ,(make-location
-                   :absolute
-                   `((:pose ,(tf:make-pose-stamped
-                              "map" 0.0
-                              (tf:make-3d-vector -1.4 -0.9 0.78)
-                              (tf:euler->quaternion :az (/ pi -2)))))))
+                ;; (,(make-object :type "Milk")
+                ;;  ,(make-location
+                ;;    :absolute
+                ;;    `((:pose ,(tf:make-pose-stamped
+                ;;               "map" 0.0
+                ;;               (tf:make-3d-vector -1.4 -0.9 0.78)
+                ;;               (tf:euler->quaternion :az (/ pi -2)))))))
+                
                 ;; ("RedMetalBowl" (make-location
                 ;;                  :countertop
                 ;;                  `((:pose ,(tf:make-pose-stamped
@@ -532,6 +533,7 @@
                  (with-context (when arm-ok `((:open-handle-with-arm ,arm-ok)))
                    (search-object orig-object))))
           (cond (object
+                 (go-to-origin)
                  (push object acquired-objects)
                  (ecase loc-type
                    (:absolute
@@ -545,7 +547,8 @@
                                           (:obj ,object)
                                           (:at ,location))))
                       (go-to-origin :keep-orientation t)
-                      (perform place-action)))
+                      (with-context `((:fix-to-ground-putdown t))
+                        (perform place-action))))
                    (:drawer
                     ;; Well-defined starting torso height
                     (move-torso)
@@ -580,6 +583,8 @@
                         `((:to :place)
                           (:obj ,object)
                           (:at ,location))))
+      (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
+                       (tf:to-msg fin-pose))
       (perform place-action)
       (sleep 0.1)
       (let ((objname (desig:desig-prop-value object :name))
