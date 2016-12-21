@@ -469,20 +469,20 @@
              (make-object (mode content)
                (make-designator :object `((,mode ,content)))))
       (let ((setting-mappings
-              `(;; (,(make-object :type "RedMetalPlate")
-                ;;  ,(make-location
-                ;;    :absolute
-                ;;    `((:pose ,(tf:make-pose-stamped
-                ;;               "map" 0.0
-                ;;               (tf:make-3d-vector -1.0 -0.8 0.78)
-                ;;               (tf:euler->quaternion :az (/ pi -2)))))))
-                ;; (,(make-object :type "Fork")
-                ;;  ,(make-location
-                ;;    :absolute
-                ;;    `((:pose ,(tf:make-pose-stamped
-                ;;               "map" 0.0
-                ;;               (tf:make-3d-vector -0.75 -0.9 0.78)
-                ;;               (tf:euler->quaternion :az pi))))))
+              `((,(make-object :type "RedMetalPlate")
+                 ,(make-location
+                   :absolute
+                   `((:pose ,(tf:make-pose-stamped
+                              "map" 0.0
+                              (tf:make-3d-vector -1.0 -0.8 0.78)
+                              (tf:euler->quaternion :az (/ pi -2)))))))
+                (,(make-object :type "Fork")
+                 ,(make-location
+                   :absolute
+                   `((:pose ,(tf:make-pose-stamped
+                              "map" 0.0
+                              (tf:make-3d-vector -0.75 -0.9 0.78)
+                              (tf:euler->quaternion :az pi))))))
                 (,(make-object :type "Knife")
                  ,(make-location
                    :absolute
