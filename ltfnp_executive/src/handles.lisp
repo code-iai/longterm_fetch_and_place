@@ -362,10 +362,10 @@
          (v-offset (tf:v* axis amount-open)))
     (ensure-pose-stamped
      (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
-            (tf:make-pose (tf:v+ (tf:make-3d-vector 0.4 0.6 0.0) v-offset)
+            (tf:make-pose (tf:v+ (tf:make-3d-vector 0.5 0.6 0.0) v-offset)
                           (tf:euler->quaternion :az 0)))
            ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
-            (tf:make-pose (tf:v+ (tf:make-3d-vector 0.4 0.6 0.0) v-offset)
+            (tf:make-pose (tf:v+ (tf:make-3d-vector 0.5 0.6 0.0) v-offset)
                           (tf:euler->quaternion :az 0)))
            ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
             (tf:make-pose (tf:v+ (tf:make-3d-vector 0.0 0.6 0.0) v-offset)
@@ -749,7 +749,8 @@
         (detach-object "ground_plane" "link" id "link")
         (sleep 0.1)
         (roslisp:ros-info (ltfnp) "Remove gazebo object model '~a'" id)
-        (roslisp:ros-info (ltfnp) "Result: ~a" (cram-gazebo-utilities::delete-gazebo-model id)))))
+        (roslisp:ros-info (ltfnp) "Result: ~a" (cram-gazebo-utilities::delete-gazebo-model id))
+        (cram-moveit::remove-collision-object id))))
   (close-auto-handle handle))
 
 (def-top-level-cram-function open-close-test ()
