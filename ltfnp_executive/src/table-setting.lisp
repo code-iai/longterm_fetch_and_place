@@ -431,3 +431,98 @@
     (cram-prolog:lisp-fun positions->seat-location ?seat ?positions ?location)
     (cram-prolog:lisp-fun object-type->object
                   ?object-type ?location ?guest ?meal ?object)))
+
+(defun look-point (point &key (frame "base_link"))
+  (look-at (make-designator :location `((:pose ,(tf:make-pose-stamped frame 0.0 point (tf:make-identity-rotation)))))))
+
+(defun move-arm (side translation rotation &key (frame "base_link"))
+  (pr2-manip-pm::execute-move-arm-poses side `(,(tf:make-pose-stamped frame 0.0 translation rotation)) (pr2-manip-pm::make-empty-goal-specification)))
+
+(def-top-level-cram-function mock-perception-run ()
+  (setf cram-moveit::*needs-ft-fix* t)
+  ;; Old park poses
+  (setf pr2-manip-pm::*park-pose-left-default*
+        (tf:make-pose-stamped
+         "torso_lift_link" (ros-time)
+         (cl-transforms:make-3d-vector 0.1 0.45 0.3)
+         (cl-transforms:euler->quaternion :ay (/ pi -2))))
+  (setf pr2-manip-pm::*park-pose-right-default*
+        (tf:make-pose-stamped
+         "torso_lift_link" (ros-time)
+         (cl-transforms:make-3d-vector 0.1 -0.45 0.3)
+         (cl-transforms:euler->quaternion :ay (/ pi -2))))
+  (with-process-modules
+    ;; Torso up
+    (move-torso)
+    ;; Arms up
+    (move-arms-up-2)
+    ;; In front of sink area
+    (go-to-pose (tf:make-3d-vector 0.693 0.498 0.052)
+                (tf:make-quaternion 0.0 0.0 0.0 1.0)
+                :frame "map")
+    ;; Look at area
+    (look-point (tf:make-3d-vector 0.5 0.0 1.05))
+    ;; Open gripper
+    (pr2-manip-pm::open-gripper :left)
+    ;; Pregrasp plate
+    (move-arm :left (tf:make-3d-vector 0.6 0.33 1.02) (tf:euler->quaternion :ax (/ pi 2) :ay (* pi 0.2) :az -0.8))
+    ;; Grasp plate
+    (move-arm :left (tf:make-3d-vector 0.63 0.27 0.97) (tf:euler->quaternion :ax (/ pi 2) :ay (* pi 0.2) :az -0.8))
+    ;; Close gripper
+    (pr2-manip-pm::close-gripper :left)
+    ;; New park pose -- left
+    (setf pr2-manip-pm::*park-pose-left-default*
+          (tf:make-pose-stamped
+           "torso_lift_link" 0.0
+           (tf:make-3d-vector 0.4 0.5 0.1)
+           (tf:euler->quaternion :ax (/ pi 2) :ay 0.45 :az (/ pi -2))))
+    ;; Arms up
+    (move-arms-up-2)
+    ;; Look at area
+    (look-point (tf:make-3d-vector 0.5 -0.2 1.05))
+    ;; Open gripper
+    (pr2-manip-pm::open-gripper :right)
+    ;; Pregrasp knife
+    (move-arm :right (tf:make-3d-vector 0.7 -0.15 1.1) (tf:euler->quaternion :ay (/ pi 2)))
+    ;; Grasp knife
+    (move-arm :right (tf:make-3d-vector 0.7 -0.15 0.97) (tf:euler->quaternion :ay (/ pi 2)))
+    ;; Close gripper
+    (pr2-manip-pm::close-gripper :right)
+    ;; New park pose -- right
+    (setf pr2-manip-pm::*park-pose-right-default*
+          (tf:make-pose-stamped
+           "torso_lift_link" 0.0
+           (tf:make-3d-vector 0.4 -0.3 0.2)
+           (tf:euler->quaternion :az (/ pi 2))))
+    ;; Arms up
+    (move-arms-up-2)
+    ;; After pickup, look at scene again
+    (sleep 10)
+    ;; In front of sink area
+    (go-to-pose (tf:make-3d-vector -0.747 -0.352 0.05)
+                (tf:make-quaternion 0.0 0.0 0.680 -0.733)
+                :frame "map")
+    ;; Look at area
+    (look-point (tf:make-3d-vector 0.5 -0.3 0.5))
+    ;; Putdown plate
+    (move-arm :left (tf:make-3d-vector 0.5 -0.0 0.90) (tf:euler->quaternion :ax (/ pi 2) :ay (* pi 0.2) :az -0.8))
+    ;; Open gripper
+    (pr2-manip-pm::open-gripper :left)
+    ;; Correction to release plate
+    (move-arm :left (tf:make-3d-vector 0.5 -0.0 1.05) (tf:euler->quaternion :ax (/ pi 2) :ay (/ pi 2)))
+    ;; Putdown knife
+    (move-arm :right (tf:make-3d-vector 0.6 -0.4 0.90) (tf:euler->quaternion :ay (/ pi 2)))
+    ;; Open gripper
+    (pr2-manip-pm::open-gripper :right)
+    ;; Old park poses
+    (setf pr2-manip-pm::*park-pose-left-default*
+          (tf:make-pose-stamped
+           "torso_lift_link" (ros-time)
+           (cl-transforms:make-3d-vector 0.1 0.45 0.3)
+           (cl-transforms:euler->quaternion :ay (/ pi -2))))
+    (setf pr2-manip-pm::*park-pose-right-default*
+          (tf:make-pose-stamped
+           "torso_lift_link" (ros-time)
+           (cl-transforms:make-3d-vector 0.1 -0.45 0.3)
+           (cl-transforms:euler->quaternion :ay (/ pi -2))))
+    (move-arms-up-2)))
