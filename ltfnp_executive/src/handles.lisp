@@ -718,6 +718,7 @@
   (push object (gethash handle *container-stored-objects*)))
 
 (defun remove-object-from-handled-container (id handle)
+  (format t "REMOVING OBJECT '~a' FROM CONTAINER '~a'~%" id handle)
   (setf (gethash handle *container-stored-objects*)
         (remove id (gethash handle *container-stored-objects*)
                 :test (lambda (x pair)
