@@ -441,6 +441,14 @@
                           (tf:euler->quaternion :ay (/ pi -2)))
                    :ignore-collisions ignore-collisions)))
 
+(defun move-arms-up-2 (&key side ignore-collisions)
+  (when (or (eql side :left) (not side))
+    (move-arm-pose :left pr2-manip-pm::*park-pose-left-default*
+                   :ignore-collisions ignore-collisions))
+  (when (or (eql side :right) (not side))
+    (move-arm-pose :right pr2-manip-pm::*park-pose-right-default*
+                   :ignore-collisions ignore-collisions)))
+
 (defun move-torso (&optional (position 0.3))
   ;; Hack
   (setf *action-client-torso* nil)
