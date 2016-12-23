@@ -636,6 +636,16 @@
      (move-arm-relative
       arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
                         (tf:make-identity-rotation))
+      :ignore-collisions t))
+    (:dishwasher ;; Dishwasher
+     (roslisp:ros-info (open handle) "Open dishwasher (apply magic sauce)")
+     (set-handle-degree handle 1.0 :hold t)
+     (roslisp:ros-info (open handle) "Open gripper")
+     (pr2-manip-pm::open-gripper arm)
+     (roslisp:ros-info (open handle) "Move arm relative")
+     (move-arm-relative
+      arm (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.0)
+                        (tf:make-identity-rotation))
       :ignore-collisions t)
      ))
   (roslisp:ros-info (open handle) "And up")
