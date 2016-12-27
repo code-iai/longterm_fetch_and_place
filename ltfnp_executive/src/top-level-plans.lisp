@@ -208,6 +208,8 @@
                "iai_kitchen_sink_area_left_upper_drawer_handle")
   (maybe-store "Spoon" (tf:make-pose (tf:make-3d-vector 0.05 0.15 0.05) (tf:euler->quaternion :az pi))
                "iai_kitchen_sink_area_left_upper_drawer_handle")
+  (maybe-store "Muesli" (tf:make-pose (tf:make-3d-vector 0.15 -0.2 0.15) (tf:euler->quaternion :az pi))
+               "iai_kitchen_sink_area_counter_top")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
                "iai_kitchen_sink_area_counter_top")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
@@ -473,65 +475,66 @@
                (make-designator :location (append `((:type ,type)) args)))
              (make-object (mode content)
                (make-designator :object `((,mode ,content)))))
-      (let ((setting-mappings
-              `((,(make-object :type "RedMetalPlate")
-                 ,(make-location
-                   :fridge
-                   `((:name "iai_kitchen_fridge_door_handle")
-                   ;; :dishwasher
-                   ;; `((:name "iai_kitchen_sink_area_dish_washer_door_handle")
-                     (:pose ,(tf:make-pose
-                              (tf:make-3d-vector -0.1 0.08 0.35)
-                              (tf:euler->quaternion))))))
-                ;; (,(make-object :type "RedMetalPlate")
-                ;;  ,(make-location
-                ;;    :absolute
-                ;;    `((:pose ,(tf:make-pose-stamped
-                ;;               "map" 0.0
-                ;;               (tf:make-3d-vector -1.0 -0.8 0.78)
-                ;;               (tf:euler->quaternion :az (/ pi -2)))))))
-                )))
-                ;; (,(make-object :type "Fork")
-                ;;  ,(make-location
-                ;;    :absolute
-                ;;    `((:pose ,(tf:make-pose-stamped
-                ;;               "map" 0.0
-                ;;               (tf:make-3d-vector -0.75 -0.9 0.78)
-                ;;               (tf:euler->quaternion :az pi))))))
-                ;; (,(make-object :type "Knife")
-                ;;  ,(make-location
-                ;;    :absolute
-                ;;    `((:pose ,(tf:make-pose-stamped
-                ;;               "map" 0.0
-                ;;               (tf:make-3d-vector -1.30 -0.9 0.78)
-                ;;               (tf:euler->quaternion :az pi))))))
-                ;; ;; (,(make-object :type "Milk")
-                ;; ;;  ,(make-location
-                ;; ;;    :absolute
-                ;; ;;    `((:pose ,(tf:make-pose-stamped
-                ;; ;;               "map" 0.0
-                ;; ;;               (tf:make-3d-vector -1.4 -0.9 0.78)
-                ;; ;;               (tf:euler->quaternion :az (/ pi -2)))))))
+      (set-scene-1)
+      (let ((setting-mappings (setmap-required-scene-objects)))
+              ;; `((,(make-object :type "RedMetalPlate")
+              ;;    ,(make-location
+              ;;      :fridge
+              ;;      `((:name "iai_kitchen_fridge_door_handle")
+              ;;      ;; :dishwasher
+              ;;      ;; `((:name "iai_kitchen_sink_area_dish_washer_door_handle")
+              ;;        (:pose ,(tf:make-pose
+              ;;                 (tf:make-3d-vector -0.1 0.08 0.35)
+              ;;                 (tf:euler->quaternion))))))
+              ;;   ;; (,(make-object :type "RedMetalPlate")
+              ;;   ;;  ,(make-location
+              ;;   ;;    :absolute
+              ;;   ;;    `((:pose ,(tf:make-pose-stamped
+              ;;   ;;               "map" 0.0
+              ;;   ;;               (tf:make-3d-vector -1.0 -0.8 0.78)
+              ;;   ;;               (tf:euler->quaternion :az (/ pi -2)))))))
+              ;;   )))
+              ;;   ;; (,(make-object :type "Fork")
+              ;;   ;;  ,(make-location
+              ;;   ;;    :absolute
+              ;;   ;;    `((:pose ,(tf:make-pose-stamped
+              ;;   ;;               "map" 0.0
+              ;;   ;;               (tf:make-3d-vector -0.75 -0.9 0.78)
+              ;;   ;;               (tf:euler->quaternion :az pi))))))
+              ;;   ;; (,(make-object :type "Knife")
+              ;;   ;;  ,(make-location
+              ;;   ;;    :absolute
+              ;;   ;;    `((:pose ,(tf:make-pose-stamped
+              ;;   ;;               "map" 0.0
+              ;;   ;;               (tf:make-3d-vector -1.30 -0.9 0.78)
+              ;;   ;;               (tf:euler->quaternion :az pi))))))
+              ;;   ;; ;; (,(make-object :type "Milk")
+              ;;   ;; ;;  ,(make-location
+              ;;   ;; ;;    :absolute
+              ;;   ;; ;;    `((:pose ,(tf:make-pose-stamped
+              ;;   ;; ;;               "map" 0.0
+              ;;   ;; ;;               (tf:make-3d-vector -1.4 -0.9 0.78)
+              ;;   ;; ;;               (tf:euler->quaternion :az (/ pi -2)))))))
                 
-                ;; ;; ("RedMetalBowl" (make-location
-                ;; ;;                  :countertop
-                ;; ;;                  `((:pose ,(tf:make-pose-stamped
-                ;; ;;                             "map" 0.0
-                ;; ;;                             (tf:make-3d-vector -1.6 -0.8 0.78)
-                ;; ;;                             (tf:euler->quaternion :az (/ pi -2)))))))
-                ;; ;; ("Spoon" (make-location
-                ;; ;;           :countertop
-                ;; ;;           `((:pose ,(tf:make-pose-stamped
-                ;; ;;                      "map" 0.0
-                ;; ;;                      (tf:make-3d-vector -1.5 -0.9 0.78)
-                ;; ;;                      (tf:euler->quaternion :az pi)))))))))
-                ;; (,(make-object :type "Knife")
-                ;;  ,(make-location
-                ;;    :drawer
-                ;;    `((:name "iai_kitchen_sink_area_left_upper_drawer_handle")
-                ;;      (:pose ,(tf:make-pose
-                ;;               (tf:make-3d-vector 0.05 0 0.05)
-                ;;               (tf:euler->quaternion :az (/ pi -2))))))))))
+              ;;   ;; ;; ("RedMetalBowl" (make-location
+              ;;   ;; ;;                  :countertop
+              ;;   ;; ;;                  `((:pose ,(tf:make-pose-stamped
+              ;;   ;; ;;                             "map" 0.0
+              ;;   ;; ;;                             (tf:make-3d-vector -1.6 -0.8 0.78)
+              ;;   ;; ;;                             (tf:euler->quaternion :az (/ pi -2)))))))
+              ;;   ;; ;; ("Spoon" (make-location
+              ;;   ;; ;;           :countertop
+              ;;   ;; ;;           `((:pose ,(tf:make-pose-stamped
+              ;;   ;; ;;                      "map" 0.0
+              ;;   ;; ;;                      (tf:make-3d-vector -1.5 -0.9 0.78)
+              ;;   ;; ;;                      (tf:euler->quaternion :az pi)))))))))
+              ;;   ;; (,(make-object :type "Knife")
+              ;;   ;;  ,(make-location
+              ;;   ;;    :drawer
+              ;;   ;;    `((:name "iai_kitchen_sink_area_left_upper_drawer_handle")
+              ;;   ;;      (:pose ,(tf:make-pose
+              ;;   ;;               (tf:make-3d-vector 0.05 0 0.05)
+              ;;   ;;               (tf:euler->quaternion :az (/ pi -2))))))))))
         (process-fetch-and-place setting-mappings)))))
 
 (def-cram-function process-fetch-and-place (setting-mappings)

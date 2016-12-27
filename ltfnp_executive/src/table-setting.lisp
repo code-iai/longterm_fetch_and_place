@@ -526,3 +526,82 @@
            (cl-transforms:make-3d-vector 0.1 -0.45 0.3)
            (cl-transforms:euler->quaternion :ay (/ pi -2))))
     (move-arms-up-2)))
+
+(defun transform-pose (daisy-chain)
+  (let ((len (length daisy-chain)))
+    (cond ((= len 0) nil)
+          ((= len 1) (first daisy-chain))
+          ((= len 2)
+           (destructuring-bind (base-pose trafo-pose) daisy-chain
+             (let ((transformed
+                     (cl-transforms:transform-pose
+                      (tf:pose->transform base-pose)
+                      trafo-pose)))
+               (cond ((eql (class-name (class-of base-pose)) 'tf:pose-stamped)
+                      (tf:pose->pose-stamped
+                       (tf:frame-id base-pose)
+                       (tf:stamp base-pose)
+                       transformed))
+                     (t transformed)))))
+          (t (transform-pose `(,(first daisy-chain) ,(transform-pose (rest daisy-chain))))))))
+
+(defun show-pose (pose)
+  (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
+                   (tf:to-msg pose)))
+
+(defun resolve-seat-location (loc object-type)
+  (labels ((translation (vector)
+             (tf:make-pose vector (tf:make-identity-rotation)))
+           (translate (x y z)
+             (translation (tf:make-3d-vector x y z)))
+           (rotation (quaternion)
+             (tf:make-pose (tf:make-identity-vector) quaternion))
+           (rotate (&key (ax 0.0) (ay 0.0) (az 0.0))
+             (tf:euler->quaternion :ax ax :ay ay :az az))
+           (id-pose ()
+             (tf:make-identity-pose)))
+    (let* ((base-table-pose
+             (let* ((table
+                      (first
+                       (cram-semantic-map-designators:designator->semantic-map-objects
+                        (make-designator
+                         :object `((:name "iai_kitchen_meal_table_counter_top"))))))
+                    (pose (slot-value table 'cram-semantic-map-utils:pose)))
+               (tf:make-pose-stamped
+                "map" 0.0
+                (tf:v+ (tf:origin pose)
+                       (tf:make-3d-vector 0.05 0.25 0.0))
+                (tf:euler->quaternion :az (/ pi -2)))))
+           (seat-no (desig:desig-prop-value loc :seat))
+           (seat-base-offset
+             (ecase seat-no
+               (1 (translate -0.25 0.4 0.0))
+               (2 (translate -0.25 -0.2 0.0))))
+           (seat-base-pose (transform-pose `(,base-table-pose ,seat-base-offset)))
+           (object-offset-pose
+             (or (case object-type
+                   (:glass (translate 0.1 -0.2 0.0))
+                   (:cup (translate 0.1 -0.2 0.0))
+                   (:fork (translate 0.0 0.2 0.0))
+                   (:knife (translate 0.0 -0.2 0.0))
+                   (:spoon (translate 0.0 0.2 0.0))
+                   (:ketchup (translate 0.1 0.2 0.0))
+                   (:muesli (translate 0.1 -0.2 0.0))
+                   (:milkbox (translate 0.1 0.2 0.0)))
+                 (id-pose)))) ;; plate, bowl
+      (transform-pose `(,seat-base-pose ,object-offset-pose)))))
+
+(defun setmap-required-scene-objects ()
+  (labels ((make-location (type args)
+               (make-designator :location (append `((:type ,type)) args)))
+             (make-object (mode content)
+               (make-designator :object `((,mode ,content)))))
+    (mapcar (lambda (obj)
+              (let* ((loc (desig:desig-prop-value obj :at))
+                     (obj-type (desig:desig-prop-value obj :type))
+                     (resolved (resolve-seat-location loc obj-type)))
+                `(,(make-object :type (scene-object->object-class obj-type))
+                  ,(make-location
+                    :absolute
+                    `((:pose ,resolved))))))
+            (required-scene-objects))))
