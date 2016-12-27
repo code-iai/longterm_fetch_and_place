@@ -347,14 +347,14 @@
     <rdfs:subClassOf>
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_laok8b26"/>
+	<owl:hasValue rdf:resource="&knowrob;Muesli_Handle_laok8b26"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     
     <rdfs:subClassOf>
       <owl:Restriction>
 	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
-	<owl:hasValue rdf:resource="&knowrob;Milk_Handle_diuxn543"/>
+	<owl:hasValue rdf:resource="&knowrob;Muesli_Handle_diuxn543"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -704,6 +704,31 @@
     <rdf:type rdf:resource="&knowrob;Transformation"/>
     <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 -0.707</knowrob:quaternion>
     <knowrob:translation rdf:datatype="&xsd;string">-0.03 0.0 0.06</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <!-- Muesli Handles -->
+  <owl:NamedIndividual rdf:about="&knowrob;Muesli_Handle_laok8b26">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Muesli_Handle_laok8b26_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Muesli_Handle_laok8b26_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.707 0.0 0.0 -0.707</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">0.08 0.0 0.06</knowrob:translation>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Muesli_Handle_diuxn543">
+    <rdf:type rdf:resource="&knowrob;SemanticHandle"/>
+    <knowrob:handlePose rdf:resource="&knowrob;Muesli_Handle_diuxn543_pose"/>
+    <knowrob:graspType rdf:datatype="&xsd;string">push</knowrob:graspType>
+  </owl:NamedIndividual>
+  
+  <owl:NamedIndividual rdf:about="&knowrob;Muesli_Handle_diuxn543_pose">
+    <rdf:type rdf:resource="&knowrob;Transformation"/>
+    <knowrob:quaternion rdf:datatype="&xsd;string">0.0 0.707 0.0 -0.707</knowrob:quaternion>
+    <knowrob:translation rdf:datatype="&xsd;string">-0.08 0.0 0.06</knowrob:translation>
   </owl:NamedIndividual>
   
   <!-- RedMetalCup Handles -->
