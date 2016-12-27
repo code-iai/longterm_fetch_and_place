@@ -1005,3 +1005,10 @@
      (set-contextual-constraints new-constraints)
      (unwind-protect (progn ,@code)
        (set-contextual-constraints old-constraints))))
+
+
+(defmacro def-fnc (name arguments &body code)
+  `(defun ,name (&rest argument-values)
+     (mapcar (lambda (argument value)
+               (format t "~a = ~a~%" argument value))
+             ',arguments argument-values)))
