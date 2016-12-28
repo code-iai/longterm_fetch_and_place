@@ -294,6 +294,8 @@
                              (cond ((string= loc "iai_kitchen_fridge_door_handle")
                                     `("HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_FRIDGE_AREA-1"
                                       "HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_FRIDGE_MAIN-1"))
+                                   ((string= loc "iai_kitchen_kitchen_island_left_upper_drawer_handle")
+                                    `("HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_KITCHEN_ISLAND-1"))
                                    (t nil))))
                      (cram-moveit::without-collision-objects without-co
                        (setf found-object
