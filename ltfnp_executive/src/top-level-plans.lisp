@@ -82,7 +82,11 @@
                 ((exp-mode "search")
                  (search-object-scenario))
                 ((exp-mode "tablesetting2")
-                 (tablesetting-scenario))))
+                 (beliefstate:enable-logging logged)
+                 (setf beliefstate::*enable-prolog-logging* logged)
+                 (tablesetting-scenario :variance variance)
+                 (when logged
+                   (beliefstate:extract-files)))))
       (roslisp:ros-info (ltfnp) "Done with LTFnP"))))
 
 
@@ -467,7 +471,7 @@
 ;;                        ;; TODO: relpos needs to be determined!
 ;;                        (store objcls relpos loc)))))))))))
 
-(def-top-level-cram-function tablesetting-scenario ()
+(def-top-level-cram-function tablesetting-scenario (&key variance)
   (with-process-modules-simulated
     (beliefstate:enable-logging nil)
     (do-init t :variance (make-hash-table :test 'equal))
@@ -477,6 +481,8 @@
                (make-designator :location (append `((:type ,type)) args)))
              (make-object (mode content)
                (make-designator :object `((,mode ,content)))))
+      ;; TODO: Make use of the variance parameter when setting the
+      ;; scene details!
       (set-scene-1)
       (let ((setting-mappings (setmap-required-scene-objects)))
               ;; `((,(make-object :type "RedMetalPlate")
