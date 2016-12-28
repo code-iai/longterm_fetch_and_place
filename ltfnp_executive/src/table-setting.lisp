@@ -587,7 +587,7 @@
                    (:spoon (translate 0.05 0.2 0.0))
                    (:ketchup (translate 0.1 0.2 0.0))
                    (:muesli (translate 0.1 -0.2 0.1))
-                   (:milkbox (translate 0.1 0.2 0.1))
+                   (:milkbox (translate 0.2 0.2 0.1))
                    (:bowl (translate 0.0 0.0 -0.02))
                    (:plate (translate 0.0 0.0 -0.02)))
                  (id-pose))))
