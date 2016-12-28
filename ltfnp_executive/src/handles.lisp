@@ -395,7 +395,7 @@
         ((string= handle "iai_kitchen_sink_area_left_middle_drawer_handle")
          0.2)
         ((string= handle "iai_kitchen_kitchen_island_left_upper_drawer_handle")
-         0.2)
+         0.1)
         ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
          0.3)
         ((string= handle "iai_kitchen_fridge_door_handle")
@@ -682,7 +682,8 @@
                         (tf:make-identity-rotation))
       :ignore-collisions t)
      ))
-  (move-arms-up))
+  (move-arms-up)
+  (move-torso))
 
 (defun ideal-arm-for-handle (handle)
   (cond ((string= handle "iai_kitchen_sink_area_left_upper_drawer_handle")
@@ -838,7 +839,7 @@
 
 (defun maybe-store (objclass relpose place)
   (let ((should-store (< (random 100) 100)))
-    ;; Fixed right now: 75% probability that objects are *actually*
+    ;; Fixed right now: 100% probability that objects are *actually*
     ;; stored in the environment
     (when should-store
       (store objclass relpose place))))

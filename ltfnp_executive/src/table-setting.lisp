@@ -582,12 +582,12 @@
              (or (case object-type
                    (:glass (translate 0.1 -0.2 0.0))
                    (:cup (translate 0.1 -0.2 0.0))
-                   (:fork (translate 0.0 0.2 0.0))
-                   (:knife (translate 0.0 -0.2 0.0))
-                   (:spoon (translate 0.0 0.2 0.0))
+                   (:fork (translate 0.05 0.2 0.0))
+                   (:knife (translate 0.05 -0.2 0.0))
+                   (:spoon (translate 0.05 0.2 0.0))
                    (:ketchup (translate 0.1 0.2 0.0))
-                   (:muesli (translate 0.1 -0.2 0.0))
-                   (:milkbox (translate 0.1 0.2 0.0)))
+                   (:muesli (translate 0.1 -0.2 0.15))
+                   (:milkbox (translate 0.1 0.2 0.1)))
                  (id-pose)))) ;; plate, bowl
       (transform-pose `(,seat-base-pose ,object-offset-pose)))))
 

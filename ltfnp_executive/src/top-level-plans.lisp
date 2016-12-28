@@ -212,7 +212,7 @@
                "iai_kitchen_sink_area_counter_top")
   (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 -0.5 0.05) (tf:euler->quaternion :az pi))
                "iai_kitchen_sink_area_counter_top")
-  (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :az 0))
+  (maybe-store "RedMetalPlate" (tf:make-pose (tf:make-3d-vector 0.15 1.0 -0.05) (tf:euler->quaternion :ax pi :az 0))
                "iai_kitchen_kitchen_island_counter_top")
   (maybe-store "Milk" (tf:make-pose (tf:make-3d-vector 0.1 0.1 -1.33) (tf:euler->quaternion :az pi))
                "iai_kitchen_fridge_door_handle")
@@ -226,7 +226,7 @@
                "iai_kitchen_fridge_door_handle")
   (maybe-store "Buttermilk" (tf:make-pose (tf:make-3d-vector 0.15 -0.15 -1.67) (tf:euler->quaternion :az pi))
                "iai_kitchen_fridge_door_handle")
-  (maybe-store "RedMetalBowl" (tf:make-pose (tf:make-3d-vector -0.1 0.0 0.05) (tf:euler->quaternion :az pi))
+  (maybe-store "RedMetalBowl" (tf:make-pose (tf:make-3d-vector 0.17 0.0 0.05) (tf:euler->quaternion :az (/ pi 2)))
                "iai_kitchen_kitchen_island_left_upper_drawer_handle")
   (loop for h being the hash-keys of *container-stored-objects*
         when (eql (container-type h) :countertop)
