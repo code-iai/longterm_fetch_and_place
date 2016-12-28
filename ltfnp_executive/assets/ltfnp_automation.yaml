@@ -29,6 +29,23 @@ task-variances:
     items: [["Left", left], ["Right", right]]
     allow-empty: false
     default: [left, right]
+  attendants:
+    label: "Meal attendants"
+    value-type: [multiple-choice]
+    items: [["Mary", mary], ["Tim", tim]]
+    allow-empty: false
+    default: [tim]
+    mean-amount: 1
+  dayoftheweek:
+    label: "Time of day"
+    value-type: [choice]
+    items: [["Monday", monday], ["Tuesday", tuesday], ["Wednesday", wednesday], ["Thursday", thursday], ["Friday", friday], ["Saturday", saturday], ["Sunday", sunday]]
+    default: [monday]
+  mealtime:
+    label: "Meal time"
+    value-type: [choice]
+    items: [["Breakfast", breakfast], ["Lunch", lunch], ["Dinner", dinner]]
+    default: [breakfast]
 workers:
   - command: roslaunch
     parameters: [ltfnp_executive, ltfnp_simulation.launch]
@@ -39,7 +56,7 @@ workers:
       message: "MoveIt! started successfully"
     - name: attache
       matchmode: contains
-      template: "Attache plugin loaded"
+      template: "[Attach"
       message: "Attache plugin present"
     - name: reasoning
       matchmode: contains
