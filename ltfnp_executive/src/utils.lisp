@@ -354,6 +354,19 @@
                       (gethash "allowed_arms" variance))))
     (when arms (setf pr2-manip-pm::*allowed-arms* arms))))
 
+(defun variance-atom (name variance &key (default nil))
+  (let ((value (gethash name variance)))
+    (or (when value
+          (intern (string-upcase value) :keyword))
+        default)))
+
+(defun variance-list (name variance &key (default nil))
+  (let ((value (gethash name variance)))
+    (or (when value
+          (mapcar (lambda (x) (intern (string-upcase x) :keyword))
+                  value))
+        default)))
+
 (defun lift-up (pose distance)
   (let* ((origin (cl-transforms:origin pose))
          (lifted-origin (cl-transforms:make-3d-vector

@@ -94,7 +94,7 @@
 ;;; Top-Level Plans
 ;;;
 
-(def-top-level-cram-function longterm-fetch-and-place (&key variance)
+(def-cram-function longterm-fetch-and-place (&key variance)
   (roslisp:ros-info (ltfnp) "Preparation complete, beginning actual scenario")
   (cond (*simulated*
          (roslisp:ros-info (ltfnp) "Environment: Simulated")
@@ -472,79 +472,19 @@
 ;;                        ;; TODO: relpos needs to be determined!
 ;;                        (store objcls relpos loc)))))))))))
 
-(def-top-level-cram-function tablesetting-scenario (&key variance logged)
-  (with-process-modules-simulated
-    ;;(beliefstate:enable-logging nil)
-    ;;(do-init t :variance (make-hash-table :test 'equal))
-    ;; Initialize scenario
-    (prepare-container-scene)
-    (labels ((make-location (type args)
-               (make-designator :location (append `((:type ,type)) args)))
-             (make-object (mode content)
-               (make-designator :object `((,mode ,content)))))
-      ;; TODO: Make use of the variance parameter when setting the
-      ;; scene details!
-      (set-scene-1)
-      (let ((setting-mappings (setmap-required-scene-objects)))
-              ;; `((,(make-object :type "RedMetalPlate")
-              ;;    ,(make-location
-              ;;      :fridge
-              ;;      `((:name "iai_kitchen_fridge_door_handle")
-              ;;      ;; :dishwasher
-              ;;      ;; `((:name "iai_kitchen_sink_area_dish_washer_door_handle")
-              ;;        (:pose ,(tf:make-pose
-              ;;                 (tf:make-3d-vector -0.1 0.08 0.35)
-              ;;                 (tf:euler->quaternion))))))
-              ;;   ;; (,(make-object :type "RedMetalPlate")
-              ;;   ;;  ,(make-location
-              ;;   ;;    :absolute
-              ;;   ;;    `((:pose ,(tf:make-pose-stamped
-              ;;   ;;               "map" 0.0
-              ;;   ;;               (tf:make-3d-vector -1.0 -0.8 0.78)
-              ;;   ;;               (tf:euler->quaternion :az (/ pi -2)))))))
-              ;;   )))
-              ;;   ;; (,(make-object :type "Fork")
-              ;;   ;;  ,(make-location
-              ;;   ;;    :absolute
-              ;;   ;;    `((:pose ,(tf:make-pose-stamped
-              ;;   ;;               "map" 0.0
-              ;;   ;;               (tf:make-3d-vector -0.75 -0.9 0.78)
-              ;;   ;;               (tf:euler->quaternion :az pi))))))
-              ;;   ;; (,(make-object :type "Knife")
-              ;;   ;;  ,(make-location
-              ;;   ;;    :absolute
-              ;;   ;;    `((:pose ,(tf:make-pose-stamped
-              ;;   ;;               "map" 0.0
-              ;;   ;;               (tf:make-3d-vector -1.30 -0.9 0.78)
-              ;;   ;;               (tf:euler->quaternion :az pi))))))
-              ;;   ;; ;; (,(make-object :type "Milk")
-              ;;   ;; ;;  ,(make-location
-              ;;   ;; ;;    :absolute
-              ;;   ;; ;;    `((:pose ,(tf:make-pose-stamped
-              ;;   ;; ;;               "map" 0.0
-              ;;   ;; ;;               (tf:make-3d-vector -1.4 -0.9 0.78)
-              ;;   ;; ;;               (tf:euler->quaternion :az (/ pi -2)))))))
-                
-              ;;   ;; ;; ("RedMetalBowl" (make-location
-              ;;   ;; ;;                  :countertop
-              ;;   ;; ;;                  `((:pose ,(tf:make-pose-stamped
-              ;;   ;; ;;                             "map" 0.0
-              ;;   ;; ;;                             (tf:make-3d-vector -1.6 -0.8 0.78)
-              ;;   ;; ;;                             (tf:euler->quaternion :az (/ pi -2)))))))
-              ;;   ;; ;; ("Spoon" (make-location
-              ;;   ;; ;;           :countertop
-              ;;   ;; ;;           `((:pose ,(tf:make-pose-stamped
-              ;;   ;; ;;                      "map" 0.0
-              ;;   ;; ;;                      (tf:make-3d-vector -1.5 -0.9 0.78)
-              ;;   ;; ;;                      (tf:euler->quaternion :az pi)))))))))
-              ;;   ;; (,(make-object :type "Knife")
-              ;;   ;;  ,(make-location
-              ;;   ;;    :drawer
-              ;;   ;;    `((:name "iai_kitchen_sink_area_left_upper_drawer_handle")
-              ;;   ;;      (:pose ,(tf:make-pose
-              ;;   ;;               (tf:make-3d-vector 0.05 0 0.05)
-              ;;   ;;               (tf:euler->quaternion :az (/ pi -2))))))))))
-        (process-fetch-and-place setting-mappings)))))
+(def-cram-function tablesetting-scenario (&key variance)
+  ;; Initialize scenario
+  (prepare-container-scene)
+  (labels ((make-location (type args)
+             (make-designator :location (append `((:type ,type)) args)))
+           (make-object (mode content)
+             (make-designator :object `((,mode ,content)))))
+    (let ((guests (variance-list "attendants" variance :default `(:tim)))
+          (mealtime (variance-atom "mealtime" variance :default :breakfast))
+          (dayoftheweek (variance-atom "dayoftheweek" variance :default :monday)))
+      (set-scene guests mealtime dayoftheweek))
+    (let ((setting-mappings (setmap-required-scene-objects)))
+      (process-fetch-and-place setting-mappings))))
 
 (def-cram-function process-fetch-and-place (setting-mappings)
   (let ((objects-not-found nil)
