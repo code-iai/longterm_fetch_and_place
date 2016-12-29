@@ -141,8 +141,11 @@
 (defmethod handle-motion-function (handle (strategy (eql :revolute-pull)) &key (limits `(0 ,(/ pi 2))) (offset (tf:make-identity-pose)))
   ;; This, again, is pretty hacky
   (cond ((string= handle "iai_kitchen_sink_area_dish_washer_door_handle")
-         ;; TODO: Write this!
-         )
+         (let ((base-position (tf:make-3d-vector 1.0 0.0 0.76))
+               (offset-angle (/ pi 2)) ;; Fix me
+               (radius 1.0)) ;; Fix me
+           (lambda (degree)
+             (tf:make-pose base-position (tf:euler->quaternion :ax (/ pi 2))))))
         ((string= handle "iai_kitchen_fridge_door_handle")
          (let ((base-position (tf:make-3d-vector 1.03 -0.79 0.985))
                (offset-angle (/ pi 2)) ;; Fix me
@@ -257,13 +260,14 @@
                        (tf:euler->quaternion :ax (/ pi 2))))
          ;(offset (cl-transforms:transform-pose (tf:pose->transform offset)
          ;                                      hand-offset))
-         (motion-func (cond ((and limits limitsp)
-                             (handle-motion-function
-                              handle nil
-                              :offset offset
-                              :limits limits))
-                            (t (handle-motion-function
-                                handle nil :offset offset))))
+         (motion-func (or (when (and limits limitsp)
+                            (handle-motion-function
+                             handle nil
+                             :offset offset
+                             :limits limits))
+                          (handle-motion-function
+                           handle nil :offset offset)))
+         (ttt (format t "~a~%" motion-func))
          (pose (funcall motion-func degree)))
     pose))
 

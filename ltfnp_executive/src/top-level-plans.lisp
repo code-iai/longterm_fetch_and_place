@@ -49,7 +49,8 @@
   (prepare-settings :simulated simulated :headless headless :variance variance)
   (roslisp:ros-info (ltfnp) "Putting the PR2 into defined start state")
   (move-arms-up)
-  (move-torso))
+  (move-torso)
+  (initialize-handle-joint-controller))
 
 
 ;;;
@@ -524,7 +525,7 @@
         (beliefstate:add-designator-to-node (make-designator :object result-data) log-id-1)
         (beliefstate:stop-node log-id-1)
         (beliefstate:stop-node log-id-0))
-      )));;(cleanup-tablesetting-scene found-objects))))
+      (cleanup-tablesetting-scene found-objects))))
 
 (def-cram-function cleanup-tablesetting-scene (objects)
   (labels ((make-location (type args)
@@ -626,25 +627,28 @@
                    (:dishwasher
                     ;; Open dishwasher
                     (open-handled-storage-container loc-name)
-                    ;; Put object inside
-                    (let* ((putdown-pose (transform-pose
-                                          `(,(container-center-pose loc-name)
-                                            ,(tf:make-pose (tf:make-3d-vector 0.3 0.0 0.2)
-                                                           (tf:euler->quaternion :az pi)))))
-                           (putdown-location (make-designator :location `((:pose ,putdown-pose))))
-                           (standing-pose (tf:make-pose-stamped
-                                           "map" 0.0
-                                           (tf:make-3d-vector 0.5 0.0 0.0)
-                                           (tf:euler->quaternion)))
-                           (torso-height 0.1))
-                      (move-torso torso-height)
-                      (go-to-pose (tf:origin standing-pose) (tf:orientation standing-pose)
-                                  :frame "map")
-                      (place-object-into-location object putdown-location :destroy t)
-                      (move-arms-up)
-                      (move-torso)
-                      ;; Leave it open for now, maybe close it at the end
-                      ))))
+                    ;; Put object inside (remove the collision objects first!)
+                    (cram-moveit::without-collision-objects `("HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_SINK_AREA_DISH_WASHER_MAIN-1"
+                                                              "HTTP://KNOWROB.ORG/KB/IAI-KITCHEN.OWL#IAI_KITCHEN_SINK_AREA-1")
+                      (let* ((putdown-pose (transform-pose
+                                            `(,(container-center-pose loc-name)
+                                              ,(tf:make-pose (tf:make-3d-vector 0.3 0.0 0.2)
+                                                             (tf:euler->quaternion :az pi)))))
+                             (putdown-location (make-designator :location `((:pose ,putdown-pose)
+                                                                            (:name ,loc-name))))
+                             (standing-pose (tf:make-pose-stamped
+                                             "map" 0.0
+                                             (tf:make-3d-vector 0.5 0.0 0.0)
+                                             (tf:euler->quaternion)))
+                             (torso-height 0.1))
+                        (move-torso torso-height)
+                        (go-to-pose (tf:origin standing-pose) (tf:orientation standing-pose)
+                                    :frame "map")
+                        (place-object-into-location object putdown-location :destroy t)
+                        (move-arms-up)
+                        (move-torso)
+                        ;; Leave it open for now, maybe close it at the end
+                        )))))
                 (t (push orig-object objects-not-found))))))
     `((:not-found ,objects-not-found)
       (:acquired ,acquired-objects))))
@@ -653,7 +657,8 @@
   (let* ((locname (desig:desig-prop-value location :name))
          (relpos (desig:desig-prop-value location :pose))
          (loc-center-pose
-           (or (when (string= locname "iai_kitchen_fridge_door_handle")
+           (or (when (or (string= locname "iai_kitchen_fridge_door_handle")
+                         (string= locname "iai_kitchen_sink_area_dish_washer_door_handle"))
                  (tf:transform-pose-stamped
                   *transformer*
                   :pose (tf:pose->pose-stamped (container-frame-for-handle locname)
