@@ -424,7 +424,6 @@
            (handle-hand-offset-pose
             handle
             :limits (handle-limits handle)))
-           ;;(get-handle-base-pose handle))
          (handle-axis (get-handle-axis handle))
          (applied-rotation (cl-transforms:transform-pose
                             (tf:make-transform
@@ -443,17 +442,14 @@
                           ;; This is pretty hacky
                           (:revolute-pull
                            (tf:make-3d-vector 0 0 0))))
-                           ;;(tf:v* (tf:make-3d-vector -1 0 0) distance-factor))))
                  (tf:orientation applied-rotation))
                 :frame "torso_lift_link")))
       (when double
         (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
                          (tf:to-msg (grasp-pose 0.4)))
-        (format t "Whack ~a~%" handle-base-pose)
         (move-arm-pose arm (grasp-pose 0.4) :ignore-collisions t))
       (roslisp:publish (roslisp:advertise "/blablabla" "geometry_msgs/PoseStamped")
                        (tf:to-msg (grasp-pose 0.2)))
-      (format t "Darn~%")
       (move-arm-pose arm (grasp-pose 0.2) :ignore-collisions t))))
 
 (defun move-arm-relative (arm offset &key ignore-collisions)
