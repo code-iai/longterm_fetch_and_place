@@ -738,7 +738,7 @@
 (defun objects-stored-in-handled-container (handle)
   (gethash handle *container-stored-objects*))
 
-(defun open-handled-storage-container (handle)
+(def-cram-function open-handled-storage-container (handle)
   (open-auto-handle handle)
   (dolist (object (objects-stored-in-handled-container handle))
     (destructuring-bind (id objclass relative-pose) object
@@ -753,7 +753,7 @@
           (sleep 0.1)
           (attach-object id "link" "ground_plane" "link"))))))
 
-(defun close-handled-storage-container (handle)
+(def-cram-function close-handled-storage-container (handle)
   (cram-gazebo-utilities::with-physics-paused
     (dolist (object (objects-stored-in-handled-container handle))
       (destructuring-bind (id objclass relative-pose) object
