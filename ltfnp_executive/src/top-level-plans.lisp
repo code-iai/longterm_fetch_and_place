@@ -74,7 +74,7 @@
                    (string= mode exp-mode-string)))
           (cond ((exp-mode "tablesetting")
                  (beliefstate:enable-logging logged)
-                 (setf beliefstate::*enable-prolog-logging* logged)
+                 ;;(setf beliefstate::*enable-prolog-logging* logged)
                  (prog1
                      (longterm-fetch-and-place :variance variance)
                    (when logged
@@ -83,7 +83,7 @@
                  (search-object-scenario))
                 ((exp-mode "tablesetting2")
                  (beliefstate:enable-logging logged)
-                 (setf beliefstate::*enable-prolog-logging* logged)
+                 ;;(setf beliefstate::*enable-prolog-logging* logged)
                  (tablesetting-scenario :variance variance)
                  (when logged
                    (beliefstate:extract-files)))))
@@ -471,10 +471,10 @@
 ;;                        ;; TODO: relpos needs to be determined!
 ;;                        (store objcls relpos loc)))))))))))
 
-(def-top-level-cram-function tablesetting-scenario (&key variance)
+(def-top-level-cram-function tablesetting-scenario (&key variance logged)
   (with-process-modules-simulated
-    (beliefstate:enable-logging nil)
-    (do-init t :variance (make-hash-table :test 'equal))
+    ;;(beliefstate:enable-logging nil)
+    ;;(do-init t :variance (make-hash-table :test 'equal))
     ;; Initialize scenario
     (prepare-container-scene)
     (labels ((make-location (type args)
