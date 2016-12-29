@@ -423,7 +423,8 @@
     (:knife "Knife")
     (:fork "Fork")
     (:ketchup "Ketchup")
-    (:salt "Salt")))
+    (:salt "Salt")
+    (:glass "Glass")))
 
 ;; (defun common-residence-location (objcls)
 ;;   (cond ((string= objcls "Muesli")
