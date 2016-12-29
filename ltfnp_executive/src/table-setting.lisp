@@ -599,9 +599,9 @@
 
 (defun setmap-required-scene-objects ()
   (labels ((make-location (type args)
-               (make-designator :location (append `((:type ,type)) args)))
-             (make-object (mode content)
-               (make-designator :object `((,mode ,content)))))
+             (make-designator :location (append `((:type ,type)) args)))
+           (make-object (mode content)
+             (make-designator :object `((,mode ,content)))))
     (mapcar (lambda (obj)
               (let* ((loc (desig:desig-prop-value obj :at))
                      (obj-type (desig:desig-prop-value obj :type))
