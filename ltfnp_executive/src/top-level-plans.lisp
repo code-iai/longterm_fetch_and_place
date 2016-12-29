@@ -524,7 +524,7 @@
         (beliefstate:add-designator-to-node (make-designator :object result-data) log-id-1)
         (beliefstate:stop-node log-id-1)
         (beliefstate:stop-node log-id-0))
-      (cleanup-tablesetting-scene found-objects))))
+      )));;(cleanup-tablesetting-scene found-objects))))
 
 (def-cram-function cleanup-tablesetting-scene (objects)
   (labels ((make-location (type args)
