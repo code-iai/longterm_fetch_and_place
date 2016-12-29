@@ -218,7 +218,7 @@
                "iai_kitchen_sink_area_left_middle_drawer_handle")
   (maybe-store "Spoon" (tf:make-pose (tf:make-3d-vector 0.05 0.15 0.05) (tf:euler->quaternion :az pi))
                "iai_kitchen_sink_area_left_middle_drawer_handle")
-  (maybe-store "Muesli" (tf:make-pose (tf:make-3d-vector 0.15 -0.2 0.15) (tf:euler->quaternion :az pi))
+  (maybe-store "Muesli" (tf:make-pose (tf:make-3d-vector 0.1 -0.2 0.15) (tf:euler->quaternion :az pi))
                "iai_kitchen_sink_area_counter_top")
   (maybe-store "Glass" (tf:make-pose (tf:make-3d-vector 0.15 0.1 0.07) (tf:euler->quaternion :az pi))
                "iai_kitchen_sink_area_counter_top")
@@ -436,6 +436,20 @@
     (:salt "Salt")
     (:glass "Glass")))
 
+(defun object-class->scene-object (oc)
+  (cond ((string= oc "Muesli") :muesli)
+        ((string= oc "Milk") :milkbox)
+        ((string= oc "Buttermilk") :buttermilk)
+        ((string= oc "RedMetalPlate") :plate)
+        ((string= oc "RedMetalCup") :cup)
+        ((string= oc "RedMetalBowl") :bowl)
+        ((string= oc "Spoon") :spoon)
+        ((string= oc "Knife") :knife)
+        ((string= oc "Fork") :fork)
+        ((string= oc "Ketchup") :ketchup)
+        ((string= oc "Salt") :salt)
+        ((string= oc "Glass") :glass)))
+
 ;; (defun common-residence-location (objcls)
 ;;   (cond ((string= objcls "Muesli")
 ;;          "iai_kitchen_kitchen_island_left_upper_drawer_handle")
@@ -499,13 +513,59 @@
         (beliefstate:stop-node log-id)))
     (let* ((setting-mappings (setmap-required-scene-objects))
            (result (process-fetch-and-place setting-mappings))
+           (found-objects nil)
            (result-data
              (loop for pair in result
                    collect (destructuring-bind (key elements) pair
+                             (when (eql key :acquired) (setf found-objects elements))
                              `(,key ,(map 'vector #'identity elements))))))
-      (let ((log-id (beliefstate:start-node "RESULT")))
-        (beliefstate:add-designator-to-node (make-designator :object result-data) log-id)
-        (beliefstate:stop-node log-id)))))
+      (let ((log-id-0 (beliefstate:start-node "RESULT"))
+            (log-id-1 (beliefstate:start-node "TABLESETTING")))
+        (beliefstate:add-designator-to-node (make-designator :object result-data) log-id-1)
+        (beliefstate:stop-node log-id-1)
+        (beliefstate:stop-node log-id-0))
+      (cleanup-tablesetting-scene found-objects))))
+
+(def-cram-function cleanup-tablesetting-scene (objects)
+  (labels ((make-location (type args)
+             (make-designator :location (append `((:type ,type)) args)))
+           (make-object (mode content)
+             (make-designator :object `((,mode ,content)))))
+    (let* ((setmap
+             (loop for object in objects
+                   as target-location = (target-cleanup-location object)
+                   append (when target-location
+                            (destructuring-bind (locname clean-it-up) target-location
+                              (when clean-it-up ;; Some items are not handled, yet.
+                                `((,(make-object :name (desig:desig-prop-value object :name))
+                                   ,(make-location :dishwasher `((:name ,locname))))))))))
+           (result (process-fetch-and-place setmap))
+           (found-objects nil)
+           (result-data
+             (loop for pair in result
+                   collect (destructuring-bind (key elements) pair
+                             (when (eql key :acquired) (setf found-objects elements))
+                             `(,key ,(map 'vector #'identity elements))))))
+      (let ((log-id-0 (beliefstate:start-node "RESULT"))
+            (log-id-1 (beliefstate:start-node "CLEANUP")))
+        (beliefstate:add-designator-to-node (make-designator :object result-data) log-id-1)
+        (beliefstate:stop-node log-id-1)
+        (beliefstate:stop-node log-id-0)))))
+
+(defun target-cleanup-location (object)
+  (let ((type (object-class->scene-object (desig:desig-prop-value object :type))))
+    (cond ((eql type :muesli) `("iai_kitchen_sink_area_counter_top" nil))
+          ((eql type :buttermilk) `("iai_kitchen_fridge_door_handle" nil))
+          ((eql type :plate) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :cup) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :bowl) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :spoon) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :knife) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :fork) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :ketchup) `("iai_kitchen_fridge_door_handle" nil))
+          ((eql type :salt) `("iai_kitchen_sink_area_counter_top" nil))
+          ((eql type :glass) `("iai_kitchen_sink_area_dish_washer_door_handle" t))
+          ((eql type :milkbox) `("iai_kitchen_fridge_door_handle" nil)))))
 
 (def-cram-function process-fetch-and-place (setting-mappings)
   (let ((objects-not-found nil)
@@ -564,12 +624,32 @@
                       ;; Close drawer
                       (close-handled-storage-container loc-name)))
                    (:dishwasher
-                    )))
+                    ;; Open dishwasher
+                    (open-handled-storage-container loc-name)
+                    ;; Put object inside
+                    (let* ((putdown-pose (transform-pose
+                                          `(,(container-center-pose loc-name)
+                                            ,(tf:make-pose (tf:make-3d-vector 0.3 0.0 0.2)
+                                                           (tf:euler->quaternion :az pi)))))
+                           (putdown-location (make-designator :location `((:pose ,putdown-pose))))
+                           (standing-pose (tf:make-pose-stamped
+                                           "map" 0.0
+                                           (tf:make-3d-vector 0.5 0.0 0.0)
+                                           (tf:euler->quaternion)))
+                           (torso-height 0.1))
+                      (move-torso torso-height)
+                      (go-to-pose (tf:origin standing-pose) (tf:orientation standing-pose)
+                                  :frame "map")
+                      (place-object-into-location object putdown-location :destroy t)
+                      (move-arms-up)
+                      (move-torso)
+                      ;; Leave it open for now, maybe close it at the end
+                      ))))
                 (t (push orig-object objects-not-found))))))
     `((:not-found ,objects-not-found)
       (:acquired ,acquired-objects))))
 
-(def-cram-function place-object-into-location (object location)
+(def-cram-function place-object-into-location (object location &key destroy)
   (let* ((locname (desig:desig-prop-value location :name))
          (relpos (desig:desig-prop-value location :pose))
          (loc-center-pose
@@ -600,9 +680,10 @@
             (objtype (desig:desig-prop-value object :type)))
         (cram-gazebo-utilities::with-physics-paused
           (cram-gazebo-utilities::delete-gazebo-model objname)
-          (sleep 0.1)
-          (store-object-in-handled-container `(,objname ,objtype ,relpos) locname)
-          (spawn-class objname objtype fin-pose))))))
+          (unless destroy
+            (sleep 0.1)
+            (store-object-in-handled-container `(,objname ,objtype ,relpos) locname)
+            (spawn-class objname objtype fin-pose)))))))
 
 
 ;;;
