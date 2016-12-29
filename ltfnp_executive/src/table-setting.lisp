@@ -78,10 +78,13 @@
 (defun scene-detail (detail)
   (gethash detail *scene-context*))
 
+(defun set-scene (guests meal-time week-day)
+  (set-scene-detail :guests guests)
+  (set-scene-detail :meal-time meal-time)
+  (set-scene-detail :week-day week-day))
+
 (defun set-scene-1 ()
-  (set-scene-detail :guests `(:tim))
-  (set-scene-detail :meal-time :breakfast)
-  (set-scene-detail :week-day :saturday))
+  (set-scene `(:tim) :breakfast :saturday))
 
 (defun rectangular-costmap-generator (x-r y-r w h)
   (lambda (x y)
