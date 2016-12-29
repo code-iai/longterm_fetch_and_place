@@ -486,16 +486,26 @@
   (with-process-modules-simulated
     ;; Initialize scenario
     (prepare-container-scene)
-    (labels ((make-location (type args)
-               (make-designator :location (append `((:type ,type)) args)))
-             (make-object (mode content)
-               (make-designator :object `((,mode ,content)))))
-      (let ((guests (variance-list "attendants" variance :default `(:tim)))
-            (mealtime (variance-atom "mealtime" variance :default :breakfast))
-            (dayoftheweek (variance-atom "dayoftheweek" variance :default :monday)))
-        (set-scene guests mealtime dayoftheweek))
-      (let ((setting-mappings (setmap-required-scene-objects)))
-        (process-fetch-and-place setting-mappings)))))
+    (let ((guests (variance-list "attendants" variance :default `(:tim)))
+          (mealtime (variance-atom "mealtime" variance :default :breakfast))
+          (dayoftheweek (variance-atom "dayoftheweek" variance :default :monday)))
+      (let ((log-id (beliefstate:start-node "CONFIGURATION")))
+        (beliefstate:add-designator-to-node
+         (make-designator :object `((:guests ,(map 'vector #'identity guests))
+                                    (:mealtime ,mealtime)
+                                    (:dayoftheweek ,dayoftheweek)))
+         log-id)
+        (set-scene guests mealtime dayoftheweek)
+        (beliefstate:stop-node log-id)))
+    (let* ((setting-mappings (setmap-required-scene-objects))
+           (result (process-fetch-and-place setting-mappings))
+           (result-data
+             (loop for pair in result
+                   collect (destructuring-bind (key elements) pair
+                             `(,key ,(map 'vector #'identity elements))))))
+      (let ((log-id (beliefstate:start-node "RESULT")))
+        (beliefstate:add-designator-to-node (make-designator :object result-data) log-id)
+        (beliefstate:stop-node log-id)))))
 
 (def-cram-function process-fetch-and-place (setting-mappings)
   (let ((objects-not-found nil)
