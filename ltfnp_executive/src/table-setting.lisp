@@ -79,7 +79,7 @@
   (gethash detail *scene-context*))
 
 (defun set-scene (guests meal-time week-day)
-  (roslisp:ros-info (SET-SCENE) "Setting scene details: ~a,~a, ~a" guests meal-time week-day)
+  (roslisp:ros-info (SET-SCENE) "Setting scene details: ~a, ~a, ~a" guests meal-time week-day)
   (set-scene-detail :guests guests)
   (set-scene-detail :meal-time meal-time)
   (set-scene-detail :week-day week-day))
