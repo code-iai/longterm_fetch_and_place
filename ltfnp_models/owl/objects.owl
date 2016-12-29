@@ -542,6 +542,81 @@
     </rdfs:subClassOf>
   </owl:Class>
   
+  <!-- Glass -->
+  <owl:Class rdf:about="&knowrob;Glass">
+    <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToURDFModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/glass/glass.urdf</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;pathToCadModel"/>
+	<owl:hasValue rdf:datatype="&xsd;string">package://ltfnp_models/models/glass/Mug.dae</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="&knowrob;boundingBoxSize"/>
+        <owl:hasValue rdf:datatype="&xsd;string">0.045 0.045 0.07</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;primitiveShape"/>
+	<owl:hasValue rdf:datatype="&xsd;string">cylinder</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;roboSherlockClass"/>
+	<owl:hasValue rdf:datatype="&xsd;string">Glass</owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;RedMetalCup_Handle_laok8b26"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;RedMetalCup_Handle_diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;RedMetalCup_Handle_2diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;RedMetalCup_Handle_3diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&knowrob;semanticHandle"/>
+	<owl:hasValue rdf:resource="&knowrob;RedMetalCup_Handle_4diuxn543"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  
   <!-- RedMetalBowl -->
   <owl:Class rdf:about="&knowrob;RedMetalBowl">
     <rdfs:subClassOf rdf:resource="&knowrob;LTFnPObject"/>
