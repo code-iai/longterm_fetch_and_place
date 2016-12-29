@@ -37,7 +37,7 @@ task-variances:
     default: [tim]
     mean-amount: 1
   dayoftheweek:
-    label: "Time of day"
+    label: "Day of the week"
     value-type: [choice]
     items: [["Monday", monday], ["Tuesday", tuesday], ["Wednesday", wednesday], ["Thursday", thursday], ["Friday", friday], ["Saturday", saturday], ["Sunday", sunday]]
     default: [monday]
